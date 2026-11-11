@@ -20,6 +20,6 @@
 - 키를 스크립트·로그에 하드코딩(`.env.example`에 이름만)
 
 ## 완료 조건 (실행 가능한 확인)
-- [ ] 제품 3종 각 1편 MP4 생성(목표 길이 15·20초, `docs/planning.md#17-4` target_sec)
+- [ ] 테스트 카테고리 3개 각 1편 MP4 생성(목표 길이 15·20초, `docs/planning.md#17-4` target_sec)
 - [ ] 편당 원가 표(공급자별 금액·정수 원)를 `docs/00_LEAN.md` 결과 칸에 기록
 - [ ] `secscan` 비밀 0건

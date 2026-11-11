@@ -1,13 +1,16 @@
 # NOW — 재진입 스냅샷 (30줄 이내, 매 작업 끝에 덮어쓴다)
 
-- 갱신: 2026-11-11
-- 현재 작업: W0 task-001 랜딩(builder) · task-002 실측 양식·의뢰서(planner) — 상태: 진행
-- 마지막으로 한 일: D1~D5 확정 반영, 7편 승인 규칙 변경(권리 확인 원본 기준), 00_LEAN·03_SCREENS_UX 작성, task-001~029 작성, 프로토타입 기본 체크 해제·정책 점검 6개 문구
-- 다음 한 걸음: W0 task-001·002 병렬 착수 → task-003 → 00_LEAN 판정
-- 열린 결정(사용자 확인 필요): 작업 파일의 "팀장 결정 필요" 세부 값(009·017·018·020·025·028)은 해당 작업 착수 때 결정
-- 주의(이번 작업에서 알게 된 함정): plan2spec 다이어그램은 docs/diagrams/generated로 출력(손 작성 sitemap.mmd 보호). 호스팅된 Claude Design 링크는 로컬 수정과 별개. .claude/rules/api.md는 FastAPI용이라 미사용
-- SDLC 단계: 01 검증 착수 전(02 기획 완료)
-- 담당 모델/역할: 팀장 · Opus 5.5 / planner · codex-designer · reviewer
-- 수정 파일: docs/planning.md, docs/design.md, docs/00_LEAN.md, docs/03_SCREENS_UX.md, design/prototype/Main.dc.html, design/spec.json, design/wireframes/, tasks/, README.md, AGENTS.md
-- 테스트 상태: 코드 없음. plan2spec 🔴 0
-- 남은 작업: 커밋·푸시(사용자 확인 후), /token-audit, /secure setup(task-008에 포함)
+- 갱신: 2026-11-11 (오늘 작업 종료)
+- 현재 작업: W0 task-001·002·003 — 상태: AI 몫 완료, 사용자 입력 대기
+- 마지막으로 한 일: task-001 랜딩(landing/), task-002 실측 양식·법률 검토 의뢰서(docs/w0/), task-003 편집·원가 PoC(poc/agency/, 합성 클립 데모 통과). "제품 3종" 표현을 "테스트 카테고리 3개(제안, 판매 상품 확정 아님)"로 정리
+- 다음 한 걸음: 사용자 입력을 받아 task-001 폼 연결 → task-002 실측 결과를 00_LEAN에 기록 → task-003 실제 원가 측정 → 00_LEAN 판정
+- 열린 결정(사용자 확인 필요):
+  - task-001: 사전예약 폼 서비스·방문 집계 도구, 정책 문구 2개(연락처 삭제 시점, 사전예약 취소 가능)
+  - task-002: 테스트 카테고리 3개 확정, 회신 대기 기한, 촬영 구입비 상한, 자체 촬영 최소 길이, 법률 검토 발송 범위
+  - task-003: API 방식(OpenRouter 경유 / Anthropic 직접)과 키, 단가, Fish Audio 과금 단위(글자/바이트)
+- 주의(이번 작업에서 알게 된 함정): W1~W6은 00_LEAN 통과 전 보류. Codex는 한도로 불가였음(18:24 이후 재시도 가능) → 실제 API 연결 시 task-003 독립 코드 리뷰 필요. 원가 표에 이미지 이해 항목 아직 없음. 호스팅된 Claude Design 링크는 로컬 수정과 별개
+- SDLC 단계: 01 검증(W0) 진행 중
+- 담당 모델/역할: 팀장 · Opus 5.5 / builder · planner
+- 수정 파일: landing/, docs/w0/, poc/agency/, docs/00_LEAN.md, docs/planning.md, tasks/
+- 테스트 상태: 랜딩 3구간 캡처 확인, poc 데모 통과(1080x1920, 15·20초, 음성 포함). 폼 제출 집계는 미확인
+- 남은 작업: 위 열린 결정 처리, /token-audit, /secure setup(task-008에 포함)

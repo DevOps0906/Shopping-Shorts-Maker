@@ -1,0 +1,26 @@
+{
+  "_comment": "단가는 사용자가 채운다. 빈 문자열이면 예상 원가를 계산하지 않는다. 금액은 문자열 숫자(Decimal)로 적는다.",
+  "usd_krw": "",
+  "pricing": {
+    "claude": {
+      "input_per_1m_tokens_usd": "",
+      "output_per_1m_tokens_usd": ""
+    },
+    "fish_audio": {
+      "billing_unit": "utf8_bytes",
+      "per_1m_units_usd": ""
+    },
+    "render_local": {
+      "per_hour_krw": ""
+    }
+  },
+  "fish_audio_voices": [
+    {"name": "", "reference_id": ""},
+    {"name": "", "reference_id": ""},
+    {"name": "", "reference_id": ""},
+    {"name": "", "reference_id": ""},
+    {"name": "", "reference_id": ""},
+    {"name": "", "reference_id": ""}
+  ],
+  "subtitle_font": "C:/Windows/Fonts/malgun.ttf"
+}
