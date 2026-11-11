@@ -10,8 +10,9 @@
 | 영역 | 선택 | 위치 |
 |---|---|---|
 | 웹·AI 호출 | Next.js 16.4 (App Router) · React 19.3 · TypeScript · Tailwind CSS v4.3 · shadcn/ui (LLM 키는 서버 전용 코드에만) | `apps/web` |
-| DB·인증·파일 | Supabase (Postgres · RLS · Auth · Storage · Realtime · Vault) | `supabase/` |
-| 영상 워커 | FFmpeg · Railway (언어·큐는 `docs/planning.md#17-2` D4에서 확정) | `apps/worker` |
+| DB·인증·파일 | Supabase 셀프 호스팅 (Postgres · RLS · Auth · Storage · Realtime · Vault · Queues) | `supabase/` |
+| 영상 워커 | FFmpeg 워커 컨테이너 (언어는 `docs/planning.md#17-2` D4 ADR에서 확정) | `apps/worker` |
+| 인프라 | Docker Compose, 개발·운영 동일 구성 (`docs/planning.md#17-10`) | `docker/` |
 | 수집 | 사용자 로그인 브라우저 확장 | `apps/extension` |
 
 ## 3. 명령 (앱 생성 후 유효)
@@ -41,7 +42,9 @@
 ## 5. 문서 지도 (필요한 장만 읽는다)
 | 문서 | 내용 |
 |---|---|
-| `docs/planning.md` | 기능 · 데이터 · 리스크 · 로드맵 (17장: 구현 전 보강 명세 · 열린 결정) |
+| `docs/00_LEAN.md` | 린 검증 게이트 (통과 전 W1~W6 보류) |
+| `docs/planning.md` | 기능 · 데이터 · 리스크 · 로드맵 (17장: 구현 전 보강 명세 · 확정 결정) |
+| `docs/03_SCREENS_UX.md` · `design/spec.json` | 화면 표 S-01~S-16 · 화면별 사양(`spec <ID>`로 조회) |
 | `docs/diagrams/*.mmd` | 구조도 · 흐름도 · ERD (Mermaid) |
 | `docs/design.md` · `design/prototype/` | 디자인 시안 · 토큰 (`apps/web` 생성 후 토큰 파일이 정답) |
 | `tasks/README.md` · `tasks/NOW.md` | 작업 표 · 현재 상태 |

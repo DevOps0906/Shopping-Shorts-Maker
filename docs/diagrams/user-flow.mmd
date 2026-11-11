@@ -4,10 +4,11 @@ flowchart TD
   entry -- "제품명 직접 입력 또는 URL" --> topic["01 소재"]
   trend -- "01 소재 자동 승인" --> source["02 소스 자동 검색"]
   topic --> source
-  source --> enough{"체크된 원본 7편 이상"}
-  enough -- "아니오, 3회 미만" --> source
-  enough -- "아니오, 3회 탐색 후" --> script["03 대본"]
-  enough -- "예" --> script
+  source --> enough{"권리 확인 원본 수"}
+  enough -- "0~2편" --> add["직접 추가 또는 재탐색"]
+  add --> source
+  enough -- "3~6편, 사유 기록 후 예외 승인" --> script["03 대본"]
+  enough -- "7편 이상" --> script
   script --> voice["04 목소리"]
   voice --> edit["05 편집"]
   edit --> review{"검토본 승인"}

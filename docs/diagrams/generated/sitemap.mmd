@@ -1,0 +1,53 @@
+flowchart LR
+  subgraph g0["로그인"]
+    n_S_01["S-01 홈<br/>/"]
+    n_S_02["S-02 새로운 프로젝트<br/>/new"]
+    n_S_03["S-03 프로젝트 관리<br/>/projects"]
+    n_S_04["S-04 트렌드 분석<br/>/trends"]
+    n_S_12["S-12 성과 분석<br/>/analytics"]
+    n_S_16["S-16 제작 파트너 팝업<br/>(전역)"]
+  end
+  subgraph g1["로그인(채널 소유자)"]
+    n_S_05["S-05 내 채널<br/>/channels/[id]"]
+  end
+  subgraph g2["로그인(프로젝트 소유자)"]
+    n_S_06["S-06 01 소재<br/>/studio/[projectId]/topic"]
+    n_S_07["S-07 02 소스<br/>/studio/[projectId]/source"]
+    n_S_08["S-08 03 대본<br/>/studio/[projectId]/script"]
+    n_S_09["S-09 04 목소리<br/>/studio/[projectId]/voice"]
+    n_S_10["S-10 05 편집<br/>/studio/[projectId]/edit"]
+    n_S_11["S-11 06 발행<br/>/studio/[projectId]/publish"]
+  end
+  subgraph g3["로그인(본인)"]
+    n_S_13["S-13 프로필 설정<br/>/settings/profile"]
+    n_S_14["S-14 다중 계정<br/>/settings/accounts"]
+    n_S_15["S-15 모델 API 키<br/>/settings/api-keys"]
+  end
+  n_S_01 --> n_S_02
+  n_S_01 --> n_S_03
+  n_S_01 --> n_S_04
+  n_S_01 --> n_S_06
+  n_S_01 --> n_S_07
+  n_S_01 --> n_S_14
+  n_S_02 --> n_S_06
+  n_S_02 --> n_S_04
+  n_S_02 --> n_S_01
+  n_S_03 --> n_S_06
+  n_S_03 --> n_S_02
+  n_S_04 --> n_S_07
+  n_S_05 --> n_S_02
+  n_S_05 --> n_S_03
+  n_S_05 --> n_S_04
+  n_S_05 --> n_S_06
+  n_S_05 --> n_S_07
+  n_S_05 --> n_S_12
+  n_S_05 --> n_S_14
+  n_S_06 --> n_S_07
+  n_S_07 --> n_S_08
+  n_S_08 --> n_S_09
+  n_S_09 --> n_S_10
+  n_S_10 --> n_S_11
+  n_S_11 --> n_S_12
+  n_S_11 --> n_S_14
+  n_S_12 --> n_S_04
+  n_S_14 --> n_S_05

@@ -1,0 +1,2173 @@
+{
+ "version": "1",
+ "generated": "2026-11-11T08:03:39+00:00",
+ "docs": "docs",
+ "tokens": "기본 시작 토큰(프로젝트 토큰 없음)",
+ "sources": {
+  "docs/03_SCREENS_UX.md": "513fcf16f6f2",
+  "docs/planning.md": "93f4f819ddef"
+ },
+ "changed": [
+  "S-07",
+  "S-14"
+ ],
+ "removed": [],
+ "screens": {
+  "S-01": {
+   "id": "S-01",
+   "name": "홈",
+   "type_raw": "대시보드",
+   "route": "/",
+   "purpose": "오늘 할 제작 이어 가기",
+   "blocks": [
+    {
+     "type": "header",
+     "label": "인사(안녕하세요 ○○ 님)",
+     "items": [
+      "인사(안녕하세요 ○○ 님)"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "+ 새로운 프로젝트",
+     "items": [
+      "+ 새로운 프로젝트"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "오늘의 트렌드 보기",
+     "items": [
+      "오늘의 트렌드 보기"
+     ]
+    },
+    {
+     "type": "stat",
+     "label": "진행 중·발행 대기·이번 주 업로드·크레딧",
+     "items": [
+      "진행 중",
+      "발행 대기",
+      "이번 주 업로드",
+      "크레딧"
+     ]
+    },
+    {
+     "type": "daterange",
+     "label": "이번 주(고정)",
+     "items": [
+      "이번 주(고정)"
+     ]
+    },
+    {
+     "type": "list",
+     "label": "이어서 만들기(상태 배지·단계·채널·이어서 하기)",
+     "items": [
+      "이어서 만들기(상태 배지",
+      "단계",
+      "채널",
+      "이어서 하기)"
+     ]
+    },
+    {
+     "type": "list",
+     "label": "오늘의 급상승 상품 상위 5개(기회 점수·숏폼 제작)",
+     "items": [
+      "오늘의 급상승 상품 상위 5개(기회 점수",
+      "숏폼 제작)"
+     ]
+    },
+    {
+     "type": "chart",
+     "label": "채널별 이번 주 업로드 진행 바(업로드·목표)",
+     "items": [
+      "채널별 이번 주 업로드 진행 바(업로드",
+      "목표)"
+     ]
+    },
+    {
+     "type": "updated",
+     "label": "지표 기준 시각",
+     "items": [
+      "지표 기준 시각"
+     ]
+    }
+   ],
+   "data": [
+    "projects",
+    "accounts",
+    "trend\\_items",
+    "publications",
+    "credit\\_ledger"
+   ],
+   "api": [],
+   "role": "로그인",
+   "next": [
+    "S-02",
+    "S-03",
+    "S-04",
+    "S-06",
+    "S-07",
+    "S-14"
+   ],
+   "states_combined": "",
+   "source": "docs/03_SCREENS_UX.md",
+   "type": "dashboard",
+   "must_missing": [],
+   "should_missing": [
+    "이전 기간 대비(증감)",
+    "내보내기(CSV·PDF)",
+    "세그먼트·담당자 필터",
+    "할 일·알림(지표가 행동으로 이어지게)"
+   ],
+   "states_missing": [],
+   "hash": "93b7493a5da0",
+   "wireframe": "design/wireframes/S-01.html"
+  },
+  "S-02": {
+   "id": "S-02",
+   "name": "새로운 프로젝트",
+   "type_raw": "폼",
+   "route": "/new",
+   "purpose": "채널·카테고리·시작 방식을 정해 프로젝트 만들기",
+   "blocks": [
+    {
+     "type": "header",
+     "label": "새로운 프로젝트",
+     "items": [
+      "새로운 프로젝트"
+     ]
+    },
+    {
+     "type": "form",
+     "label": "① 채널·② 카테고리(10개)·③ 시작 방식(트렌드에서 고르기·제품명 직접 입력·상품 URL)·제품명·상품 링크·④ 영상 길이(15초·20초)·올릴 플랫폼·프로젝트 이름(선택)",
+     "items": [
+      "① 채널",
+      "② 카테고리(10개)",
+      "③ 시작 방식(트렌드에서 고르기",
+      "제품명 직접 입력",
+      "상품 URL)",
+      "제품명",
+      "상품 링크",
+      "④ 영상 길이(15초",
+      "20초)",
+      "올릴 플랫폼",
+      "프로젝트 이름(선택)"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "프로젝트 만들기(트렌드 선택 시 트렌드에서 상품 고르기 →)",
+     "items": [
+      "프로젝트 만들기(트렌드 선택 시 트렌드에서 상품 고르기 →)"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "취소",
+     "items": [
+      "취소"
+     ]
+    }
+   ],
+   "data": [
+    "projects",
+    "accounts",
+    "categories"
+   ],
+   "api": [],
+   "role": "로그인",
+   "next": [
+    "S-06",
+    "S-04",
+    "S-01"
+   ],
+   "states_combined": "",
+   "source": "docs/03_SCREENS_UX.md",
+   "type": "form",
+   "must_missing": [],
+   "should_missing": [
+    "필수 표시·도움말",
+    "임시 저장(긴 폼)"
+   ],
+   "states_missing": [],
+   "hash": "8c83edb8ba48",
+   "wireframe": "design/wireframes/S-02.html"
+  },
+  "S-03": {
+   "id": "S-03",
+   "name": "프로젝트 관리",
+   "type_raw": "목록",
+   "route": "/projects",
+   "purpose": "프로젝트 찾아 열기·복제·삭제",
+   "blocks": [
+    {
+     "type": "header",
+     "label": "프로젝트 관리",
+     "items": [
+      "프로젝트 관리"
+     ]
+    },
+    {
+     "type": "filter",
+     "label": "상태(전체·진행 중·발행 대기·예약됨·업로드됨)",
+     "items": [
+      "상태(전체",
+      "진행 중",
+      "발행 대기",
+      "예약됨",
+      "업로드됨)"
+     ]
+    },
+    {
+     "type": "search",
+     "label": "프로젝트·제품 검색",
+     "items": [
+      "프로젝트",
+      "제품 검색"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "+ 새로운 프로젝트",
+     "items": [
+      "+ 새로운 프로젝트"
+     ]
+    },
+    {
+     "type": "table",
+     "label": "프로젝트·채널·카테고리·진행·버전·수정·상태·관리(열기·복제·삭제)",
+     "items": [
+      "프로젝트",
+      "채널",
+      "카테고리",
+      "진행",
+      "버전",
+      "수정",
+      "상태",
+      "관리(열기",
+      "복제",
+      "삭제)"
+     ]
+    },
+    {
+     "type": "pagination",
+     "label": "",
+     "items": []
+    }
+   ],
+   "data": [
+    "projects",
+    "accounts",
+    "renders"
+   ],
+   "api": [],
+   "role": "로그인",
+   "next": [
+    "S-06",
+    "S-02"
+   ],
+   "states_combined": "",
+   "source": "docs/03_SCREENS_UX.md",
+   "type": "list",
+   "must_missing": [],
+   "should_missing": [
+    "일괄 작업(선택·삭제·내보내기)",
+    "저장된 보기·열 설정"
+   ],
+   "states_missing": [],
+   "hash": "5a51bd8c03fa",
+   "wireframe": "design/wireframes/S-03.html"
+  },
+  "S-04": {
+   "id": "S-04",
+   "name": "트렌드 분석",
+   "type_raw": "대시보드",
+   "route": "/trends",
+   "purpose": "기회 점수로 만들 상품 고르기",
+   "blocks": [
+    {
+     "type": "header",
+     "label": "트렌드 분석",
+     "items": [
+      "트렌드 분석"
+     ]
+    },
+    {
+     "type": "filter",
+     "label": "카테고리·기간(오늘·7일·30일)·해외 데이터 출처(전체·틱톡·샤오홍슈)",
+     "items": [
+      "카테고리",
+      "기간(오늘",
+      "7일",
+      "30일)",
+      "해외 데이터 출처(전체",
+      "틱톡",
+      "샤오홍슈)"
+     ]
+    },
+    {
+     "type": "stat",
+     "label": "가장 기회가 큰 카테고리·해외 선행 상품 수·평균 해외 영상 증가",
+     "items": [
+      "가장 기회가 큰 카테고리",
+      "해외 선행 상품 수",
+      "평균 해외 영상 증가"
+     ]
+    },
+    {
+     "type": "table",
+     "label": "급상승 상품 TOP(체크·순위·상품·7일 추이·해외 영상·국내 검색·국내 경쟁·기회 점수)",
+     "items": [
+      "급상승 상품 TOP(체크",
+      "순위",
+      "상품",
+      "7일 추이",
+      "해외 영상",
+      "국내 검색",
+      "국내 경쟁",
+      "기회 점수)"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "상위 3개 선택",
+     "items": [
+      "상위 3개 선택"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "숏폼 제작하기 →",
+     "items": [
+      "숏폼 제작하기 →"
+     ]
+    },
+    {
+     "type": "text",
+     "label": "선택 바(N개 선택·선택 해제·숏폼 제작하기)",
+     "items": [
+      "선택 바(N개 선택",
+      "선택 해제",
+      "숏폼 제작하기)"
+     ]
+    },
+    {
+     "type": "chart",
+     "label": "카테고리별 기회 점수 막대",
+     "items": [
+      "카테고리별 기회 점수 막대"
+     ]
+    },
+    {
+     "type": "text",
+     "label": "기회 점수 산식 안내",
+     "items": [
+      "기회 점수 산식 안내"
+     ]
+    },
+    {
+     "type": "updated",
+     "label": "수집 시각",
+     "items": [
+      "수집 시각"
+     ]
+    }
+   ],
+   "data": [
+    "trend\\_items",
+    "projects",
+    "accounts"
+   ],
+   "api": [],
+   "role": "로그인",
+   "next": [
+    "S-07"
+   ],
+   "states_combined": "",
+   "source": "docs/03_SCREENS_UX.md",
+   "type": "dashboard",
+   "must_missing": [],
+   "should_missing": [
+    "이전 기간 대비(증감)",
+    "내보내기(CSV·PDF)",
+    "할 일·알림(지표가 행동으로 이어지게)"
+   ],
+   "states_missing": [],
+   "hash": "0cbd7488e805",
+   "wireframe": "design/wireframes/S-04.html"
+  },
+  "S-05": {
+   "id": "S-05",
+   "name": "내 채널",
+   "type_raw": "상세",
+   "route": "/channels/[id]",
+   "purpose": "채널 하나의 현황 보고 이 채널로 제작",
+   "blocks": [
+    {
+     "type": "header",
+     "label": "채널 헤더(아바타·플랫폼·카테고리·말투·연결 상태)",
+     "items": [
+      "채널 헤더(아바타",
+      "플랫폼",
+      "카테고리",
+      "말투",
+      "연결 상태)"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "+ 이 채널로 새 프로젝트",
+     "items": [
+      "+ 이 채널로 새 프로젝트"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "채널 설정",
+     "items": [
+      "채널 설정"
+     ]
+    },
+    {
+     "type": "stat",
+     "label": "이번 주 업로드 대비 목표·진행 중 프로젝트·발행한 프로젝트·최근 영상 조회",
+     "items": [
+      "이번 주 업로드 대비 목표",
+      "진행 중 프로젝트",
+      "발행한 프로젝트",
+      "최근 영상 조회"
+     ]
+    },
+    {
+     "type": "list",
+     "label": "이 채널의 프로젝트(열기)",
+     "items": [
+      "이 채널의 프로젝트(열기)"
+     ]
+    },
+    {
+     "type": "list",
+     "label": "같은 카테고리 급상승 상품 3개(숏폼 제작)",
+     "items": [
+      "같은 카테고리 급상승 상품 3개(숏폼 제작)"
+     ]
+    },
+    {
+     "type": "table",
+     "label": "최근 영상 성과(영상·발행·조회·링크 클릭·클릭률)",
+     "items": [
+      "최근 영상 성과(영상",
+      "발행",
+      "조회",
+      "링크 클릭",
+      "클릭률)"
+     ]
+    }
+   ],
+   "data": [
+    "accounts",
+    "projects",
+    "trend\\_items",
+    "publications",
+    "video\\_metrics"
+   ],
+   "api": [],
+   "role": "로그인(채널 소유자)",
+   "next": [
+    "S-02",
+    "S-03",
+    "S-04",
+    "S-06",
+    "S-07",
+    "S-12",
+    "S-14"
+   ],
+   "states_combined": "",
+   "source": "docs/03_SCREENS_UX.md",
+   "type": "detail",
+   "must_missing": [],
+   "should_missing": [
+    "관련 항목 탭",
+    "활동·변경 이력"
+   ],
+   "states_missing": [],
+   "hash": "504b6f5b7cb6",
+   "wireframe": "design/wireframes/S-05.html"
+  },
+  "S-06": {
+   "id": "S-06",
+   "name": "01 소재",
+   "type_raw": "마법사",
+   "route": "/studio/[projectId]/topic",
+   "purpose": "이번 영상에서 다룰 제품 정하기",
+   "blocks": [
+    {
+     "type": "header",
+     "label": "현재 프로젝트 줄(카테고리·프로젝트명·채널·저장 시각·프로젝트 삭제·처음부터 다시)",
+     "items": [
+      "현재 프로젝트 줄(카테고리",
+      "프로젝트명",
+      "채널",
+      "저장 시각",
+      "프로젝트 삭제",
+      "처음부터 다시)"
+     ]
+    },
+    {
+     "type": "steps",
+     "label": "01 소재·02 소스·03 대본·04 목소리·05 편집·06 발행",
+     "items": [
+      "01 소재",
+      "02 소스",
+      "03 대본",
+      "04 목소리",
+      "05 편집",
+      "06 발행"
+     ]
+    },
+    {
+     "type": "text",
+     "label": "상태 배너",
+     "items": [
+      "상태 배너"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "소재 추천받기",
+     "items": [
+      "소재 추천받기"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "사진으로 시작하기",
+     "items": [
+      "사진으로 시작하기"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "샤오홍슈 로그인 연결",
+     "items": [
+      "샤오홍슈 로그인 연결"
+     ]
+    },
+    {
+     "type": "list",
+     "label": "추천 소재 후보 3개(선정 근거·비슷한 영상 링크)",
+     "items": [
+      "추천 소재 후보 3개(선정 근거",
+      "비슷한 영상 링크)"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "다른 후보 추천",
+     "items": [
+      "다른 후보 추천"
+     ]
+    },
+    {
+     "type": "form",
+     "label": "이번 영상에서 다룰 제품*",
+     "items": [
+      "이번 영상에서 다룰 제품*"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "소재 저장",
+     "items": [
+      "소재 저장"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "그대로 진행·승인",
+     "items": [
+      "그대로 진행",
+      "승인"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "변경 필요",
+     "items": [
+      "변경 필요"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "다음 단계 →",
+     "items": [
+      "다음 단계 →"
+     ]
+    }
+   ],
+   "data": [
+    "projects",
+    "topics",
+    "chat\\_messages",
+    "jobs"
+   ],
+   "api": [],
+   "role": "로그인(프로젝트 소유자)",
+   "next": [
+    "S-07"
+   ],
+   "states_combined": "",
+   "source": "docs/03_SCREENS_UX.md",
+   "type": "wizard",
+   "must_missing": [],
+   "should_missing": [],
+   "states_missing": [],
+   "hash": "1729cef98d71",
+   "wireframe": "design/wireframes/S-06.html"
+  },
+  "S-07": {
+   "id": "S-07",
+   "name": "02 소스",
+   "type_raw": "마법사",
+   "route": "/studio/[projectId]/source",
+   "purpose": "권리를 확인한 원본만 골라 편집에 넘기기",
+   "blocks": [
+    {
+     "type": "header",
+     "label": "현재 프로젝트 줄",
+     "items": [
+      "현재 프로젝트 줄"
+     ]
+    },
+    {
+     "type": "steps",
+     "label": "01 소재·02 소스·03 대본·04 목소리·05 편집·06 발행",
+     "items": [
+      "01 소재",
+      "02 소스",
+      "03 대본",
+      "04 목소리",
+      "05 편집",
+      "06 발행"
+     ]
+    },
+    {
+     "type": "text",
+     "label": "상태 배너(확장 미연결 시 대기 배너)",
+     "items": [
+      "상태 배너(확장 미연결 시 대기 배너)"
+     ]
+    },
+    {
+     "type": "text",
+     "label": "승인된 소재",
+     "items": [
+      "승인된 소재"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "소스 찾기(라벨: 한 번 더 찾기 · 탐색 3회 완료)",
+     "items": [
+      "소스 찾기(라벨: 한 번 더 찾기",
+      "탐색 3회 완료)"
+     ]
+    },
+    {
+     "type": "text",
+     "label": "안내(자동 수집은 참고용·권리 미확인·원본은 발행 30일 뒤 삭제)",
+     "items": [
+      "안내(자동 수집은 참고용",
+      "권리 미확인",
+      "원본은 발행 30일 뒤 삭제)"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "샤오홍슈 로그인 연결",
+     "items": [
+      "샤오홍슈 로그인 연결"
+     ]
+    },
+    {
+     "type": "link",
+     "label": "틱톡 검색·샤오홍슈 검색",
+     "items": [
+      "틱톡 검색",
+      "샤오홍슈 검색"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "+ 원본 영상 추가",
+     "items": [
+      "+ 원본 영상 추가"
+     ]
+    },
+    {
+     "type": "filter",
+     "label": "전체·TikTok·샤오홍슈",
+     "items": [
+      "전체",
+      "TikTok",
+      "샤오홍슈"
+     ]
+    },
+    {
+     "type": "card",
+     "label": "원본 최대 20편(번호·플랫폼·해상도·길이·체크 기본 해제·미리보기)",
+     "items": [
+      "원본 최대 20편(번호",
+      "플랫폼",
+      "해상도",
+      "길이",
+      "체크 기본 해제",
+      "미리보기)"
+     ]
+    },
+    {
+     "type": "text",
+     "label": "확보 N편 · 다음 단계 전달 N편",
+     "items": [
+      "확보 N편",
+      "다음 단계 전달 N편"
+     ]
+    },
+    {
+     "type": "form",
+     "label": "원본 체크(권리 확인한 원본만)",
+     "items": [
+      "원본 체크(권리 확인한 원본만)"
+     ]
+    },
+    {
+     "type": "text",
+     "label": "파일 추가 또는 URL 붙여 넣기 안내",
+     "items": [
+      "파일 추가 또는 URL 붙여 넣기 안내"
+     ]
+    },
+    {
+     "type": "text",
+     "label": "승인 기준 안내(부족 사유는 제작 파트너 채팅으로 기록)",
+     "items": [
+      "승인 기준 안내(부족 사유는 제작 파트너 채팅으로 기록)"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "그대로 진행·승인",
+     "items": [
+      "그대로 진행",
+      "승인"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "변경 필요",
+     "items": [
+      "변경 필요"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "다음 단계 →",
+     "items": [
+      "다음 단계 →"
+     ]
+    }
+   ],
+   "data": [
+    "sources",
+    "projects",
+    "jobs"
+   ],
+   "api": [],
+   "role": "로그인(프로젝트 소유자)",
+   "next": [
+    "S-08"
+   ],
+   "states_combined": "",
+   "source": "docs/03_SCREENS_UX.md",
+   "type": "wizard",
+   "must_missing": [],
+   "should_missing": [
+    "중간 저장·이어하기"
+   ],
+   "states_missing": [],
+   "hash": "d79257a264dc",
+   "wireframe": "design/wireframes/S-07.html"
+  },
+  "S-08": {
+   "id": "S-08",
+   "name": "03 대본",
+   "type_raw": "마법사",
+   "route": "/studio/[projectId]/script",
+   "purpose": "원본에 보이는 동작만으로 15~20초 대본 쓰기",
+   "blocks": [
+    {
+     "type": "header",
+     "label": "현재 프로젝트 줄",
+     "items": [
+      "현재 프로젝트 줄"
+     ]
+    },
+    {
+     "type": "steps",
+     "label": "01 소재·02 소스·03 대본·04 목소리·05 편집·06 발행",
+     "items": [
+      "01 소재",
+      "02 소스",
+      "03 대본",
+      "04 목소리",
+      "05 편집",
+      "06 발행"
+     ]
+    },
+    {
+     "type": "text",
+     "label": "상태 배너",
+     "items": [
+      "상태 배너"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "이 소스에 맞는 대본 초안",
+     "items": [
+      "이 소스에 맞는 대본 초안"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "추천 대본을 작업칸에 적용",
+     "items": [
+      "추천 대본을 작업칸에 적용"
+     ]
+    },
+    {
+     "type": "form",
+     "label": "내레이션(한 줄에 한 문장)*",
+     "items": [
+      "내레이션(한 줄에 한 문장)*"
+     ]
+    },
+    {
+     "type": "chart",
+     "label": "예상 길이 미터(목표 15~20초)",
+     "items": [
+      "예상 길이 미터(목표 15~20초)"
+     ]
+    },
+    {
+     "type": "list",
+     "label": "문장 번호·문장별 예상 초",
+     "items": [
+      "문장 번호",
+      "문장별 예상 초"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "대본 저장",
+     "items": [
+      "대본 저장"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "그대로 진행·승인",
+     "items": [
+      "그대로 진행",
+      "승인"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "변경 필요",
+     "items": [
+      "변경 필요"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "다음 단계 →",
+     "items": [
+      "다음 단계 →"
+     ]
+    }
+   ],
+   "data": [
+    "scripts",
+    "sources",
+    "jobs"
+   ],
+   "api": [],
+   "role": "로그인(프로젝트 소유자)",
+   "next": [
+    "S-09"
+   ],
+   "states_combined": "",
+   "source": "docs/03_SCREENS_UX.md",
+   "type": "wizard",
+   "must_missing": [],
+   "should_missing": [],
+   "states_missing": [],
+   "hash": "3215843bf25f",
+   "wireframe": "design/wireframes/S-08.html"
+  },
+  "S-09": {
+   "id": "S-09",
+   "name": "04 목소리",
+   "type_raw": "마법사",
+   "route": "/studio/[projectId]/voice",
+   "purpose": "목소리 고르고 음성 만들기·쉼 다듬기",
+   "blocks": [
+    {
+     "type": "header",
+     "label": "현재 프로젝트 줄",
+     "items": [
+      "현재 프로젝트 줄"
+     ]
+    },
+    {
+     "type": "steps",
+     "label": "01 소재·02 소스·03 대본·04 목소리·05 편집·06 발행",
+     "items": [
+      "01 소재",
+      "02 소스",
+      "03 대본",
+      "04 목소리",
+      "05 편집",
+      "06 발행"
+     ]
+    },
+    {
+     "type": "text",
+     "label": "상태 배너",
+     "items": [
+      "상태 배너"
+     ]
+    },
+    {
+     "type": "card",
+     "label": "목소리 6종(이름·성별·미리 듣기·Fish Audio에서 듣기)",
+     "items": [
+      "목소리 6종(이름",
+      "성별",
+      "미리 듣기",
+      "Fish Audio에서 듣기)"
+     ]
+    },
+    {
+     "type": "link",
+     "label": "전체 목소리 100개 보기",
+     "items": [
+      "전체 목소리 100개 보기"
+     ]
+    },
+    {
+     "type": "form",
+     "label": "목소리 선택·녹음 파일",
+     "items": [
+      "목소리 선택",
+      "녹음 파일"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "음성 생성",
+     "items": [
+      "음성 생성"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "직접 녹음 추가",
+     "items": [
+      "직접 녹음 추가"
+     ]
+    },
+    {
+     "type": "text",
+     "label": "현재 음성 플레이어·승인 대본",
+     "items": [
+      "현재 음성 플레이어",
+      "승인 대본"
+     ]
+    },
+    {
+     "type": "list",
+     "label": "단어 칩과 쉼 버튼",
+     "items": [
+      "단어 칩과 쉼 버튼"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "선택한 쉼만 정리",
+     "items": [
+      "선택한 쉼만 정리"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "그대로 진행·승인",
+     "items": [
+      "그대로 진행",
+      "승인"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "변경 필요",
+     "items": [
+      "변경 필요"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "다음 단계 →",
+     "items": [
+      "다음 단계 →"
+     ]
+    }
+   ],
+   "data": [
+    "voice\\_takes",
+    "scripts",
+    "jobs"
+   ],
+   "api": [],
+   "role": "로그인(프로젝트 소유자)",
+   "next": [
+    "S-10"
+   ],
+   "states_combined": "",
+   "source": "docs/03_SCREENS_UX.md",
+   "type": "wizard",
+   "must_missing": [],
+   "should_missing": [
+    "중간 저장·이어하기"
+   ],
+   "states_missing": [],
+   "hash": "6b85e73370f2",
+   "wireframe": "design/wireframes/S-09.html"
+  },
+  "S-10": {
+   "id": "S-10",
+   "name": "05 편집",
+   "type_raw": "상세",
+   "route": "/studio/[projectId]/edit",
+   "purpose": "대사와 컷을 맞춰 MP4 검토본 만들기",
+   "blocks": [
+    {
+     "type": "header",
+     "label": "현재 프로젝트 줄",
+     "items": [
+      "현재 프로젝트 줄"
+     ]
+    },
+    {
+     "type": "steps",
+     "label": "01 소재·02 소스·03 대본·04 목소리·05 편집·06 발행",
+     "items": [
+      "01 소재",
+      "02 소스",
+      "03 대본",
+      "04 목소리",
+      "05 편집",
+      "06 발행"
+     ]
+    },
+    {
+     "type": "text",
+     "label": "상태 배너",
+     "items": [
+      "상태 배너"
+     ]
+    },
+    {
+     "type": "chart",
+     "label": "컷 타임라인",
+     "items": [
+      "컷 타임라인"
+     ]
+    },
+    {
+     "type": "table",
+     "label": "대사와 장면 연결표(컷·대사·원본·구간)",
+     "items": [
+      "대사와 장면 연결표(컷",
+      "대사",
+      "원본",
+      "구간)"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "스케일업",
+     "items": [
+      "스케일업"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "자막 및 워터마크 제거",
+     "items": [
+      "자막 및 워터마크 제거"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "좋은 컷을 골라 MP4 만들기",
+     "items": [
+      "좋은 컷을 골라 MP4 만들기"
+     ]
+    },
+    {
+     "type": "card",
+     "label": "검토본(최신 수정본 V1·생성 시각·9:16 미리보기·다운로드)",
+     "items": [
+      "검토본(최신 수정본 V1",
+      "생성 시각",
+      "9:16 미리보기",
+      "다운로드)"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "그대로 진행·승인",
+     "items": [
+      "그대로 진행",
+      "승인"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "변경 필요",
+     "items": [
+      "변경 필요"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "다음 단계 →",
+     "items": [
+      "다음 단계 →"
+     ]
+    }
+   ],
+   "data": [
+    "renders",
+    "sources",
+    "voice\\_takes",
+    "jobs"
+   ],
+   "api": [],
+   "role": "로그인(프로젝트 소유자)",
+   "next": [
+    "S-11"
+   ],
+   "states_combined": "",
+   "source": "docs/03_SCREENS_UX.md",
+   "type": "detail",
+   "must_missing": [],
+   "should_missing": [
+    "관련 항목 탭",
+    "활동·변경 이력"
+   ],
+   "states_missing": [],
+   "hash": "2668efa0371b",
+   "wireframe": "design/wireframes/S-10.html"
+  },
+  "S-11": {
+   "id": "S-11",
+   "name": "06 발행",
+   "type_raw": "마법사",
+   "route": "/studio/[projectId]/publish",
+   "purpose": "제휴 링크·정책 점검을 거쳐 예약·발행",
+   "blocks": [
+    {
+     "type": "header",
+     "label": "현재 프로젝트 줄",
+     "items": [
+      "현재 프로젝트 줄"
+     ]
+    },
+    {
+     "type": "steps",
+     "label": "01 소재·02 소스·03 대본·04 목소리·05 편집·06 발행",
+     "items": [
+      "01 소재",
+      "02 소스",
+      "03 대본",
+      "04 목소리",
+      "05 편집",
+      "06 발행"
+     ]
+    },
+    {
+     "type": "text",
+     "label": "상태 배너",
+     "items": [
+      "상태 배너"
+     ]
+    },
+    {
+     "type": "card",
+     "label": "제휴 프로그램 8개(추천 배지)",
+     "items": [
+      "제휴 프로그램 8개(추천 배지)"
+     ]
+    },
+    {
+     "type": "form",
+     "label": "상품 제휴 링크·제목(100자 카운터)·설명·해시태그·발행 방식(예약 발행·지금 올리기)",
+     "items": [
+      "상품 제휴 링크",
+      "제목(100자 카운터)",
+      "설명",
+      "해시태그",
+      "발행 방식(예약 발행",
+      "지금 올리기)"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "자동 찾기",
+     "items": [
+      "자동 찾기"
+     ]
+    },
+    {
+     "type": "text",
+     "label": "고지 문구 자동 삽입·고정 댓글 구매 안내 스위치",
+     "items": [
+      "고지 문구 자동 삽입",
+      "고정 댓글 구매 안내 스위치"
+     ]
+    },
+    {
+     "type": "list",
+     "label": "링크 삽입 위치(사용·조건부·보조·클릭 안 됨)",
+     "items": [
+      "링크 삽입 위치(사용",
+      "조건부",
+      "보조",
+      "클릭 안 됨)"
+     ]
+    },
+    {
+     "type": "card",
+     "label": "링크인바이오 등록(서비스·번호·항목 내용 복사·등록 완료 스위치)",
+     "items": [
+      "링크인바이오 등록(서비스",
+      "번호",
+      "항목 내용 복사",
+      "등록 완료 스위치)"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "다시 만들기",
+     "items": [
+      "다시 만들기"
+     ]
+    },
+    {
+     "type": "text",
+     "label": "설명란 미리보기(고지 → 구매 안내 → 본문 → 해시태그)",
+     "items": [
+      "설명란 미리보기(고지 → 구매 안내 → 본문 → 해시태그)"
+     ]
+    },
+    {
+     "type": "list",
+     "label": "권리·정책 점검 6개(N / 6 통과)",
+     "items": [
+      "권리",
+      "정책 점검 6개(N",
+      "6 통과)"
+     ]
+    },
+    {
+     "type": "list",
+     "label": "추천 시간 3개",
+     "items": [
+      "추천 시간 3개"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "발행(6개 통과 시 활성)",
+     "items": [
+      "발행(6개 통과 시 활성)"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "성과 분석 보기 →(다음 단계 자리)",
+     "items": [
+      "성과 분석 보기 →(다음 단계 자리)"
+     ]
+    }
+   ],
+   "data": [
+    "affiliate\\_links",
+    "publications",
+    "policy\\_checks",
+    "accounts"
+   ],
+   "api": [],
+   "role": "로그인(프로젝트 소유자)",
+   "next": [
+    "S-12",
+    "S-14"
+   ],
+   "states_combined": "",
+   "source": "docs/03_SCREENS_UX.md",
+   "type": "wizard",
+   "must_missing": [],
+   "should_missing": [
+    "중간 저장·이어하기"
+   ],
+   "states_missing": [],
+   "hash": "d18c09b617f3",
+   "wireframe": "design/wireframes/S-11.html"
+  },
+  "S-12": {
+   "id": "S-12",
+   "name": "성과 분석",
+   "type_raw": "대시보드",
+   "route": "/analytics",
+   "purpose": "조회·클릭·예상 수익으로 다음 상품 판단",
+   "blocks": [
+    {
+     "type": "header",
+     "label": "성과 분석",
+     "items": [
+      "성과 분석"
+     ]
+    },
+    {
+     "type": "filter",
+     "label": "채널(전체·채널별)",
+     "items": [
+      "채널(전체",
+      "채널별)"
+     ]
+    },
+    {
+     "type": "daterange",
+     "label": "최근 14일(고정)",
+     "items": [
+      "최근 14일(고정)"
+     ]
+    },
+    {
+     "type": "stat",
+     "label": "조회수·링크 클릭·클릭률·예상 제휴 수익",
+     "items": [
+      "조회수",
+      "링크 클릭",
+      "클릭률",
+      "예상 제휴 수익"
+     ]
+    },
+    {
+     "type": "chart",
+     "label": "최근 14일 조회 막대(툴팁)",
+     "items": [
+      "최근 14일 조회 막대(툴팁)"
+     ]
+    },
+    {
+     "type": "table",
+     "label": "영상별 성과(영상·채널·발행·조회·평균 시청 비율·링크 클릭·클릭률·예상 수익·훅 우수)",
+     "items": [
+      "영상별 성과(영상",
+      "채널",
+      "발행",
+      "조회",
+      "평균 시청 비율",
+      "링크 클릭",
+      "클릭률",
+      "예상 수익",
+      "훅 우수)"
+     ]
+    },
+    {
+     "type": "card",
+     "label": "인사이트 3개(클릭률 최고 카테고리·시청 유지 최고 영상·추천 발행 시간)",
+     "items": [
+      "인사이트 3개(클릭률 최고 카테고리",
+      "시청 유지 최고 영상",
+      "추천 발행 시간)"
+     ]
+    },
+    {
+     "type": "text",
+     "label": "예상 수익 가정값 안내",
+     "items": [
+      "예상 수익 가정값 안내"
+     ]
+    },
+    {
+     "type": "updated",
+     "label": "지표 수집 시각",
+     "items": [
+      "지표 수집 시각"
+     ]
+    }
+   ],
+   "data": [
+    "video\\_metrics",
+    "publications",
+    "accounts"
+   ],
+   "api": [],
+   "role": "로그인",
+   "next": [
+    "S-04"
+   ],
+   "states_combined": "",
+   "source": "docs/03_SCREENS_UX.md",
+   "type": "dashboard",
+   "must_missing": [],
+   "should_missing": [
+    "이전 기간 대비(증감)",
+    "내보내기(CSV·PDF)",
+    "할 일·알림(지표가 행동으로 이어지게)"
+   ],
+   "states_missing": [],
+   "hash": "e7784618732f",
+   "wireframe": "design/wireframes/S-12.html"
+  },
+  "S-13": {
+   "id": "S-13",
+   "name": "프로필 설정",
+   "type_raw": "설정",
+   "route": "/settings/profile",
+   "purpose": "새 프로젝트 기본값 정하기",
+   "blocks": [
+    {
+     "type": "tabs",
+     "label": "프로필 설정·다중 계정·모델 API 키",
+     "items": [
+      "프로필 설정",
+      "다중 계정",
+      "모델 API 키"
+     ]
+    },
+    {
+     "type": "form",
+     "label": "이름·이메일·기본 말투·기본 언어·자막 스타일·기본 영상 길이(15초·20초)",
+     "items": [
+      "이름",
+      "이메일",
+      "기본 말투",
+      "기본 언어",
+      "자막 스타일",
+      "기본 영상 길이(15초",
+      "20초)"
+     ]
+    },
+    {
+     "type": "form",
+     "label": "알림(작업 완료·주간 트렌드 리포트)",
+     "items": [
+      "알림(작업 완료",
+      "주간 트렌드 리포트)"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "프로필 저장",
+     "items": [
+      "프로필 저장"
+     ]
+    }
+   ],
+   "data": [
+    "user\\_profiles"
+   ],
+   "api": [],
+   "role": "로그인(본인)",
+   "next": [],
+   "states_combined": "",
+   "source": "docs/03_SCREENS_UX.md",
+   "type": "settings",
+   "must_missing": [],
+   "should_missing": [
+    "위험 작업 구역(삭제·탈퇴) 분리·확인"
+   ],
+   "states_missing": [],
+   "hash": "12a2920ac2e5",
+   "wireframe": "design/wireframes/S-13.html"
+  },
+  "S-14": {
+   "id": "S-14",
+   "name": "다중 계정",
+   "type_raw": "설정",
+   "route": "/settings/accounts",
+   "purpose": "채널 연결·카테고리·말투 관리",
+   "blocks": [
+    {
+     "type": "tabs",
+     "label": "프로필 설정·다중 계정·모델 API 키",
+     "items": [
+      "프로필 설정",
+      "다중 계정",
+      "모델 API 키"
+     ]
+    },
+    {
+     "type": "card",
+     "label": "연결된 계정(플랫폼·채널명·카테고리·말투·이번 주 업로드 대비 목표·연결 상태)",
+     "items": [
+      "연결된 계정(플랫폼",
+      "채널명",
+      "카테고리",
+      "말투",
+      "이번 주 업로드 대비 목표",
+      "연결 상태)"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "기본으로",
+     "items": [
+      "기본으로"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "재연결",
+     "items": [
+      "재연결"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "연결 해제",
+     "items": [
+      "연결 해제"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "+ 계정 추가",
+     "items": [
+      "+ 계정 추가"
+     ]
+    },
+    {
+     "type": "form",
+     "label": "계정 추가(플랫폼·채널 이름·카테고리·말투)",
+     "items": [
+      "계정 추가(플랫폼",
+      "채널 이름",
+      "카테고리",
+      "말투)"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "계정 연결하기(저장)",
+     "items": [
+      "계정 연결하기(저장)"
+     ]
+    }
+   ],
+   "data": [
+    "accounts",
+    "categories"
+   ],
+   "api": [],
+   "role": "로그인(본인)",
+   "next": [
+    "S-05"
+   ],
+   "states_combined": "",
+   "source": "docs/03_SCREENS_UX.md",
+   "type": "settings",
+   "must_missing": [],
+   "should_missing": [
+    "위험 작업 구역(삭제·탈퇴) 분리·확인"
+   ],
+   "states_missing": [],
+   "hash": "4da1757d4a08",
+   "wireframe": "design/wireframes/S-14.html"
+  },
+  "S-15": {
+   "id": "S-15",
+   "name": "모델 API 키",
+   "type_raw": "설정",
+   "route": "/settings/api-keys",
+   "purpose": "사용 방식과 공급자 키 등록",
+   "blocks": [
+    {
+     "type": "tabs",
+     "label": "프로필 설정·다중 계정·모델 API 키",
+     "items": [
+      "프로필 설정",
+      "다중 계정",
+      "모델 API 키"
+     ]
+    },
+    {
+     "type": "form",
+     "label": "사용 방식(플랫폼 크레딧·내 API 키)·대본 채팅 모델·음성 엔진",
+     "items": [
+      "사용 방식(플랫폼 크레딧",
+      "내 API 키)",
+      "대본 채팅 모델",
+      "음성 엔진"
+     ]
+    },
+    {
+     "type": "form",
+     "label": "공급자 키(Anthropic·OpenAI·Fish Audio·ElevenLabs·Fal.ai)",
+     "items": [
+      "공급자 키(Anthropic",
+      "OpenAI",
+      "Fish Audio",
+      "ElevenLabs",
+      "Fal.ai)"
+     ]
+    },
+    {
+     "type": "text",
+     "label": "키 상태(미등록·등록됨 끝 4자리·연결 확인됨)",
+     "items": [
+      "키 상태(미등록",
+      "등록됨 끝 4자리",
+      "연결 확인됨)"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "저장",
+     "items": [
+      "저장"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "연결 테스트",
+     "items": [
+      "연결 테스트"
+     ]
+    }
+   ],
+   "data": [
+    "api\\_keys"
+   ],
+   "api": [],
+   "role": "로그인(본인)",
+   "next": [],
+   "states_combined": "",
+   "source": "docs/03_SCREENS_UX.md",
+   "type": "settings",
+   "must_missing": [],
+   "should_missing": [
+    "위험 작업 구역(삭제·탈퇴) 분리·확인"
+   ],
+   "states_missing": [],
+   "hash": "1c97b26cd7a5",
+   "wireframe": "design/wireframes/S-15.html"
+  },
+  "S-16": {
+   "id": "S-16",
+   "name": "제작 파트너 팝업",
+   "type_raw": "팝업",
+   "route": "(전역)",
+   "purpose": "채팅으로 현재 단계 수정 요청",
+   "blocks": [
+    {
+     "type": "button",
+     "label": "FAB 제작 파트너(숫자 배지)",
+     "items": [
+      "FAB 제작 파트너(숫자 배지)"
+     ]
+    },
+    {
+     "type": "header",
+     "label": "제작 파트너 · AI CHAT · 닫기",
+     "items": [
+      "제작 파트너",
+      "AI CHAT",
+      "닫기"
+     ]
+    },
+    {
+     "type": "text",
+     "label": "맥락 줄(단계·채널·카테고리·말투)",
+     "items": [
+      "맥락 줄(단계",
+      "채널",
+      "카테고리",
+      "말투)"
+     ]
+    },
+    {
+     "type": "list",
+     "label": "메시지(나 화면 선택·나 직접 입력·제작 파트너·적용 버튼)",
+     "items": [
+      "메시지(나 화면 선택",
+      "나 직접 입력",
+      "제작 파트너",
+      "적용 버튼)"
+     ]
+    },
+    {
+     "type": "button",
+     "label": "빠른 요청 칩 3개",
+     "items": [
+      "빠른 요청 칩 3개"
+     ]
+    },
+    {
+     "type": "form",
+     "label": "입력칸(Enter 전송·Shift+Enter 줄바꿈·첨부)",
+     "items": [
+      "입력칸(Enter 전송",
+      "Shift+Enter 줄바꿈",
+      "첨부)"
+     ]
+    },
+    {
+     "type": "text",
+     "label": "크레딧 차감 안내",
+     "items": [
+      "크레딧 차감 안내"
+     ]
+    },
+    {
+     "type": "text",
+     "label": "닫힘 중 미리보기 3줄",
+     "items": [
+      "닫힘 중 미리보기 3줄"
+     ]
+    }
+   ],
+   "data": [
+    "chat\\_messages",
+    "credit\\_ledger"
+   ],
+   "api": [],
+   "role": "로그인",
+   "next": [],
+   "states_combined": "",
+   "source": "docs/03_SCREENS_UX.md",
+   "type": "",
+   "must_missing": [],
+   "should_missing": [],
+   "states_missing": [],
+   "hash": "1ff95ceb0138",
+   "wireframe": "design/wireframes/S-16.html"
+  }
+ },
+ "states": {
+  "S-01": {
+   "빈": "\"진행 중인 프로젝트가 없습니다. 트렌드에서 상품을 골라 시작해 보세요.\"",
+   "로딩": "지표 카드·목록 스켈레톤",
+   "오류": "오류 안내 + 다시 시도 버튼",
+   "성공": "—"
+  },
+  "S-02": {
+   "빈": "—",
+   "로딩": "프로젝트 만들기 버튼 진행 표시",
+   "오류": "필수 항목 누락 안내",
+   "성공": "프로젝트 생성 → S-06 (트렌드에서 고르기면 S-04)"
+  },
+  "S-03": {
+   "빈": "\"조건에 맞는 프로젝트가 없습니다.\"",
+   "로딩": "표 스켈레톤",
+   "오류": "오류 안내 + 다시 시도 버튼",
+   "성공": "—"
+  },
+  "S-04": {
+   "빈": "\"이 카테고리의 급상승 상품이 아직 없습니다.\"",
+   "로딩": "카드·표 스켈레톤",
+   "오류": "오류 안내 + 다시 시도 버튼",
+   "성공": "상품마다 프로젝트 생성 · 01 자동 승인 · 첫 상품 S-07 이동 후 소스 찾기 자동 시작(확장 미연결이면 대기 배너)"
+  },
+  "S-05": {
+   "빈": "영역별 빈 안내(프로젝트 없음·급상승 상품 없음·발행 영상 없음)",
+   "로딩": "스켈레톤",
+   "오류": "오류 안내 + 다시 시도 버튼",
+   "성공": "—"
+  },
+  "S-06": {
+   "빈": "대기 · \"소재 추천받기를 누르면 후보 3개를 제안합니다\"",
+   "로딩": "진행 중 · 경과 초",
+   "오류": "후보 0개·사진 인식 실패 → 사유와 \"제품명 직접 입력\"",
+   "성공": "승인 ✓ · 02 소스 열림"
+  },
+  "S-07": {
+   "빈": "0편 빈 상태 + 소스 찾기 · 확장 미연결이면 대기 배너(\"현재 0편 확보 · 최소 7편 목표 …\")",
+   "로딩": "틱톡 + 샤오홍슈 병행 탐색 진행 · 경과 초",
+   "오류": "확장 미연결·로그인 만료·권리 확인 7편 미만 → 사유와 남은 탐색 회차 · 재연결·직접 추가",
+   "성공": "승인 조건([기획서 3장 02](./planning.md#02-소스-모으기))을 채우면 승인 · 아니면 승인 버튼 비활성"
+  },
+  "S-08": {
+   "빈": "대기 · 대본 초안 버튼",
+   "로딩": "원본 영상 분석 중 · 경과 초",
+   "오류": "금지 표현 포함·분석 실패 → 문제 문장과 표현 표시",
+   "성공": "승인 ✓(1문장 이상) · 04 목소리 열림"
+  },
+  "S-09": {
+   "빈": "대기 · 목소리 선택 안내",
+   "로딩": "음성 합성 중 · 경과 초",
+   "오류": "TTS 오류·업로드 형식 오류 → 사용자 문구로 변환 · 다른 목소리·다시 생성·직접 녹음",
+   "성공": "승인 ✓(음성 1개 이상) · 05 편집 열림"
+  },
+  "S-10": {
+   "빈": "대기 · MP4 만들기 버튼",
+   "로딩": "자막과 음성 합치는 중 · 경과 초",
+   "오류": "컷 매칭·렌더 실패 → 실패한 컷 번호 · 다음 순위 원본 교체·재시도",
+   "성공": "검토본 V1 생성 · 승인 시 06 발행 열림"
+  },
+  "S-11": {
+   "빈": "정책 점검 미통과면 발행 버튼 비활성",
+   "로딩": "발행 버튼 회전 아이콘",
+   "오류": "OAuth 만료·업로드 실패 → 사유와 재시도 횟수 · 3회 자동 재시도 · S-14 재연결 안내",
+   "성공": "예약됨 또는 업로드됨 · 채널 주간 업로드 +1 · 하단 버튼 \"성과 분석 보기 →\""
+  },
+  "S-12": {
+   "빈": "\"이 채널에서 발행한 영상이 아직 없습니다.\"",
+   "로딩": "카드·그래프 스켈레톤",
+   "오류": "오류 안내 + 다시 시도 버튼",
+   "성공": "—"
+  },
+  "S-13": {
+   "빈": "—",
+   "로딩": "폼 로딩 표시",
+   "오류": "저장 실패 안내",
+   "성공": "저장됨 표시"
+  },
+  "S-14": {
+   "빈": "—",
+   "로딩": "계정 카드 로딩 표시",
+   "오류": "연결 상태 \"재연결 필요\" + 재연결 버튼",
+   "성공": "좌측 \"내 채널\"에 메뉴 생성·강조"
+  },
+  "S-15": {
+   "빈": "미등록 상태",
+   "로딩": "연결 테스트 \"확인 중…\"",
+   "오류": "연결 테스트 실패 안내",
+   "성공": "등록됨(끝 4자리) → 연결 확인됨"
+  },
+  "S-16": {
+   "빈": "—",
+   "로딩": "점 3개 입력 표시(\"제작 파트너가 입력 중\")",
+   "오류": "크레딧 잔액 부족 → 필요·남은 크레딧 안내(planning 17-5)",
+   "성공": "적용 버튼 → 현재 단계 작업칸 반영"
+  }
+ },
+ "flows": {
+  "F-01": {
+   "id": "F-01",
+   "name": "트렌드 → 제작",
+   "steps": [
+    "S-01",
+    "S-04",
+    "S-07"
+   ],
+   "source": "docs/03_SCREENS_UX.md"
+  },
+  "F-02": {
+   "id": "F-02",
+   "name": "6단계 제작",
+   "steps": [
+    "S-02",
+    "S-06",
+    "S-07",
+    "S-08",
+    "S-09",
+    "S-10",
+    "S-11"
+   ],
+   "source": "docs/03_SCREENS_UX.md"
+  },
+  "F-03": {
+   "id": "F-03",
+   "name": "발행 → 성과",
+   "steps": [
+    "S-11",
+    "S-12",
+    "S-04"
+   ],
+   "source": "docs/03_SCREENS_UX.md"
+  }
+ },
+ "apis": {},
+ "tables": {
+  "projects": {
+   "name": "projects",
+   "row": {
+    "테이블": "projects",
+    "변경": "account\\_id, category\\_id, status(진행 중·발행 대기·예약됨·업로드됨), target\\_sec(15·20) 추가",
+    "이유": "1 프로젝트 = 1 채널, 프로젝트 관리 필터"
+   },
+   "source": "docs/planning.md"
+  },
+  "topics": {
+   "name": "topics",
+   "row": {
+    "테이블": "topics",
+    "주요 컬럼": "id, project\\_id, round, name, reason, evidence\\_urls\\[\\], picked",
+    "비고": "소재 후보와 근거"
+   },
+   "source": "docs/planning.md"
+  },
+  "sources": {
+   "name": "sources",
+   "row": {
+    "테이블": "sources",
+    "주요 컬럼": "id, project\\_id, platform, url, author, title, width, height, duration\\_sec, file\\_path, score, checked, exclude\\_reason, collected\\_at",
+    "비고": "원본 20편, 출처 기록"
+   },
+   "source": "docs/planning.md"
+  },
+  "scripts": {
+   "name": "scripts",
+   "row": {
+    "테이블": "scripts",
+    "주요 컬럼": "id, project\\_id, version, lines(jsonb), est\\_sec, approved\\_at",
+    "비고": "문장 배열과 예상 초"
+   },
+   "source": "docs/planning.md"
+  },
+  "voice\\_takes": {
+   "name": "voice\\_takes",
+   "row": {
+    "테이블": "voice\\_takes",
+    "주요 컬럼": "id, project\\_id, voice\\_id, source(tts/녹음), audio\\_path, words(jsonb), pauses(jsonb), duration\\_sec",
+    "비고": "단어 타이밍과 쉼"
+   },
+   "source": "docs/planning.md"
+  },
+  "renders": {
+   "name": "renders",
+   "row": {
+    "테이블": "renders",
+    "주요 컬럼": "id, project\\_id, version, cut\\_map(jsonb), upscale\\_status, clean\\_status, mp4\\_path, created\\_at",
+    "비고": "V1, V2… 검토본"
+   },
+   "source": "docs/planning.md"
+  },
+  "chat\\_messages": {
+   "name": "chat\\_messages",
+   "row": {
+    "테이블": "chat\\_messages",
+    "주요 컬럼": "id, project\\_id, role, kind(screen/text/ai), text, payload(jsonb), created\\_at",
+    "비고": "화면 동작 기록 포함"
+   },
+   "source": "docs/planning.md"
+  },
+  "channel\\_cards": {
+   "name": "channel\\_cards",
+   "row": {
+    "테이블": "channel\\_cards",
+    "주요 컬럼": "(폐기)",
+    "비고": "말투·타깃은 accounts로 통합(12장, 17-4)"
+   },
+   "source": "docs/planning.md"
+  },
+  "jobs": {
+   "name": "jobs",
+   "row": {
+    "테이블": "jobs",
+    "변경": "idempotency\\_key, attempts, max\\_attempts, payload(jsonb) 추가, status를 17-5로 고정",
+    "이유": "재시도와 중복 실행 방지"
+   },
+   "source": "docs/planning.md"
+  },
+  "credit\\_ledger": {
+   "name": "credit\\_ledger",
+   "row": {
+    "테이블": "credit\\_ledger",
+    "변경": "job\\_id, kind(reserve·settle·release·charge), idempotency\\_key 추가",
+    "이유": "실패 시 환불 추적"
+   },
+   "source": "docs/planning.md"
+  },
+  "accounts": {
+   "name": "accounts",
+   "row": {
+    "테이블": "accounts",
+    "변경": "target 추가, channel\\_cards 대체",
+    "이유": "말투·타깃을 채널별로 한 곳에서 관리"
+   },
+   "source": "docs/planning.md"
+  },
+  "trend\\_items": {
+   "name": "trend\\_items",
+   "row": {
+    "테이블": "trend\\_items",
+    "변경": "id, category\\_id, name, period, overseas\\_growth, kr\\_search\\_growth, kr\\_competition, opportunity\\_score, sellable, captured\\_at 신설",
+    "이유": "11장이 참조하지만 정의가 없었음"
+   },
+   "source": "docs/planning.md"
+  },
+  "project\\_events": {
+   "name": "project\\_events",
+   "row": {
+    "테이블": "project\\_events",
+    "변경": "id, project\\_id, step, event, created\\_at 신설",
+    "이유": "17-9 지표 측정"
+   },
+   "source": "docs/planning.md"
+  }
+ },
+ "issues": [
+  [
+   "🟡",
+   "S-01",
+   "홈 권장: 이전 기간 대비(증감), 내보내기(CSV·PDF), 세그먼트·담당자 필터, 할 일·알림(지표가 행동으로 이어지게)"
+  ],
+  [
+   "🟡",
+   "S-01",
+   "데이터 'publications' — 05_DATA_MODEL 표에 없음"
+  ],
+  [
+   "🟡",
+   "S-02",
+   "새로운 프로젝트 권장: 필수 표시·도움말, 임시 저장(긴 폼)"
+  ],
+  [
+   "🟡",
+   "S-02",
+   "데이터 'categories' — 05_DATA_MODEL 표에 없음"
+  ],
+  [
+   "🟡",
+   "S-03",
+   "프로젝트 관리 권장: 일괄 작업(선택·삭제·내보내기), 저장된 보기·열 설정"
+  ],
+  [
+   "🟡",
+   "S-04",
+   "트렌드 분석 권장: 이전 기간 대비(증감), 내보내기(CSV·PDF), 할 일·알림(지표가 행동으로 이어지게)"
+  ],
+  [
+   "🟡",
+   "S-05",
+   "내 채널 권장: 관련 항목 탭, 활동·변경 이력"
+  ],
+  [
+   "🟡",
+   "S-05",
+   "데이터 'publications' — 05_DATA_MODEL 표에 없음"
+  ],
+  [
+   "🟡",
+   "S-05",
+   "데이터 'video\\_metrics' — 05_DATA_MODEL 표에 없음"
+  ],
+  [
+   "🟡",
+   "S-07",
+   "02 소스 권장: 중간 저장·이어하기"
+  ],
+  [
+   "🟡",
+   "S-09",
+   "04 목소리 권장: 중간 저장·이어하기"
+  ],
+  [
+   "🟡",
+   "S-10",
+   "05 편집 권장: 관련 항목 탭, 활동·변경 이력"
+  ],
+  [
+   "🟡",
+   "S-11",
+   "06 발행 권장: 중간 저장·이어하기"
+  ],
+  [
+   "🟡",
+   "S-11",
+   "데이터 'affiliate\\_links' — 05_DATA_MODEL 표에 없음"
+  ],
+  [
+   "🟡",
+   "S-11",
+   "데이터 'publications' — 05_DATA_MODEL 표에 없음"
+  ],
+  [
+   "🟡",
+   "S-11",
+   "데이터 'policy\\_checks' — 05_DATA_MODEL 표에 없음"
+  ],
+  [
+   "🟡",
+   "S-12",
+   "성과 분석 권장: 이전 기간 대비(증감), 내보내기(CSV·PDF), 할 일·알림(지표가 행동으로 이어지게)"
+  ],
+  [
+   "🟡",
+   "S-12",
+   "데이터 'video\\_metrics' — 05_DATA_MODEL 표에 없음"
+  ],
+  [
+   "🟡",
+   "S-12",
+   "데이터 'publications' — 05_DATA_MODEL 표에 없음"
+  ],
+  [
+   "🟡",
+   "S-13",
+   "프로필 설정 권장: 위험 작업 구역(삭제·탈퇴) 분리·확인"
+  ],
+  [
+   "🟡",
+   "S-13",
+   "데이터 'user\\_profiles' — 05_DATA_MODEL 표에 없음"
+  ],
+  [
+   "🟡",
+   "S-14",
+   "다중 계정 권장: 위험 작업 구역(삭제·탈퇴) 분리·확인"
+  ],
+  [
+   "🟡",
+   "S-14",
+   "데이터 'categories' — 05_DATA_MODEL 표에 없음"
+  ],
+  [
+   "🟡",
+   "S-15",
+   "모델 API 키 권장: 위험 작업 구역(삭제·탈퇴) 분리·확인"
+  ],
+  [
+   "🟡",
+   "S-15",
+   "데이터 'api\\_keys' — 05_DATA_MODEL 표에 없음"
+  ],
+  [
+   "🟡",
+   "S-16",
+   "유형 없음/모름('팝업') → 필수 구조 검사 불가 (대시보드·목록·상세·폼·보드·마법사·설정·로그인·랜딩)"
+  ],
+  [
+   "ℹ️",
+   "S-13",
+   "프로필 설정 — 들어오는 경로 없음(메뉴에서만 진입이면 무시)"
+  ],
+  [
+   "ℹ️",
+   "S-15",
+   "모델 API 키 — 들어오는 경로 없음(메뉴에서만 진입이면 무시)"
+  ],
+  [
+   "ℹ️",
+   "S-16",
+   "제작 파트너 팝업 — 들어오는 경로 없음(메뉴에서만 진입이면 무시)"
+  ]
+ ]
+}

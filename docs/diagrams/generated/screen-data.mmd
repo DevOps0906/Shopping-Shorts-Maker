@@ -1,0 +1,88 @@
+flowchart LR
+  subgraph SC["화면"]
+    n_S_01["S-01 홈"]
+    n_S_02["S-02 새로운 프로젝트"]
+    n_S_03["S-03 프로젝트 관리"]
+    n_S_04["S-04 트렌드 분석"]
+    n_S_05["S-05 내 채널"]
+    n_S_06["S-06 01 소재"]
+    n_S_07["S-07 02 소스"]
+    n_S_08["S-08 03 대본"]
+    n_S_09["S-09 04 목소리"]
+    n_S_10["S-10 05 편집"]
+    n_S_11["S-11 06 발행"]
+    n_S_12["S-12 성과 분석"]
+    n_S_13["S-13 프로필 설정"]
+    n_S_14["S-14 다중 계정"]
+    n_S_15["S-15 모델 API 키"]
+    n_S_16["S-16 제작 파트너 팝업"]
+  end
+  subgraph DB["데이터"]
+    n_t_accounts[("accounts")]
+    n_t_affiliate__links[("affiliate\_links")]
+    n_t_api__keys[("api\_keys")]
+    n_t_categories[("categories")]
+    n_t_chat__messages[("chat\_messages")]
+    n_t_credit__ledger[("credit\_ledger")]
+    n_t_jobs[("jobs")]
+    n_t_policy__checks[("policy\_checks")]
+    n_t_projects[("projects")]
+    n_t_publications[("publications")]
+    n_t_renders[("renders")]
+    n_t_scripts[("scripts")]
+    n_t_sources[("sources")]
+    n_t_topics[("topics")]
+    n_t_trend__items[("trend\_items")]
+    n_t_user__profiles[("user\_profiles")]
+    n_t_video__metrics[("video\_metrics")]
+    n_t_voice__takes[("voice\_takes")]
+  end
+  n_S_01 -.-> n_t_projects
+  n_S_01 -.-> n_t_accounts
+  n_S_01 -.-> n_t_trend__items
+  n_S_01 -.-> n_t_publications
+  n_S_01 -.-> n_t_credit__ledger
+  n_S_02 -.-> n_t_projects
+  n_S_02 -.-> n_t_accounts
+  n_S_02 -.-> n_t_categories
+  n_S_03 -.-> n_t_projects
+  n_S_03 -.-> n_t_accounts
+  n_S_03 -.-> n_t_renders
+  n_S_04 -.-> n_t_trend__items
+  n_S_04 -.-> n_t_projects
+  n_S_04 -.-> n_t_accounts
+  n_S_05 -.-> n_t_accounts
+  n_S_05 -.-> n_t_projects
+  n_S_05 -.-> n_t_trend__items
+  n_S_05 -.-> n_t_publications
+  n_S_05 -.-> n_t_video__metrics
+  n_S_06 -.-> n_t_projects
+  n_S_06 -.-> n_t_topics
+  n_S_06 -.-> n_t_chat__messages
+  n_S_06 -.-> n_t_jobs
+  n_S_07 -.-> n_t_sources
+  n_S_07 -.-> n_t_projects
+  n_S_07 -.-> n_t_jobs
+  n_S_08 -.-> n_t_scripts
+  n_S_08 -.-> n_t_sources
+  n_S_08 -.-> n_t_jobs
+  n_S_09 -.-> n_t_voice__takes
+  n_S_09 -.-> n_t_scripts
+  n_S_09 -.-> n_t_jobs
+  n_S_10 -.-> n_t_renders
+  n_S_10 -.-> n_t_sources
+  n_S_10 -.-> n_t_voice__takes
+  n_S_10 -.-> n_t_jobs
+  n_S_11 -.-> n_t_affiliate__links
+  n_S_11 -.-> n_t_publications
+  n_S_11 -.-> n_t_policy__checks
+  n_S_11 -.-> n_t_accounts
+  n_S_12 -.-> n_t_video__metrics
+  n_S_12 -.-> n_t_publications
+  n_S_12 -.-> n_t_accounts
+  n_S_13 -.-> n_t_user__profiles
+  n_S_14 -.-> n_t_accounts
+  n_S_14 -.-> n_t_categories
+  n_S_15 -.-> n_t_api__keys
+  n_S_16 -.-> n_t_chat__messages
+  n_S_16 -.-> n_t_credit__ledger

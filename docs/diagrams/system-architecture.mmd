@@ -3,48 +3,48 @@ flowchart LR
     browser["웹 대시보드"]
     ext["브라우저 확장 (수집)"]
   end
-  subgraph app["Next.js 서버"]
-    routes["Route Handler · 서버 액션"]
-    agent["제작 파트너 (도구 호출)"]
-  end
-  subgraph supa["Supabase"]
-    auth["Auth"]
-    db[("Postgres · RLS")]
-    storage[("Storage (비공개)")]
-    realtime["Realtime"]
-    vault["Vault (API 키 · OAuth)"]
-    queue["작업 큐"]
-  end
-  subgraph worker["Railway"]
-    ffmpeg["FFmpeg 워커"]
+  subgraph server["자체 서버 (Docker Compose)"]
+    proxy["리버스 프록시 (TLS)"]
+    subgraph app["Next.js 컨테이너"]
+      routes["Route Handler · 서버 액션"]
+      agent["제작 파트너 (도구 호출)"]
+    end
+    subgraph supa["Supabase 셀프 호스팅"]
+      gateway["API 게이트웨이"]
+      auth["Auth"]
+      db[("Postgres · RLS · Queues")]
+      storage[("Storage (비공개)")]
+      realtime["Realtime"]
+      vault["Vault (API 키 · OAuth)"]
+    end
+    ffmpeg["FFmpeg 워커 컨테이너"]
   end
   subgraph ai["AI 공급자"]
     llm["LLM · 이미지 이해"]
     tts["Fish Audio · ElevenLabs"]
-    fal["스케일업 (Fal.ai 등)"]
   end
   subgraph ext_src["외부 플랫폼"]
     source_sites["틱톡 · 샤오홍슈"]
-    publish_sites["YouTube 등 공식 API"]
+    publish_sites["YouTube 공식 API"]
     affiliate["제휴 프로그램"]
   end
-  browser --> routes
-  browser --> auth
+  browser --> proxy
+  ext --> proxy
+  proxy --> routes
+  proxy --> gateway
+  gateway --> auth
+  gateway --> storage
+  gateway --> realtime
   realtime --> browser
   routes --> agent
   routes --> db
-  routes --> queue
+  routes --> vault
   agent --> llm
   ext --> source_sites
-  ext --> storage
-  ext --> db
-  queue --> ffmpeg
+  db --> ffmpeg
   ffmpeg --> storage
   ffmpeg --> db
   ffmpeg --> tts
-  ffmpeg --> fal
   ffmpeg --> llm
-  db --> realtime
-  routes --> vault
   routes --> publish_sites
   routes --> affiliate
