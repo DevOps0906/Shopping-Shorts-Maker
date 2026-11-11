@@ -1,6 +1,6 @@
 # NOW — 재진입 스냅샷 (30줄 이내, 매 작업 끝에 덮어쓴다)
 
-- 갱신: 2026-11-12
+- 갱신: 2026-11-12 (세션 마무리)
 - 현재 작업: W0 task-001·002·003 — 상태: 002 결정 확정, 사용자 실측·발송 대기
 - 마지막으로 한 일: task-002 확정(P1 생활·수납 압축팩 / P2 주방 밀폐용기 / P3 생활가전 보풀제거기, 회신 10일·구입비 제품당 5만·합계 15만·클립 2초↑·의뢰서 전체 발송). D7(사용자 결정): 원작자 허락 대신 출처 표기 + 노란 고지 확인 체크(체크해야 승인) + 경고 메일 대처 팁(접이식 7단계), 제작 파트너가 상위 7편 미리 체크, 영상 우하단·설명란 출처 자동 표기, 워터마크 제거는 출처 표기 원본에 금지, 정책 점검 2번 "출처 표기·고지 확인"으로 변경. 반영: planning 3장 02, design.md, 03_SCREENS_UX, spec.json·S-07 와이어(plan2spec 재생성), 프로토타입, 의뢰서 A2-1을 D7 위험 질문으로 교체. PoC 영상 우하단 @작성자 표기·credits.txt 저장 완료(데모 재실행 통과). task-003 원가 표에 이미지 이해(vision) 항목 추가 완료(dry-run 추정, 컷당 프레임 1장, 데모 편당 약 6,268 토큰)
 - 추가(2026-11-12 오후): D8 "20편 검색(목록) → 체크 10편만 다운로드 → 5편 사용, 승인 5편·예외 3~4편" 반영(planning 1·3·4·7장·오류표, design, 03, 프로토타입 dlLabel, spec). D9 "제작 전 모델별 AI 예상 비용" 반영(S-02 표·S-04 선택 바, 예시 단가 최저 약 30원/추천 약 160원/Claude만 약 1,020원). PoC: Gemini 영상 dry-run·--sources N·렌더 전 estimate 표(out/estimate.csv) 추가, 10편 기준 토큰 Claude 프레임 50,144 vs Gemini 4,080
@@ -10,6 +10,8 @@
 - 테스트 모델을 gemini-3.5-flash-lite로 전환, 실호출 성공(입력 1,072·출력 223·thinking 0, 유료 환산 약 1.2원)
 - D11 설치형 앱: 웹 완성 후 Tauri(apps/desktop)·Capacitor(apps/mobile) 셸, 원격 URL 우선, task-032·033(W7) 추가, task-005 ADR ⑤ 추가, AGENTS 스택·README 단계 갱신
 - Gemini TTS 테스트 음성(gemini-3.8-flash-lite-tts, 목소리 Kore): `run.py --demo --live`로 Google 키 하나로 대본→음성→MP4 실호출 성공(음성 9.97초 + 무음 채움, 0원). 한국어 발음은 사람이 들어 확인 필요. demo_20s는 호출 절약을 위해 톤 대체
+- 목소리·싱크(미커밋): 문장 단위 싱크(silencedetect 경계·timing.json·check_sync 0.2초), 스타일은 "Say cheerfully:" 접두(systemInstruction은 TTS 모델 미지원, 긴 접두는 낭독됨). 샘플 정상 생성 Leda·Zephyr·Sadachbia, Laomedeia·Autonoe는 낭독 섞인 이전 파일을 자른 것. 무료 키 429(할당량)로 --demo --live 싱크 실측 미완 → 할당량 회복 후 재실행(약 3회)
+- 싱크 확인: --voice-file로 기존 음성(Kore) 오프라인 렌더 out/listen/demo_15s_synced.mp4, check_sync 오차 0.001초, 사용자 "잘 맞네" 확인. 남은 작은 문제: 영상 트랙 14.8초 vs 음성 15.0초(마지막 0.2초 정지 화면 가능)
 - 다음 한 걸음: 사용자가 A 판매자 연락·B 제품 구입/촬영·법률 의뢰 발송 → 실측 표 기록 → 00_LEAN
 - 열린 결정(사용자 확인 필요):
   - task-001: 폼 서비스·방문 집계 도구 계정(config.js FORM_URL·ANALYTICS_SNIPPET), 정책 문구 확인

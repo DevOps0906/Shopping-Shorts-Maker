@@ -11,6 +11,7 @@ import argparse
 import csv
 import json
 import math
+import re
 import shutil
 import subprocess
 import sys
@@ -24,6 +25,10 @@ ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "out"
 W, H, FPS = 1080, 1920, 30
 TOLERANCE_SEC = 0.5
+PAD_SEC, SYNC_TOL = 0.15, 0.2  # 문장 뒤 여유, 자막·무음 경계 허용 오차
+SAMPLE_VOICES = ["Leda", "Laomedeia", "Zephyr", "Autonoe"]
+SAMPLE_FALLBACK = "Sadachbia"
+SAMPLE_TEXT = "좁은 틈에도 쏙 들어가요. 이거 하나면 정리 끝!"
 DEMO_SOURCES = [(1920, 1080), (1280, 720), (1080, 1080), (720, 1280), (640, 480)]
 
 
@@ -87,6 +92,121 @@ def credits_text(cm: dict) -> str:
     return ("영상 출처: " + ", ".join(seen) + "\n") if seen else ""
 
 
+def silence_gaps(path: str, d: float = 0.12) -> tuple[list[tuple[float, float]], float]:
+    """ffmpeg silencedetect로 (무음 시작, 끝) 목록과 전체 길이를 돌려준다."""
+    r = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", path, "-af", f"silencedetect=noise=-35dB:d={d}",
+                        "-f", "null", "-"], capture_output=True, text=True, encoding="utf-8", errors="replace")
+    total = float(probe(Path(path))["format"]["duration"])
+    starts = [float(x) for x in re.findall(r"silence_start: (-?[\d.]+)", r.stderr)]
+    ends = [float(x) for x in re.findall(r"silence_end: (-?[\d.]+)", r.stderr)]
+    gaps = [(max(s, 0.0), ends[i] if i < len(ends) else total) for i, s in enumerate(starts)]
+    return gaps, total
+
+
+def sentence_spans(wav: str, lines: list[str]) -> tuple[list[tuple[float, float]], str]:
+    """한 번에 만든 음성에서 문장별 (시작, 끝). 가장 긴 N-1개 무음을 경계로 삼고, 모자라면 글자 수 비율."""
+    gaps, total = silence_gaps(wav)
+    lead, tail = 0.0, total
+    if gaps and gaps[0][0] < 0.05:
+        lead = gaps.pop(0)[1]
+    if gaps and gaps[-1][1] >= total - 0.05:
+        tail = gaps.pop()[0]
+    merged: list[tuple[float, float]] = []  # 0.15초 미만 발화(숨소리 등)로 갈라진 무음은 하나로
+    for g in gaps:
+        if merged and g[0] - merged[-1][1] < 0.15:
+            merged[-1] = (merged[-1][0], g[1])
+        else:
+            merged.append(g)
+    gaps = merged
+    n = len(lines)
+    longest = lambda k: sorted(sorted(gaps, key=lambda g: g[1] - g[0], reverse=True)[:k])
+    first_longest = bool(gaps) and gaps[0] == max(gaps, key=lambda g: g[1] - g[0])
+    if len(gaps) >= n and first_longest:  # 말투 지시문을 읽어 버린 경우(첫 쉼이 가장 길고 앞 구간이 하나 더 있음): 앞을 버린다
+        pick = longest(n)
+        return [(pick[i][1], pick[i + 1][0] if i + 1 < n else tail) for i in range(n)], "silencedetect_skip_preface"
+    if len(gaps) >= n - 1:
+        pick = longest(n - 1)
+        starts, ends = [lead] + [e for _, e in pick], [s for s, _ in pick] + [tail]
+        return list(zip(starts, ends)), "silencedetect"
+    w = [max(1, len(re.sub(r"\s", "", x))) for x in lines]
+    spans, t = [], lead
+    for x in w:
+        spans.append((t, t + (tail - lead) * x / sum(w)))
+        t = spans[-1][1]
+    return spans, "char_ratio"
+
+
+def quant(x: float) -> float:
+    return math.ceil(x * FPS - 1e-6) / FPS  # 프레임 단위 올림
+
+
+def plan_cuts(lines: list[str], target: float, spans: list[tuple[float, float]] | None) -> tuple[list[float], float]:
+    """컷 길이 목록(프레임 단위, 합 = target)과 atempo. spans 없으면(dry-run) 글자 수 비율."""
+    if spans is None:
+        w = [max(1, len(re.sub(r"\s", "", x))) for x in lines]
+        durs, tempo = [quant(target * x / sum(w)) for x in w], 1.0
+    else:
+        raw = [e - s + PAD_SEC for s, e in spans]
+        total = sum(raw)
+        tempo = max(0.9, total / target) if total < target else min(1.15, total / target)
+        durs = [quant(r / tempo) for r in raw]
+    durs[-1] = max(0.5, round(target - sum(durs[:-1]), 3))  # 남는 시간은 마지막 컷 유지, 넘치면 마지막 컷이 줄어듦
+    return durs, tempo
+
+
+def fit_voice(wav: str, spans: list[tuple[float, float]], durs: list[float], tempo: float, out: str) -> None:
+    """문장 구간을 잘라 atempo 후 컷 길이에 맞춰 패딩·이어 붙인다(48kHz 스테레오). 컷 경계 = 음성 경계."""
+    parts = [f"[0:a]atrim=start={s:.3f}:end={e:.3f},asetpts=PTS-STARTPTS,atempo={tempo:.4f},"
+             f"apad=whole_dur={d:.3f},atrim=end={d:.3f},asetpts=PTS-STARTPTS[a{i}]"
+             for i, ((s, e), d) in enumerate(zip(spans, durs))]
+    cat = "".join(f"[a{i}]" for i in range(len(spans))) + f"concat=n={len(spans)}:v=0:a=1,aresample=48000,aformat=channel_layouts=stereo[o]"
+    ff(["-i", wav, "-filter_complex", ";".join(parts + [cat]), "-map", "[o]", out])
+
+
+def check_sync(final: Path, timing: dict) -> list[str]:
+    """최종 영상 음성의 silencedetect 경계와 timing.json 자막 구간 끝이 SYNC_TOL 이내인지 확인."""
+    gaps, total = silence_gaps(str(final), 0.1)
+    inner = [g for g in gaps if g[0] > 0.05 and g[1] < total - 0.05]
+    errs, worst = [], 0.0
+    for s in timing["sentences"][:-1]:
+        err = min((abs(e - s["sub_end"]) for _, e in inner), default=99.0)
+        worst = max(worst, err)
+        if err > SYNC_TOL:
+            errs.append(f"문장 {s['no']} 자막 끝 {s['sub_end']:.2f}초 ↔ 무음 경계 오차 {err:.2f}초 > {SYNC_TOL}")
+    timing["max_boundary_error_sec"] = round(worst, 3)
+    print(f"  싱크: 경계 방식 {timing['method']}, atempo {timing['tempo']:.3f}, 최대 경계 오차 {worst:.3f}초")
+    return errs
+
+
+def trim_preface(src: str, dst: str) -> None:
+    """샘플이 7초를 넘으면 말투 지시문을 읽은 것으로 보고, 가장 긴 쉼 뒤부터만 48kHz 스테레오 mp3로 저장."""
+    gaps, total = silence_gaps(src, 0.3)
+    gaps = [g for g in gaps if 0.05 < g[0] and g[1] < total - 0.05]
+    start = max(gaps, key=lambda g: g[1] - g[0])[1] if total > 7 and gaps else 0.0
+    if start:
+        print(f"  경고: 말투 지시문 낭독 의심(길이 {total:.1f}초) → 앞 {start:.1f}초 잘라 냄")
+    ff(["-ss", f"{start:.3f}", "-i", src, "-ar", "48000", "-ac", "2", "-b:a", "128k", dst])
+
+
+def make_voice_samples(cfg: dict) -> None:
+    """목소리 후보 샘플: 같은 문장을 후보별 1회씩 live 호출 → out/listen/voice_<이름>.mp3. 실패 시 대체 목소리 1회."""
+    gc, listen = cfg.get("gemini", {}), OUT / "listen"
+    listen.mkdir(parents=True, exist_ok=True)
+    for name in SAMPLE_VOICES:
+        for v in (name, SAMPLE_FALLBACK):
+            wav = listen / f"voice_{v}.wav"
+            try:
+                GeminiTTS(False, gc.get("tts_model", ""), v, gc.get("tts_style", ""), gc.get("tts_style_mode", "system")).synthesize(SAMPLE_TEXT, "", str(wav))
+                trim_preface(str(wav), str(listen / f"voice_{v}.mp3"))
+                wav.unlink()
+                print(f"  샘플 성공: {v} → {listen / f'voice_{v}.mp3'}")
+                break
+            except RuntimeError as e:
+                print(f"  샘플 실패: {v}: {str(e)[:150]}")
+                if v == SAMPLE_FALLBACK:
+                    break
+
+
 def render(cm: dict, cfg: dict, tts) -> tuple[Path, list[Usage]]:
     work = OUT / cm["project"]
     if work.exists():
@@ -94,36 +214,53 @@ def render(cm: dict, cfg: dict, tts) -> tuple[Path, list[Usage]]:
     work.mkdir(parents=True)
     usages: list[Usage] = []
 
-    # 1) 컷마다 구간 자르기 → 비율 유지 확대 후 9:16 중앙 크롭
+    # 1) 음성 먼저(문장 단위 한 번에 생성): 컷 길이 = 문장 음성 길이. dry-run은 글자 수 비율, 무음은 원래 길이.
+    mode = cm.get("audio", {}).get("mode", "silent")
+    target, lines = cm["target_sec"], [c["line"] for c in cm["cuts"]]
+    voice_audio, spans, method, tempo = None, None, "source_range", 1.0
+    if mode == "tts":
+        script = "\n".join(x if x[-1] in ".!?。" else x + "." for x in lines)  # 문장 사이 쉼 유도
+        voice_audio, u = tts.synthesize(script, cm["audio"].get("voice_id", ""), str(work / "voice.wav"))
+        usages.append(u)
+        method = "char_ratio_dry"
+        if voice_audio:
+            spans, method = sentence_spans(voice_audio, lines)
+        durs, tempo = plan_cuts(lines, target, spans)
+        for c, d in zip(cm["cuts"], durs):
+            c["dur"] = d
+        if voice_audio:
+            fit_voice(voice_audio, spans, durs, tempo, str(work / "voice_fit.wav"))
+            voice_audio = str(work / "voice_fit.wav")
+
+    # 2) 컷마다 구간 자르기 → 비율 유지 확대 후 9:16 중앙 크롭
     vf = f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},setsar=1,fps={FPS}"
     concat_lines, t, timeline = [], 0.0, []
     for c in cm["cuts"]:
-        dur = c["end"] - c["start"]
+        dur = c.get("dur", c["end"] - c["start"])
         name = f"cut_{c['no']}.mp4"
-        ff(["-ss", str(c["start"]), "-t", str(dur), "-i", str(c["source_path"]), "-vf", vf, "-an",
+        ff(["-ss", str(c["start"]), "-t", f"{dur:.3f}", "-i", str(c["source_path"]), "-vf", vf, "-an",
             "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-pix_fmt", "yuv420p", name], cwd=work)
         concat_lines.append(f"file '{name}'")
         timeline.append((c, t, t + dur))
         t += dur
     (work / "concat.txt").write_text("\n".join(concat_lines) + "\n", encoding="utf-8")
-
-    # 2) 이어 붙이기
     ff(["-f", "concat", "-safe", "0", "-i", "concat.txt", "-c", "copy", "video.mp4"], cwd=work)
 
-    # 3) 음성: tts는 어댑터 호출, dry-run이면 합성 톤으로 대체. silent는 무음.
-    mode = cm.get("audio", {}).get("mode", "silent")
-    voice_audio = None
-    if mode == "tts":
-        script = " ".join(c["line"] for c in cm["cuts"])
-        voice_audio, u = tts.synthesize(script, cm["audio"].get("voice_id", ""), str(work / "voice.wav"))
-        usages.append(u)
-    target = cm["target_sec"]
+    # 3) 오디오 입력: tts는 맞춰 붙인 음성, dry-run이면 합성 톤, silent는 무음. 문장 시각은 timing.json에 저장.
     if voice_audio:
         audio_in = ["-i", voice_audio, "-af", "apad"]  # 음성이 짧으면 무음으로 target까지 채움
     elif mode == "silent":
         audio_in = ["-f", "lavfi", "-i", f"anullsrc=r=48000:cl=stereo:d={target}"]
     else:
         audio_in = ["-f", "lavfi", "-i", f"sine=frequency=440:sample_rate=48000:duration={target}"]
+    if mode == "tts":
+        sents = []
+        for i, (c, a, b) in enumerate(timeline):
+            sp = (spans[i][1] - spans[i][0]) / tempo if spans else b - a
+            sents.append({"no": c["no"], "line": c["line"], "speech_start": round(a, 3), "speech_end": round(a + min(sp, b - a), 3),
+                          "sub_start": round(a, 3), "sub_end": round(b, 3)})
+        timing = {"project": cm["project"], "target_sec": target, "method": method, "tempo": round(tempo, 4), "sentences": sents}
+        (work / "timing.json").write_text(json.dumps(timing, ensure_ascii=False, indent=2), encoding="utf-8")
 
     # 4) 한 줄 자막: 컷 구간마다 drawtext (문구는 UTF-8 파일로 넘겨 이스케이프 문제 회피)
     font = cfg.get("subtitle_font", "")
@@ -144,7 +281,7 @@ def render(cm: dict, cfg: dict, tts) -> tuple[Path, list[Usage]]:
     final = work / f"{cm['project']}.mp4"
     ff(["-i", "video.mp4", *audio_in, "-vf", ",".join(draws), "-map", "0:v", "-map", "1:a",
         "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-pix_fmt", "yuv420p",
-        "-c:a", "aac", "-b:a", "128k", "-t", str(target), "-movflags", "+faststart", final.name], cwd=work)
+        "-c:a", "aac", "-b:a", "128k", "-ar", "48000", "-ac", "2", "-t", str(target), "-movflags", "+faststart", final.name], cwd=work)
     return final, usages
 
 
@@ -356,17 +493,32 @@ def estimate_table(cms: list[dict], n: int, cfg: dict) -> list[dict]:
     return rows
 
 
+class FileTTS:
+    """이미 있는 음성 파일을 TTS 결과로 쓴다(API 호출 없음, 비용 0)."""
+    def __init__(self, path: Path):
+        self.path = path
+
+    def synthesize(self, text, voice_id, out_path):
+        ff(["-i", str(self.path), out_path])
+        return out_path, Usage("gemini_tts", "tts", {"chars": len(text), "utf8_bytes": len(text.encode("utf-8"))}, True)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="대행 파이프라인 PoC")
     ap.add_argument("cut_maps", nargs="*", type=Path, help="cut_map JSON 경로")
     ap.add_argument("--demo", action="store_true", help="합성 클립으로 samples/demo_*.json 실행")
     ap.add_argument("--sources", type=int, default=10, help="원본 편수 시나리오(Claude 프레임 vs Gemini 영상)")
     ap.add_argument("--live", action="store_true", help="실제 API 호출(--llm gemini만 구현, 키는 .env.local)")
+    ap.add_argument("--voice-samples", action="store_true", help="목소리 후보 샘플 4개 live 생성(out/listen/voice_<이름>.mp3)")
+    ap.add_argument("--voice-file", type=Path, default=None, help="기존 음성 파일을 TTS 결과로 사용(첫 cut_map만, 호출 없음)")
     ap.add_argument("--tts", choices=["fish", "gemini"], default=None, help="음성(기본: --live면 gemini 테스트용, 아니면 fish dry-run). fish live는 미구현")
     ap.add_argument("--llm", choices=["claude", "gemini"], default="gemini", help="live 대본·영상 분석 모델(기본 gemini = 테스트용 Google API 키, claude는 미구현)")
     args = ap.parse_args()
 
     cfg = json.loads((ROOT / "config.json").read_text(encoding="utf-8"))
+    if args.voice_samples:
+        make_voice_samples(cfg)
+        return 0
     maps = list(args.cut_maps)
     if args.demo:
         make_demo_sources()
@@ -377,13 +529,17 @@ def main() -> int:
     live_gemini = args.live and args.llm == "gemini"
     gc = cfg.get("gemini", {})
     tts_kind = args.tts or ("gemini" if args.live else "fish")
-    mk_tts = lambda dry: (GeminiTTS(dry, gc.get("tts_model", ""), gc.get("tts_voice", "")) if tts_kind == "gemini"
+    mk_tts = lambda dry: (GeminiTTS(dry, gc.get("tts_model", ""), gc.get("tts_voice", ""), gc.get("tts_style", ""), gc.get("tts_style_mode", "system")) if tts_kind == "gemini"
                           else FishAudioTTS(dry_run=dry))
     tts = mk_tts(not args.live)
     llm = ClaudeLLM(dry_run=not live_gemini and not args.live)  # --live --llm claude는 NotImplementedError 유지
     if live_gemini:
         llm = ClaudeLLM(dry_run=True)  # Claude 추정 행은 유지, 대본·영상은 Gemini 실호출
         tts = mk_tts(tts_kind != "gemini")  # fish는 dry-run 유지, gemini TTS는 실호출
+    if args.voice_file:
+        if args.live:
+            ap.error("--voice-file은 --live와 함께 쓰지 않습니다")
+        tts = FileTTS(args.voice_file)
     gemini = GeminiVideo(not live_gemini, int(cfg.get("gemini", {}).get("tokens_per_frame", 70)), cfg.get("gemini", {}).get("model", ""))
     all_rows, failures, all_cuts, all_sizes = [], 0, [], []
     cms = [load_cut_map(path) for path in maps]
@@ -417,6 +573,12 @@ def main() -> int:
             t0 += time.perf_counter() - tg  # 렌더 시간에서 API 호출 시간 제외
         render_sec = time.perf_counter() - t0
         errs = verify(final, cm["target_sec"])
+        tj = final.parent / "timing.json"
+        if tj.is_file():
+            timing = json.loads(tj.read_text(encoding="utf-8"))
+            if timing["method"] != "char_ratio_dry":  # 실제 음성이 있을 때만 경계 검증
+                errs += check_sync(final, timing)
+                tj.write_text(json.dumps(timing, ensure_ascii=False, indent=2), encoding="utf-8")
         for e in errs:
             print(f"  실패: {e}")
         failures += bool(errs)

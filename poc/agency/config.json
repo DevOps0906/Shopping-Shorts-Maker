@@ -55,7 +55,9 @@
     "model": "gemini-3.5-flash-lite",
     "tokens_per_frame": 70,
     "tts_model": "gemini-3.8-flash-lite-tts",
-    "tts_voice": "Kore",
+    "tts_voice": "Leda",
+    "tts_style": "Say cheerfully:",
+    "tts_style_mode": "prefix",
     "free_tier": true
   },
   "subtitle_font": "C:/Windows/Fonts/malgun.ttf"

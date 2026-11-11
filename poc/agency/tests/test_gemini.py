@@ -71,6 +71,29 @@ class GeminiTest(unittest.TestCase):
         self.assertIsNone(path)
         self.assertTrue(usage.dry_run)
 
+    def test_tts_style_prefix(self):
+        import base64, json
+        resp = {"candidates": [{"content": {"parts": [{"inlineData": {"data": base64.b64encode(b"ab" * 10).decode(), "mimeType": "audio/L16;rate=24000"}}]}}]}
+        with mock.patch.object(adapters, "gemini_request", return_value=resp) as g, mock.patch("wave.open"):
+            adapters.GeminiTTS(False, "m", "v", "스타일:", "prefix").synthesize("대본", "", "x.wav")
+        self.assertEqual(g.call_args[0][1]["contents"][0]["parts"][0]["text"], "스타일:\n대본")
+
+
+class SyncPlanTest(unittest.TestCase):
+    def test_plan_dry_run_sums_to_target(self):
+        import run
+        durs, tempo = run.plan_cuts(["가나다", "라마바사아자"], 15, None)
+        self.assertAlmostEqual(sum(durs), 15, places=2)
+        self.assertEqual(tempo, 1.0)
+        self.assertLess(durs[0], durs[1])
+
+    def test_plan_tempo_limits(self):
+        import run
+        _, slow = run.plan_cuts(["a", "b"], 15, [(0, 3), (3, 6)])  # 짧은 음성 → 0.9 (하한)
+        _, fast = run.plan_cuts(["a", "b"], 15, [(0, 10), (10, 20)])  # 긴 음성 → 1.15 (상한)
+        self.assertEqual(slow, 0.9)
+        self.assertEqual(fast, 1.15)
+
 
 if __name__ == "__main__":
     unittest.main()

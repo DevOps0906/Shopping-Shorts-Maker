@@ -205,19 +205,23 @@ class GeminiTTS(TTSAdapter):
     provider = "gemini_tts"
     AUDIO_TOKENS_PER_SEC = 25  # 공식 문서 기준 오디오 출력 토큰 환산(추정용)
 
-    def __init__(self, dry_run: bool = True, model: str = "", voice: str = ""):
+    def __init__(self, dry_run: bool = True, model: str = "", voice: str = "", style: str = "", style_mode: str = "system"):
         self.dry_run = dry_run
         self.model = model
         self.voice = voice
+        self.style_mode = style_mode  # system: systemInstruction으로 분리 / prefix: 본문 앞에 붙임
+        self.style = style  # 말투 지시(예: "밝고 활기찬 ... 말해 주세요:"). 비면 대본만 보낸다
 
     def synthesize(self, text, voice_id, out_path):
         if self.dry_run:
             return None, Usage(self.provider, "tts", {"chars": len(text), "utf8_bytes": len(text.encode("utf-8"))}, True)
         if not self.model or not self.voice:
             raise RuntimeError("config.json gemini.tts_model / gemini.tts_voice 가 비어 있습니다")
-        body = {"contents": [{"parts": [{"text": text}]}],
+        body = {"contents": [{"parts": [{"text": f"{self.style}\n{text}" if self.style else text}]}],
                 "generationConfig": {"responseModalities": ["AUDIO"],
                                      "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": self.voice}}}}}
+        if self.style and self.style_mode == "system":
+            body["systemInstruction"] = {"parts": [{"text": self.style}]}
         d = gemini_request(f"models/{self.model}:generateContent", body)
         try:
             inline = next(p["inlineData"] for p in d["candidates"][0]["content"]["parts"] if "inlineData" in p)
