@@ -1,0 +1,28 @@
+%% 기획 단계 초안. 마이그레이션이 생기면 sql2erd로 만든 erd.mmd로 대체한다.
+erDiagram
+  user_profiles ||--o{ accounts : owns
+  user_profiles ||--o{ projects : owns
+  user_profiles ||--o{ api_keys : registers
+  user_profiles ||--o{ credit_ledger : records
+  categories ||--o{ accounts : classifies
+  categories ||--o{ projects : classifies
+  categories ||--o{ trend_items : classifies
+  accounts ||--o{ projects : publishes
+  accounts ||--o{ publications : uploads
+  accounts ||--o| bio_pages : uses
+  projects ||--o{ topics : has
+  projects ||--o{ sources : has
+  projects ||--o{ scripts : has
+  projects ||--o{ voice_takes : has
+  projects ||--o{ renders : has
+  projects ||--o{ chat_messages : has
+  projects ||--o{ jobs : runs
+  projects ||--o{ project_events : logs
+  projects ||--o{ affiliate_links : has
+  projects ||--o{ policy_checks : has
+  projects ||--o{ publications : has
+  jobs ||--o{ credit_ledger : settles
+  publications ||--o{ video_metrics : measures
+  bio_pages ||--o{ bio_items : lists
+  projects ||--o{ bio_items : registers
+  bio_items ||--o{ link_clicks : counts

@@ -1,0 +1,20 @@
+flowchart TD
+  start["프로젝트 시작"] --> entry{"시작 방법"}
+  entry -- "트렌드에서 선택" --> trend["트렌드 분석에서 상품 선택"]
+  entry -- "제품명 직접 입력 또는 URL" --> topic["01 소재"]
+  trend -- "01 소재 자동 승인" --> source["02 소스 자동 검색"]
+  topic --> source
+  source --> enough{"체크된 원본 7편 이상"}
+  enough -- "아니오, 3회 미만" --> source
+  enough -- "아니오, 3회 탐색 후" --> script["03 대본"]
+  enough -- "예" --> script
+  script --> voice["04 목소리"]
+  voice --> edit["05 편집"]
+  edit --> review{"검토본 승인"}
+  review -- "변경 필요" --> edit
+  review -- "승인" --> publish["06 발행"]
+  publish --> policy{"정책 점검 6/6 통과"}
+  policy -- "아니오" --> publish
+  policy -- "예" --> done["예약 발행 또는 지금 올리기"]
+  done --> metrics["성과 분석"]
+  metrics -- "카테고리별 클릭률 반영" --> trend

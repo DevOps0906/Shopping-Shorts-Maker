@@ -890,6 +890,7 @@ a{color:#6A3FD0}a:hover{color:#4E2BA8}
 <p class="txt">플랫폼 검색으로 후보를 찾고, 내려받은 원본을 여기에 추가하세요. 파일을 추가하면 실제 해상도와 길이를 확인합니다.</p>
 <p class="note">첫 1~2초에 본체와 주요 구조가 비슷하거나 색상만 다른 영상은 후보로 보고, 외형이나 구조가 확연히 다르면 제외해 주세요.</p>
 <p class="note">검색 제품명 · {{product}}</p>
+<p class="note">자동으로 찾은 영상은 참고용·권리 미확인 상태입니다. 판매자 제공·자체 촬영·사용 허락을 받은 원본만 체크해 편집에 쓰세요. 원본 파일은 발행 30일 뒤 삭제하고 출처 기록만 남깁니다.</p>
 <div class="row" style="margin-top: 8px">
 <button class="btn" type="button" onClick="{{connectXhs}}">{{xhsLabel}}</button>
 <span class="links"><a href="https://www.tiktok.com/search" target="_blank" rel="noopener">틱톡 검색 ↗</a><a href="https://www.xiaohongshu.com/explore" target="_blank" rel="noopener">샤오홍슈 검색 ↗</a></span>
@@ -902,7 +903,7 @@ a{color:#6A3FD0}a:hover{color:#4E2BA8}
 
 <sc-if value="{{hasSources}}" hint-placeholder-val="{{ false }}">
 <div class="row" style="justify-content: space-between">
-<p class="txt" style="margin: 0">확보 <strong>{{srcTotal}}편</strong> · 다음 단계에 전달 <strong>{{srcOn}}편</strong>. 사용하지 않을 영상만 체크를 해제해 주세요.</p>
+<p class="txt" style="margin: 0">확보 <strong>{{srcTotal}}편</strong> · 다음 단계에 전달 <strong>{{srcOn}}편</strong>. 사용하지 않을 영상과 권리를 확인하지 않은 영상은 체크를 해제해 주세요.</p>
 <div class="filt" role="group" aria-label="플랫폼 필터">
 <sc-for list="{{filters}}" as="f" hint-placeholder-count="3">
 <button type="button" class="btn sm {{f.cls}}" onClick="{{f.go}}" aria-pressed="{{f.on}}">{{f.label}}</button>
@@ -1558,7 +1559,7 @@ class Component extends DCLogic {
     else path = { ok: !!s.bio.done, desc: s.bio.done ? '링크인바이오 ' + (s.bio.no || '') + '번에 등록했고, 영상·설명에서 번호로 안내합니다' : '링크인바이오에 등록한 뒤 등록 완료를 켜 주세요' };
     var checks = [
       { name: '원본 출처 기록', ok: s.sources.length > 0, desc: s.sources.length ? '원본 ' + s.sources.length + '편의 URL·작성자·수집 시각을 저장했습니다' : '소스 단계에서 원본을 먼저 확보해 주세요' },
-      { name: '원본 사용 권리 확인', ok: !!s.rightsOk, desc: '판매자 제공·자체 촬영·사용 허락을 받은 원본인지 직접 확인합니다', user: true, userLabel: '판매자 제공·자체 촬영·사용 허락을 받은 원본만 썼습니다' },
+      { name: '원본 사용 권리 확인', ok: !!s.rightsOk, desc: '참고용·권리 미확인 원본은 빼고, 판매자 제공·자체 촬영·사용 허락을 받은 원본인지 직접 확인합니다', user: true, userLabel: '판매자 제공·자체 촬영·사용 허락을 받은 원본만 썼습니다' },
       { name: '새로 만든 요소', ok: made, desc: made ? '대본·AI 음성·자막·컷 구성을 새로 만들었습니다' : '대본·음성·편집이 끝나야 통과합니다' },
       { name: '금지·과장 표현', ok: hits.length === 0, desc: hits.length ? '확인 필요: ' + hits.join(', ') : '제목·설명·대본에서 과장 표현을 찾지 못했습니다' },
       { name: '제휴 고지', ok: !hasAff || s.aff.disclose, desc: !hasAff ? '제휴 링크가 없어 고지가 필요 없습니다' : s.aff.disclose ? '설명란 첫머리' + (hasLink && s.bio.svc !== 'none' ? '와 링크인바이오 한 줄 공지' : '') + '에 고지 문구를 넣습니다' : '제휴 링크가 있으면 고지 문구를 켜야 합니다' },
@@ -1885,7 +1886,7 @@ class Component extends DCLogic {
     else if (st === 'change') { b.cls = 'ready'; b.isDot = true; b.title = '변경 요청됨 · 수정 내용 대기'; b.desc = '오른쪽 제작 파트너에게 바꿀 내용을 알려 주세요. 수정 후 다시 승인할 수 있습니다.'; }
     else if (i === 5 && st !== 'approved') { var po = this.policy(s); var pp = po.pass; if (po.ready) { b.cls = 'ready'; b.isDot = true; b.title = '발행 준비 완료'; b.desc = '발행 방식과 시간을 고르고 발행하세요.'; } else { b.isIdle = true; b.title = '발행 준비 · 정책 점검 ' + pp + ' / ' + po.total; b.desc = '제휴 링크를 붙이고, 링크인바이오 등록과 남은 점검 항목을 확인해 주세요.'; } }
     else if (st === 'approved') { b.cls = 'ok'; b.isOk = true; b.title = names[i] + ' 승인 완료'; b.desc = '아래 다음 단계 버튼으로 진행하세요.'; }
-    else { b.isIdle = true; b.title = i === 1 ? '소스 확보 대기' : names[i] + ' 준비 대기'; if (i === 1) b.desc = '현재 0편 확보 · 최소 7편 목표. 소스 찾기를 눌러 계속 조사하세요.'; }
+    else { b.isIdle = true; b.title = i === 1 ? '소스 확보 대기' : names[i] + ' 준비 대기'; if (i === 1) b.desc = '현재 0편 확보 · 최소 7편 목표. 브라우저 확장 프로그램을 연결한 뒤 소스 찾기를 눌러 주세요.'; }
 
     var pill = { idle: '준비 필요', suggested: '준비 필요', running: '진행 중', ready: '승인 필요', change: '변경 중', approved: '승인 완료' }[st];
     var canApprove = (st === 'ready' || st === 'change') && (i !== 1 || s.sources.length > 0) && (i !== 4 || s.rendered) && i !== 5;

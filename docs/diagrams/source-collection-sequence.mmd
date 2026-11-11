@@ -1,0 +1,25 @@
+sequenceDiagram
+  actor user as 사용자
+  participant web as 웹·서버
+  participant db as Supabase
+  participant ext as 브라우저 확장
+  participant site as 틱톡·샤오홍슈
+  participant ai as 이미지 모델
+  user->>web: 소스 찾기
+  web->>db: 작업 등록, 크레딧 예약
+  db-->>ext: 수집 작업 전달
+  alt 확장 미연결
+    db-->>user: 배너에 연결 필요 표시
+  else 연결됨
+    loop 최대 3회, 확보 7편 미만이면 검색어 교체
+      ext->>site: 사용자 로그인 상태로 병행 검색
+      site-->>ext: 후보 약 60편
+      ext->>db: 메타데이터로 1차 거른 후보 저장
+      web->>ai: 첫 1~2초 프레임 제품 비교
+      ai-->>web: 일치도와 제외 사유
+      web->>db: 점수 계산, 상위 20편 선정
+      ext->>db: 원본 업로드, 출처 기록
+    end
+    db-->>user: Realtime으로 배너 갱신, 카드 표시
+    web->>db: 크레딧 확정
+  end

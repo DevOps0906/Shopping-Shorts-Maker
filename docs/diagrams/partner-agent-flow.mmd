@@ -1,0 +1,16 @@
+flowchart TD
+  screen["화면 동작 기록"] --> ctx["맥락 조립: 단계 · 제품 · 원본 수 · 대본 · 채널"]
+  typed["직접 입력"] --> ctx
+  ctx --> llm["LLM 의도 판별"]
+  llm --> kind{"응답 종류"}
+  kind -- "질문" --> answer["수집 기록을 찾아 답변"]
+  kind -- "제안" --> suggest["제안 + 적용 버튼"]
+  kind -- "작업" --> guard["서버 검사: 소유권 · 단계 상태 · 크레딧"]
+  guard --> confirm{"되돌리기 어렵거나 크레딧이 큼"}
+  confirm -- "예" --> ask["사용자 확인"]
+  ask -- "확인" --> job["도구 실행, 작업 등록"]
+  confirm -- "아니오" --> job
+  job --> update["Realtime으로 배너 · 카드 갱신"]
+  suggest --> user_apply["사용자가 적용"]
+  user_apply --> update
+  update --> approve["승인 · 발행 · 권리 확인은 사용자만"]

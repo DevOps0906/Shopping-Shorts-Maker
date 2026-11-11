@@ -1,0 +1,50 @@
+flowchart LR
+  subgraph client["사용자 PC"]
+    browser["웹 대시보드"]
+    ext["브라우저 확장 (수집)"]
+  end
+  subgraph app["Next.js 서버"]
+    routes["Route Handler · 서버 액션"]
+    agent["제작 파트너 (도구 호출)"]
+  end
+  subgraph supa["Supabase"]
+    auth["Auth"]
+    db[("Postgres · RLS")]
+    storage[("Storage (비공개)")]
+    realtime["Realtime"]
+    vault["Vault (API 키 · OAuth)"]
+    queue["작업 큐"]
+  end
+  subgraph worker["Railway"]
+    ffmpeg["FFmpeg 워커"]
+  end
+  subgraph ai["AI 공급자"]
+    llm["LLM · 이미지 이해"]
+    tts["Fish Audio · ElevenLabs"]
+    fal["스케일업 (Fal.ai 등)"]
+  end
+  subgraph ext_src["외부 플랫폼"]
+    source_sites["틱톡 · 샤오홍슈"]
+    publish_sites["YouTube 등 공식 API"]
+    affiliate["제휴 프로그램"]
+  end
+  browser --> routes
+  browser --> auth
+  realtime --> browser
+  routes --> agent
+  routes --> db
+  routes --> queue
+  agent --> llm
+  ext --> source_sites
+  ext --> storage
+  ext --> db
+  queue --> ffmpeg
+  ffmpeg --> storage
+  ffmpeg --> db
+  ffmpeg --> tts
+  ffmpeg --> fal
+  ffmpeg --> llm
+  db --> realtime
+  routes --> vault
+  routes --> publish_sites
+  routes --> affiliate

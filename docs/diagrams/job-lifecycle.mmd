@@ -1,0 +1,14 @@
+stateDiagram-v2
+  [*] --> queued: 시작 전 잔액 검사 후 크레딧 예약
+  queued --> waiting_extension: 수집 작업이고 확장 미연결
+  waiting_extension --> running: 확장 연결
+  queued --> running: 워커가 작업 수령
+  running --> queued: 일시 오류로 재시도
+  running --> succeeded: 완료 후 실제 사용량 확정
+  running --> failed: 재시도 소진 또는 시간 초과
+  queued --> canceled: 앞 단계 변경
+  waiting_extension --> canceled: 앞 단계 변경
+  running --> canceled: 앞 단계 변경
+  failed --> [*]: 예약분 환불
+  canceled --> [*]: 예약분 환불
+  succeeded --> [*]

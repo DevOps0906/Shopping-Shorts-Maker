@@ -1,0 +1,21 @@
+flowchart TD
+  gnb["좌측 GNB (고정)"]
+  fab(("제작 파트너 팝업 (모든 화면)"))
+  gnb --> home["홈 /"]
+  gnb --> new["새로운 프로젝트 /new"]
+  gnb --> projects["프로젝트 관리 /projects"]
+  gnb --> trends["트렌드 분석 /trends"]
+  gnb --> studio["제작단계 /studio/[projectId]/[step]"]
+  gnb --> analytics["성과 분석 /analytics"]
+  gnb --> settings["환경설정 /settings/[tab]"]
+  gnb --> channels["내 채널 /channels/[id]"]
+  studio --> s1["01 소재"]
+  s1 --> s2["02 소스"]
+  s2 --> s3["03 대본"]
+  s3 --> s4["04 목소리"]
+  s4 --> s5["05 편집"]
+  s5 --> s6["06 발행"]
+  settings --> profile["프로필 설정"]
+  settings --> accounts["다중 계정"]
+  settings --> apikeys["모델 API 키"]
+  fab -.-> gnb
