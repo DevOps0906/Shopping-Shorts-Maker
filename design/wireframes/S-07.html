@@ -29,7 +29,7 @@ th{color:var(--color-text-muted,#5b6270)}.skel{display:inline-block;height:10px;
 .ok{color:var(--color-success,#1f9d55)}.no{color:var(--color-danger,#d64545);font-weight:600}.muted{color:var(--color-text-muted,#5b6270)}
 </style></head><body>
 <script>if(location.search.indexOf('dark')>=0)document.documentElement.classList.add('dark')</script>
-<div class="meta"><b>S-07</b><span>마법사</span><span>/studio/[projectId]/source</span><span>권한: 로그인(프로젝트 소유자)</span><span>권리를 확인한 원본만 골라 편집에 넘기기</span><a href="index.html">전체 화면</a></div>
+<div class="meta"><b>S-07</b><span>마법사</span><span>/studio/[projectId]/source</span><span>권한: 로그인(프로젝트 소유자)</span><span>출처를 표기할 원본을 골라 편집에 넘기기</span><a href="index.html">전체 화면</a></div>
 <div class="shell"><div><header class="hd"><h1>02 소스</h1><nav></nav><span class="burger" aria-label="메뉴"></span></header><main>
 
 <ol class="steps"><li>1. 01 소재</li><li>2. 02 소스</li><li>3. 03 대본</li><li>4. 04 목소리</li><li>5. 05 편집</li><li>6. 06 발행</li></ol>
@@ -41,15 +41,18 @@ th{color:var(--color-text-muted,#5b6270)}.skel{display:inline-block;height:10px;
 <div class="row"><a href="#">틱톡 검색·샤오홍슈 검색</a></div>
 <div class="row"><span class="btn">+ 원본 영상 추가</span></div>
 <div class="row"><span class="chip">전체 ▾</span><span class="chip">TikTok ▾</span><span class="chip">샤오홍슈 ▾</span></div>
-<div class="grid wide"><div class="box"><b>원본 최대 20편(번호</b><p class="muted"><span class="skel"></span></p></div><div class="box"><b>플랫폼</b><p class="muted"><span class="skel"></span></p></div><div class="box"><b>해상도</b><p class="muted"><span class="skel"></span></p></div><div class="box"><b>길이</b><p class="muted"><span class="skel"></span></p></div><div class="box"><b>체크 기본 해제</b><p class="muted"><span class="skel"></span></p></div><div class="box"><b>미리보기)</b><p class="muted"><span class="skel"></span></p></div></div>
-<div class="box"><div class="lab">text</div>확보 N편 · 다음 단계 전달 N편</div>
-<form class="box f"><label>원본 체크(권리 확인한 원본만)<span class="in"></span></label></form>
+<div class="grid wide"><div class="box"><b>원본 목록 20편(번호</b><p class="muted"><span class="skel"></span></p></div><div class="box"><b>플랫폼</b><p class="muted"><span class="skel"></span></p></div><div class="box"><b>해상도</b><p class="muted"><span class="skel"></span></p></div><div class="box"><b>길이</b><p class="muted"><span class="skel"></span></p></div><div class="box"><b>체크</b><p class="muted"><span class="skel"></span></p></div><div class="box"><b>미리보기</b><p class="muted"><span class="skel"></span></p></div><div class="box"><b>다운로드됨</b><p class="muted"><span class="skel"></span></p></div><div class="box"><b>목록만)</b><p class="muted"><span class="skel"></span></p></div></div>
+<div class="box"><div class="lab">text</div>다운로드 N편 · 사용 N편</div>
+<div class="box"><div class="lab">text</div>출처 표기 고지(주의 색 노란 글자·출처 표기는 허락이 아님)</div>
+<form class="box f"><label>고지 확인 체크(체크해야 승인)<span class="in"></span></label></form>
+<div class="box"><div class="lab">text</div>팁 원작자 경고 메일 대처(접이식)</div>
+<form class="box f"><label>원본 체크(제작 파트너가 상위 10편 미리 체크 → 체크한 원본만 다운로드<span class="in"></span></label><label>출처 @작성자 표시)<span class="in"></span></label></form>
 <div class="box"><div class="lab">text</div>파일 추가 또는 URL 붙여 넣기 안내</div>
 <div class="box"><div class="lab">text</div>승인 기준 안내(부족 사유는 제작 파트너 채팅으로 기록)</div>
 <div class="row"><span class="btn">그대로 진행·승인</span></div>
 <div class="row"><span class="btn">변경 필요</span></div>
 <div class="row"><span class="btn">다음 단계 →</span></div>
 </main></div></div>
-<section class="wf"><h3>상태</h3><div class="st"><div class="box"><b>빈</b><p class="muted">0편 빈 상태 + 소스 찾기 · 확장 미연결이면 대기 배너(&quot;현재 0편 확보 · 최소 7편 목표 …&quot;)</p></div><div class="box"><b>로딩</b><p class="muted">틱톡 + 샤오홍슈 병행 탐색 진행 · 경과 초</p></div><div class="box"><b>오류</b><p class="muted">확장 미연결·로그인 만료·권리 확인 7편 미만 → 사유와 남은 탐색 회차 · 재연결·직접 추가</p></div><div class="box"><b>성공</b><p class="muted">승인 조건([기획서 3장 02](./planning.md#02-소스-모으기))을 채우면 승인 · 아니면 승인 버튼 비활성</p></div></div>
+<section class="wf"><h3>상태</h3><div class="st"><div class="box"><b>빈</b><p class="muted">0편 빈 상태 + 소스 찾기 · 확장 미연결이면 대기 배너(&quot;현재 0편 확보 · 목표: 10편 다운로드 · 5편 사용 …&quot;)</p></div><div class="box"><b>로딩</b><p class="muted">틱톡 + 샤오홍슈 병행 탐색 진행 · 경과 초</p></div><div class="box"><b>오류</b><p class="muted">확장 미연결·로그인 만료·사용 가능 5편 미만 → 사유와 남은 탐색 회차 · 재연결·직접 추가</p></div><div class="box"><b>성공</b><p class="muted">승인 조건([기획서 3장 02](./planning.md#02-소스-모으기))과 고지 확인 체크를 채우면 승인 · 아니면 승인 버튼 비활성</p></div></div>
 <h3>필수 구조 검사</h3><div><div class="ok">✅ 필수 구조 충족</div><div class="muted">· 권장: 중간 저장·이어하기</div></div><h3>다음 화면</h3><div><a href="S-08.html">S-08 03 대본</a></div></section>
 </body></html>
