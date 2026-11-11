@@ -1,32 +1,56 @@
 {
-  "_comment": "단가는 사용자가 채운다. 빈 문자열이면 예상 원가를 계산하지 않는다. 금액은 문자열 숫자(Decimal)로 적는다.",
-  "usd_krw": "",
+  "_comment": "단가는 docs/w0/pricing-research.md(2026-11-12 공식 페이지 기준) 제안값. 빈 문자열이면 예상 원가를 계산하지 않는다. 금액은 문자열 숫자(Decimal)로 적는다.",
+  "usd_krw": "1336.9",
   "pricing": {
     "claude": {
-      "input_per_1m_tokens_usd": "",
-      "output_per_1m_tokens_usd": ""
+      "input_per_1m_tokens_usd": "2",
+      "output_per_1m_tokens_usd": "10"
     },
     "gemini": {
-      "input_per_1m_tokens_usd": "",
-      "output_per_1m_tokens_usd": ""
+      "input_per_1m_tokens_usd": "0.30",
+      "output_per_1m_tokens_usd": "2.50"
     },
     "fish_audio": {
       "billing_unit": "utf8_bytes",
-      "per_1m_units_usd": ""
+      "per_1m_units_usd": "15.00"
     },
     "render_local": {
       "per_hour_krw": ""
     }
   },
   "fish_audio_voices": [
-    {"name": "", "reference_id": ""},
-    {"name": "", "reference_id": ""},
-    {"name": "", "reference_id": ""},
-    {"name": "", "reference_id": ""},
-    {"name": "", "reference_id": ""},
-    {"name": "", "reference_id": ""}
+    {
+      "name": "",
+      "reference_id": ""
+    },
+    {
+      "name": "",
+      "reference_id": ""
+    },
+    {
+      "name": "",
+      "reference_id": ""
+    },
+    {
+      "name": "",
+      "reference_id": ""
+    },
+    {
+      "name": "",
+      "reference_id": ""
+    },
+    {
+      "name": "",
+      "reference_id": ""
+    }
   ],
-  "vision": {"frames_per_cut": 1},
-  "gemini": {"model": "gemini-2.5-flash", "tokens_per_frame": 70, "free_tier": true},
+  "vision": {
+    "frames_per_cut": 1
+  },
+  "gemini": {
+    "model": "gemini-3.5-flash-lite",
+    "tokens_per_frame": 70,
+    "free_tier": true
+  },
   "subtitle_font": "C:/Windows/Fonts/malgun.ttf"
 }

@@ -148,6 +148,7 @@
         try {
           if (typeof window.gtag === "function") window.gtag("event", name);
           if (typeof window.plausible === "function") window.plausible(name);
+          if (window.umami && typeof window.umami.track === "function") window.umami.track(name);
           window.dataLayer = window.dataLayer || [];
           window.dataLayer.push({ event: name });
         } catch (e) { /* 집계 실패는 폼 동작을 막지 않는다 */ }

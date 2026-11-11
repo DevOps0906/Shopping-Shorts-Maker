@@ -603,12 +603,12 @@ a{color:#6A3FD0}a:hover{color:#4E2BA8}
 <table class="map">
 <thead><tr><th>조합</th><th>대본·소재·채팅</th><th>원본 분석 (썸네일 20장 + 영상 10편)</th><th>예상 비용</th></tr></thead>
 <tbody>
-<tr><td><b>최저</b></td><td>Gemini Flash</td><td>Gemini Flash (영상 직접 입력)</td><td><b>약 30원</b></td></tr>
-<tr><td><b>추천</b></td><td>Claude Sonnet</td><td>Gemini Flash (영상 직접 입력)</td><td><b>약 160원</b></td></tr>
-<tr><td>Claude만</td><td>Claude Sonnet</td><td>Claude Sonnet (프레임 이미지)</td><td>약 1,020원</td></tr>
+<tr><td><b>최저</b></td><td>Gemini Flash</td><td>Gemini Flash (영상 직접 입력)</td><td><b>약 26원</b></td></tr>
+<tr><td><b>추천</b></td><td>Claude Sonnet</td><td>Gemini Flash (영상 직접 입력)</td><td><b>약 102원</b></td></tr>
+<tr><td>Claude만</td><td>Claude Sonnet</td><td>Claude Sonnet (프레임 이미지)</td><td>약 648원</td></tr>
 </tbody>
 </table>
-<p class="note" style="margin: 6px 0 0">공통 별도: 음성(Fish Audio, 약 300자) 단가 입력 전 · 렌더링(서버 FFmpeg) 0원 · 스케일업·제거는 실행할 때만. 예시 단가 기준(1달러 1,400원, Claude Sonnet 입력 3·출력 15달러, Gemini Flash 입력 0.3·출력 2.5달러 / 100만 토큰)이며 W0 원가 실측 후 바뀝니다. 실제 계산은 모델 API 키 설정에서 고른 모델로 합니다.</p>
+<p class="note" style="margin: 6px 0 0">공통 별도: 음성(Fish Audio, 약 300자) 단가 입력 전 · 렌더링(서버 FFmpeg) 0원 · 스케일업·제거는 실행할 때만. 2026-11-12 공식 단가 기준(1달러 1,336.9원, Claude Sonnet 5.5 입력 2·출력 10달러, Gemini Flash 입력 0.3·출력 2.5달러 / 100만 토큰, 대본 2만·3천 토큰 가정)이며 W0 원가 실측 후 바뀝니다. 실제 계산은 모델 API 키 설정에서 고른 모델로 합니다.</p>
 </section>
 <div class="row" style="margin-top: 20px">
 <button class="btn pri" type="button" onClick="{{createProject}}">{{npCta}}</button>
@@ -695,7 +695,7 @@ a{color:#6A3FD0}a:hover{color:#4E2BA8}
 </section>
 <sc-if value="{{hasSel}}" hint-placeholder-val="{{ false }}">
 <div class="selbar" role="region" aria-label="선택한 상품">
-<span class="stext"><b>{{selCount}}개 선택</b> · {{selNames}}<span style="display: block; opacity: .75; font-size: 12px">{{acctName}} 채널로 만듭니다 · 소재 자동 승인 → 소스 찾기 바로 시작</span><span style="display: block; opacity: .75; font-size: 12px">AI 예상 비용 · 편당 최저 약 30원 · 추천 약 160원 · Claude만 약 1,020원 (음성 별도) × {{selCount}}편</span></span>
+<span class="stext"><b>{{selCount}}개 선택</b> · {{selNames}}<span style="display: block; opacity: .75; font-size: 12px">{{acctName}} 채널로 만듭니다 · 소재 자동 승인 → 소스 찾기 바로 시작</span><span style="display: block; opacity: .75; font-size: 12px">AI 예상 비용 · 편당 최저 약 26원 · 추천 약 102원 · Claude만 약 648원 (음성 별도) × {{selCount}}편</span></span>
 <button class="btn sm" type="button" onClick="{{clearSel}}">선택 해제</button>
 <button class="btn pri" type="button" onClick="{{makeShortsSel}}">숏폼 제작하기 →</button>
 </div>
