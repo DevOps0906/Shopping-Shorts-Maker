@@ -341,7 +341,7 @@ def main() -> int:
     ap.add_argument("--demo", action="store_true", help="합성 클립으로 samples/demo_*.json 실행")
     ap.add_argument("--sources", type=int, default=10, help="원본 편수 시나리오(Claude 프레임 vs Gemini 영상)")
     ap.add_argument("--live", action="store_true", help="실제 API 호출(--llm gemini만 구현, 키는 .env.local)")
-    ap.add_argument("--llm", choices=["claude", "gemini"], default="claude", help="live 대본·영상 분석 모델(gemini만 구현)")
+    ap.add_argument("--llm", choices=["claude", "gemini"], default="gemini", help="live 대본·영상 분석 모델(기본 gemini = 테스트용 Google API 키, claude는 미구현)")
     args = ap.parse_args()
 
     cfg = json.loads((ROOT / "config.json").read_text(encoding="utf-8"))
