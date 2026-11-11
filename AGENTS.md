@@ -14,6 +14,7 @@
 | 영상 워커 | FFmpeg 워커 컨테이너 (언어는 `docs/planning.md#17-2` D4 ADR에서 확정) | `apps/worker` |
 | 인프라 | Docker Compose, 개발·운영 동일 구성 (`docs/planning.md#17-10`) | `docker/` |
 | 수집 | 사용자 로그인 브라우저 확장 | `apps/extension` |
+| 설치형 앱 (웹 완성 후) | Tauri(데스크톱) · Capacitor(모바일), 운영 웹을 여는 셸 (`docs/planning.md#17-2` D11) | `apps/desktop` · `apps/mobile` |
 
 ## 3. 명령 (앱 생성 후 유효)
 | 목적 | 명령 |
