@@ -6,6 +6,10 @@
       "input_per_1m_tokens_usd": "",
       "output_per_1m_tokens_usd": ""
     },
+    "gemini": {
+      "input_per_1m_tokens_usd": "",
+      "output_per_1m_tokens_usd": ""
+    },
     "fish_audio": {
       "billing_unit": "utf8_bytes",
       "per_1m_units_usd": ""
@@ -22,5 +26,7 @@
     {"name": "", "reference_id": ""},
     {"name": "", "reference_id": ""}
   ],
+  "vision": {"frames_per_cut": 1},
+  "gemini": {"model": "gemini-2.5-flash", "tokens_per_frame": 70, "free_tier": true},
   "subtitle_font": "C:/Windows/Fonts/malgun.ttf"
 }

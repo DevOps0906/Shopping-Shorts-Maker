@@ -1,5 +1,6 @@
 .nomad/
 .env
+.env.local
 .env.*
 !.env.example
 node_modules/

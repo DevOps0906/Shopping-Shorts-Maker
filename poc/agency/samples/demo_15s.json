@@ -12,35 +12,45 @@
       "line": "이거 하나면 주방 정리 끝",
       "source": "../out/demo/src/clip1.mp4",
       "start": 1.0,
-      "end": 4.0
+      "end": 4.0,
+      "author": "demo_creator_a",
+      "platform": "tiktok"
     },
     {
       "no": 2,
       "line": "좁은 틈에도 쏙 들어가요",
       "source": "../out/demo/src/clip2.mp4",
       "start": 1.0,
-      "end": 4.0
+      "end": 4.0,
+      "author": "demo_xhs_b",
+      "platform": "xiaohongshu"
     },
     {
       "no": 3,
       "line": "손잡이가 있어 꺼내기 편해요",
       "source": "../out/demo/src/clip3.mp4",
       "start": 1.0,
-      "end": 4.0
+      "end": 4.0,
+      "author": "demo_creator_a",
+      "platform": "tiktok"
     },
     {
       "no": 4,
       "line": "세척도 물로 한 번이면 돼요",
       "source": "../out/demo/src/clip4.mp4",
       "start": 1.0,
-      "end": 4.0
+      "end": 4.0,
+      "author": "demo_xhs_b",
+      "platform": "xiaohongshu"
     },
     {
       "no": 5,
       "line": "링크는 프로필에 있어요",
       "source": "../out/demo/src/clip5.mp4",
       "start": 1.0,
-      "end": 4.0
+      "end": 4.0,
+      "author": "demo_creator_c",
+      "platform": "tiktok"
     }
   ]
 }
