@@ -631,6 +631,7 @@ MVP는 쿠팡 파트너스를 기본값으로 두고, YouTube 채널은 구독�
 | 기능 맵 | [feature-map.mmd](./diagrams/feature-map.mmd) | 서비스 전체 기능 |
 | 사이트맵 | [sitemap.mmd](./diagrams/sitemap.mmd) | 메뉴와 라우트(시안 구조 그대로) |
 | 사용자 흐름 | [user-flow.mmd](./diagrams/user-flow.mmd) | 트렌드 → 6단계 승인 → 성과 |
+| 트렌드 분석 순서도 | [trend-analysis-flow.mmd](./diagrams/trend-analysis-flow.mmd) | 기회 점수 계산 → 상품 선택 → 02 소스 자동 시작(10장) |
 | 시스템 구성 | [system-architecture.mmd](./diagrams/system-architecture.mmd) | 웹·확장·DB·워커·외부 API 경계 |
 | 소스 수집 순서 | [source-collection-sequence.mmd](./diagrams/source-collection-sequence.mmd) | 4장 파이프라인의 주체와 순서 |
 | 제작 파트너 흐름 | [partner-agent-flow.mmd](./diagrams/partner-agent-flow.mmd) | 의도 판별 → 도구 호출 → 화면 반영 |

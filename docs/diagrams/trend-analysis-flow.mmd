@@ -1,0 +1,23 @@
+flowchart TD
+  start(["트렌드 분석 진입"]) --> filter["필터 선택<br/>카테고리 · 기간 · 해외 데이터 출처"]
+  filter --> data[/"지표 수집<br/>해외 영상 증가 · 국내 검색 증가 · 국내 숏폼 경쟁"/]
+  data --> norm["카테고리 안에서 0~100 정규화"]
+  norm --> score["기회 점수 계산<br/>해외 40% + 국내 검색 30% + 낮은 경쟁 30%"]
+  score --> sellable{"제휴 링크를<br/>만들 수 있는 상품인가"}
+  sellable -- "아니오" --> lower["순위 낮춤"]
+  sellable -- "예" --> table["급상승 상품표 표시"]
+  lower --> table
+  table --> pick["상품 체크 또는 상위 3개 선택"]
+  pick --> make{"숏폼 제작하기를 눌렀는가"}
+  make -- "아니오" --> filter
+  make -- "예" --> project["상품마다 프로젝트 생성<br/>01 소재 자동 승인"]
+  project --> channel{"상품 카테고리와<br/>운영 채널 카테고리가 같은가"}
+  channel -- "아니오" --> guide["채팅으로 맞는 채널 안내"]
+  channel -- "예" --> first{"첫 번째 상품인가"}
+  guide --> first
+  first -- "예" --> search["02 소스로 이동<br/>소스 찾기 자동 시작"]
+  first -- "아니오" --> wait["02 소스 단계에서 대기"]
+  search --> log["선정 근거를 채팅에 기록"]
+  wait --> log
+  log --> done(["제작 단계 진행"])
+  done -. "발행 후 카테고리별 클릭률 반영" .-> score
