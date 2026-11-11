@@ -9,6 +9,7 @@
 - 단가 조사 docs/w0/pricing-research.md → config 반영(1,336.9원/$, Claude Sonnet 5.5 2/10, Gemini 0.30/2.50, Fish 15/1M바이트). 데모 실측 1편 약 12.7원(유료 기준, thinking이 출력의 86%). 화면 예시 26/102/648원. 랜딩 도구 docs/w0/landing-tools.md(Formspree+Umami), track()에 umami 연결, 의뢰서 E4(국외 이전) 추가
 - 테스트 모델을 gemini-3.5-flash-lite로 전환, 실호출 성공(입력 1,072·출력 223·thinking 0, 유료 환산 약 1.2원)
 - D11 설치형 앱: 웹 완성 후 Tauri(apps/desktop)·Capacitor(apps/mobile) 셸, 원격 URL 우선, task-032·033(W7) 추가, task-005 ADR ⑤ 추가, AGENTS 스택·README 단계 갱신
+- Gemini TTS 테스트 음성(gemini-3.8-flash-lite-tts, 목소리 Kore): `run.py --demo --live`로 Google 키 하나로 대본→음성→MP4 실호출 성공(음성 9.97초 + 무음 채움, 0원). 한국어 발음은 사람이 들어 확인 필요. demo_20s는 호출 절약을 위해 톤 대체
 - 다음 한 걸음: 사용자가 A 판매자 연락·B 제품 구입/촬영·법률 의뢰 발송 → 실측 표 기록 → 00_LEAN
 - 열린 결정(사용자 확인 필요):
   - task-001: 폼 서비스·방문 집계 도구 계정(config.js FORM_URL·ANALYTICS_SNIPPET), 정책 문구 확인

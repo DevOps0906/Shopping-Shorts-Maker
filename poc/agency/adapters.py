@@ -9,6 +9,7 @@ import json
 import math
 import os
 import time
+import wave
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -197,3 +198,44 @@ class GeminiVideo:
                  "thinking_tokens": int(um.get("thoughtsTokenCount", 0)),
                  "total_tokens": int(um.get("totalTokenCount", 0))}
         return text, Usage(self.provider, "video_script", units, False, self.model)
+
+
+class GeminiTTS(TTSAdapter):
+    """테스트용 Gemini TTS. dry-run은 호출 없음, live는 generateContent(AUDIO)로 PCM을 받아 wav로 저장한다."""
+    provider = "gemini_tts"
+    AUDIO_TOKENS_PER_SEC = 25  # 공식 문서 기준 오디오 출력 토큰 환산(추정용)
+
+    def __init__(self, dry_run: bool = True, model: str = "", voice: str = ""):
+        self.dry_run = dry_run
+        self.model = model
+        self.voice = voice
+
+    def synthesize(self, text, voice_id, out_path):
+        if self.dry_run:
+            return None, Usage(self.provider, "tts", {"chars": len(text), "utf8_bytes": len(text.encode("utf-8"))}, True)
+        if not self.model or not self.voice:
+            raise RuntimeError("config.json gemini.tts_model / gemini.tts_voice 가 비어 있습니다")
+        body = {"contents": [{"parts": [{"text": text}]}],
+                "generationConfig": {"responseModalities": ["AUDIO"],
+                                     "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": self.voice}}}}}
+        d = gemini_request(f"models/{self.model}:generateContent", body)
+        try:
+            inline = next(p["inlineData"] for p in d["candidates"][0]["content"]["parts"] if "inlineData" in p)
+            pcm = base64.b64decode(inline["data"])
+        except (KeyError, IndexError, StopIteration):
+            raise RuntimeError(f"Gemini TTS 응답에 오디오 없음: {str(d.get('promptFeedback', ''))[:200]}")
+        rate = 24000
+        for part in inline.get("mimeType", "").split(";"):
+            if part.strip().startswith("rate="):
+                rate = int(part.strip()[5:])
+        with wave.open(out_path, "wb") as w:  # 16bit 모노 PCM → wav
+            w.setnchannels(1)
+            w.setsampwidth(2)
+            w.setframerate(rate)
+            w.writeframes(pcm)
+        um = d.get("usageMetadata", {})
+        units = {"input_tokens": int(um.get("promptTokenCount", 0)),
+                 "output_tokens": int(um.get("candidatesTokenCount", 0)),
+                 "total_tokens": int(um.get("totalTokenCount", 0)),
+                 "audio_ms": int(len(pcm) / 2 / rate * 1000)}
+        return out_path, Usage(self.provider, "tts", units, False, f"{self.model}/{self.voice}")

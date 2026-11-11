@@ -64,6 +64,13 @@ class GeminiTest(unittest.TestCase):
                     self.live().analyze_script(video(), "p")
             self.assertNotIn(KEY, str(cm.exception))
 
+    def test_tts_dry_run_no_network(self):
+        with mock.patch("urllib.request.urlopen") as u:
+            path, usage = adapters.GeminiTTS(model="m", voice="v").synthesize("안녕", "", "x.wav")
+        u.assert_not_called()
+        self.assertIsNone(path)
+        self.assertTrue(usage.dry_run)
+
 
 if __name__ == "__main__":
     unittest.main()

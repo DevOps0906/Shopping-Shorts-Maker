@@ -18,7 +18,7 @@ import time
 from decimal import Decimal, ROUND_CEILING
 from pathlib import Path
 
-from adapters import ClaudeLLM, FishAudioTTS, GeminiVideo, Usage
+from adapters import ClaudeLLM, FishAudioTTS, GeminiTTS, GeminiVideo, Usage
 
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "out"
@@ -87,7 +87,7 @@ def credits_text(cm: dict) -> str:
     return ("영상 출처: " + ", ".join(seen) + "\n") if seen else ""
 
 
-def render(cm: dict, cfg: dict, tts: FishAudioTTS) -> tuple[Path, list[Usage]]:
+def render(cm: dict, cfg: dict, tts) -> tuple[Path, list[Usage]]:
     work = OUT / cm["project"]
     if work.exists():
         shutil.rmtree(work)
@@ -119,7 +119,7 @@ def render(cm: dict, cfg: dict, tts: FishAudioTTS) -> tuple[Path, list[Usage]]:
         usages.append(u)
     target = cm["target_sec"]
     if voice_audio:
-        audio_in = ["-i", voice_audio]
+        audio_in = ["-i", voice_audio, "-af", "apad"]  # 음성이 짧으면 무음으로 target까지 채움
     elif mode == "silent":
         audio_in = ["-f", "lavfi", "-i", f"anullsrc=r=48000:cl=stereo:d={target}"]
     else:
@@ -223,6 +223,16 @@ def cost_rows(project: str, usages: list[Usage], render_sec: float, cfg: dict) -
             usage = f"{unit}={n}"
             formula = f"{unit}×per_1m_units_usd/1e6×usd_krw"
             est = None if None in (price, fx) else to_krw(n * price / Decimal(10**6) * fx)
+        elif u.provider == "gemini_tts":
+            g = p.get("gemini_tts", {})
+            pin, pout = dec(g.get("input_per_1m_tokens_usd", "")), dec(g.get("output_per_1m_tokens_usd", ""))
+            it, ot = u.units.get("input_tokens", 0), u.units.get("output_tokens", 0)
+            usage = f"input_tokens={it}; output_tokens={ot}; audio_ms={u.units.get('audio_ms', 0)}" + ("" if not u.dry_run else f"; chars={u.units.get('chars', 0)}(추정 없음)")
+            formula = "usageMetadata 실측 (input×input_per_1m + output×output_per_1m)/1e6×usd_krw"
+            if cfg.get("gemini", {}).get("free_tier"):
+                est = 0
+            else:
+                est = None if None in (pin, pout, fx) else to_krw((it * pin + ot * pout) / Decimal(10**6) * fx)
         elif u.provider == "gemini" and u.item == "video_script":
             g = p.get("gemini", {})
             pin, pout = dec(g.get("input_per_1m_tokens_usd", "")), dec(g.get("output_per_1m_tokens_usd", ""))
@@ -327,6 +337,17 @@ def estimate_table(cms: list[dict], n: int, cfg: dict) -> list[dict]:
         rows.append({"combo": f"{tag}: {name}", "script_tokens": s_in + s_out, "thumb_tokens": th, "video_tokens": vid,
                      "total_tokens": s_in + s_out + th + vid,
                      "estimated_krw": krw([(sp, s_in, s_out), (vp, th + vid, 0)]), "note": f"원본 {n}편 · 썸네일 {THUMBS}장"})
+    gt = p.get("gemini_tts", {})
+    gpi, gpo = dec(gt.get("input_per_1m_tokens_usd", "")), dec(gt.get("output_per_1m_tokens_usd", ""))
+    t_sec = cm["target_sec"]
+    t_in, t_out = ClaudeLLM.estimate_tokens(" ".join(c["line"] for c in cm["cuts"])), t_sec * GeminiTTS.AUDIO_TOKENS_PER_SEC
+    if cfg.get("gemini", {}).get("free_tier"):
+        tk = 0
+    else:
+        tk = NO_PRICE if None in (gpi, gpo, fx) else to_krw((t_in * gpi + t_out * gpo) / Decimal(10**6) * fx)
+    rows.append({"combo": "공통: 음성(테스트): Gemini TTS", "script_tokens": "", "thumb_tokens": "", "video_tokens": "",
+                 "total_tokens": t_in + t_out, "estimated_krw": tk,
+                 "note": f"모델 {cfg.get('gemini', {}).get('tts_model', '')} · 입력 {t_in}+오디오 {t_out}토큰(초당 25 추정)"})
     nb = len(" ".join(c["line"] for c in cm["cuts"]).encode("utf-8"))
     fish = dec(p["fish_audio"]["per_1m_units_usd"])
     fk = NO_PRICE if None in (fish, fx) else to_krw(nb * fish / Decimal(10**6) * fx)
@@ -341,6 +362,7 @@ def main() -> int:
     ap.add_argument("--demo", action="store_true", help="합성 클립으로 samples/demo_*.json 실행")
     ap.add_argument("--sources", type=int, default=10, help="원본 편수 시나리오(Claude 프레임 vs Gemini 영상)")
     ap.add_argument("--live", action="store_true", help="실제 API 호출(--llm gemini만 구현, 키는 .env.local)")
+    ap.add_argument("--tts", choices=["fish", "gemini"], default=None, help="음성(기본: --live면 gemini 테스트용, 아니면 fish dry-run). fish live는 미구현")
     ap.add_argument("--llm", choices=["claude", "gemini"], default="gemini", help="live 대본·영상 분석 모델(기본 gemini = 테스트용 Google API 키, claude는 미구현)")
     args = ap.parse_args()
 
@@ -353,11 +375,15 @@ def main() -> int:
         ap.error("cut_map 경로 또는 --demo 가 필요합니다")
 
     live_gemini = args.live and args.llm == "gemini"
-    tts = FishAudioTTS(dry_run=not args.live)
+    gc = cfg.get("gemini", {})
+    tts_kind = args.tts or ("gemini" if args.live else "fish")
+    mk_tts = lambda dry: (GeminiTTS(dry, gc.get("tts_model", ""), gc.get("tts_voice", "")) if tts_kind == "gemini"
+                          else FishAudioTTS(dry_run=dry))
+    tts = mk_tts(not args.live)
     llm = ClaudeLLM(dry_run=not live_gemini and not args.live)  # --live --llm claude는 NotImplementedError 유지
     if live_gemini:
         llm = ClaudeLLM(dry_run=True)  # Claude 추정 행은 유지, 대본·영상은 Gemini 실호출
-        tts = FishAudioTTS(dry_run=True)
+        tts = mk_tts(tts_kind != "gemini")  # fish는 dry-run 유지, gemini TTS는 실호출
     gemini = GeminiVideo(not live_gemini, int(cfg.get("gemini", {}).get("tokens_per_frame", 70)), cfg.get("gemini", {}).get("model", ""))
     all_rows, failures, all_cuts, all_sizes = [], 0, [], []
     cms = [load_cut_map(path) for path in maps]
@@ -376,7 +402,7 @@ def main() -> int:
         script_prompt = "다음 대사를 쇼츠 대본으로 다듬어 주세요:\n" + "\n".join(c["line"] for c in cm["cuts"])
         _, llm_usage = llm.complete(script_prompt)
         t0 = time.perf_counter()
-        final, usages = render(cm, cfg, tts)
+        final, usages = render(cm, cfg, tts if idx == 0 else mk_tts(True))  # live 호출 최소화: 첫 cut_map만 실제 음성
         sizes = extract_frames(cm, cfg, final.parent)
         all_cuts += cm["cuts"]
         all_sizes += sizes

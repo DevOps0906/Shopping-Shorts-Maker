@@ -10,3 +10,4 @@
 - 출처 표기: cut_map 컷에 선택 필드 `author`·`platform`(tiktok·xiaohongshu)·`url`을 두면 컷마다 우하단에 `@author`를 작은 글씨로 계속 표기하고(없으면 생략), `out/<project>/credits.txt`에 설명란용 `영상 출처: @a(TikTok), @b(小红书)`(중복 제거)를 저장한다
 - 원본 편수 시나리오: `--sources N`(기본 10)은 원본 N편 × 데모 컷 평균 길이로 Claude 프레임(초당 1장) 토큰과 Gemini 영상(ceil(초)×(70+오디오32)) 토큰을 `sources_N` 행으로 나란히 비교한다(dry-run, 호출 없음).
 - `config.json`의 `gemini.free_tier`가 true면 Gemini는 0원이고 비고에 "무료 구간: 학습 활용·사람 검토 대상"을 남긴다. `pricing.gemini` 단가는 사용자가 채운다.
+- 음성(테스트): `--tts gemini`(`--live`일 때 기본, dry-run 기본은 fish). `config.json` `gemini.tts_model`(`gemini-3.8-flash-lite-tts`)·`gemini.tts_voice`(`Kore`)로 PCM을 받아 wav로 저장해 렌더 음성으로 쓰고 usageMetadata 토큰을 costs.csv에 `gemini_tts` 행(dry_run=false)으로 기록한다. live 호출 최소화로 첫 cut_map만 실제 음성, 나머지는 톤 대체. Fish Audio 경로는 그대로(live 미구현). 단가는 `pricing.gemini_tts`, 비면 "단가 입력 전", `free_tier`면 0원
