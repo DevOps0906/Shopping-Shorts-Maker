@@ -29,6 +29,14 @@ SQL
 
 reset_app() {
   psql_db <<'SQL'
+-- 마이그레이션이 앱 스키마 밖에 만든 것도 지운다: 작업 큐(pgmq)·예약 작업(pg_cron)·앱 버킷(개발 DB 전용).
+-- 역할(worker_role·worker_login)은 마이그레이션이 존재 여부를 확인하고 만들므로 남겨 둔다.
+drop extension if exists pgmq cascade;
+drop extension if exists pg_cron cascade;
+-- 개발 DB 초기화에서만 Storage 보호 트리거의 공식 우회 설정을 켠다(이 연결에만 적용).
+set storage.allow_delete_query = 'true';
+delete from storage.objects where bucket_id in ('sources', 'voices', 'renders', 'thumbnails');
+delete from storage.buckets where id in ('sources', 'voices', 'renders', 'thumbnails');
 drop schema if exists private cascade;
 drop schema if exists api cascade;
 do $$
@@ -101,6 +109,12 @@ case "${1:-up}" in
     case "$ctx" in default|desktop-linux) ;; *) echo "reset 거부: Docker 컨텍스트 '$ctx'는 로컬이 아닙니다" >&2; exit 3 ;; esac
     if [ "${MIGRATE_ALLOW_RESET:-}" != "1" ]; then
       echo "reset 거부: 앱 테이블을 지웁니다. 개발 DB가 맞으면 MIGRATE_ALLOW_RESET=1 을 붙여 실행하세요" >&2
+      exit 3
+    fi
+    # 실제 사용자가 있는 DB(운영·스테이징)를 개발 DB로 착각하지 않도록, 테스트 계정이 아닌 가입자가 있으면 거부한다.
+    real_users=$(psql_db -tAX -c "select count(*) from auth.users where email is null or (email not like 'e2e-%' and email not like 'rls-test-%' and email not like '%@example.com')" 2>/dev/null || echo unknown)
+    if [ "$real_users" != "0" ]; then
+      echo "reset 거부: 테스트 계정이 아닌 사용자 ${real_users}명이 있는 DB입니다(개발 DB 전용 명령)" >&2
       exit 3
     fi
     ensure_history
