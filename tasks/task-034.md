@@ -10,6 +10,10 @@
 | 근거 | `docs/planning.md#12`(채널 수 한도와 추가 요금), `docs/planning.md#9`(수익 모델 표), `docs/planning.md#17-2` D14, `docs/05_DATA_MODEL.md#3`(accounts·projects), `supabase/migrations/20261112270000_youtube_oauth.sql`(oauth_state_create·youtube_save_connection·youtube_clear_token), `docs/ui-feedback.md#2`·`#4` |
 | 쓰기 허용 | `supabase/migrations/<새 번호>_channel_slots.sql`, `supabase/tests/channel_slots.sql`, `apps/web/src/server/oauth/**`, `apps/web/src/types/db.ts`(재생성만), `docs/diagrams/erd.mmd`(sql2erd), `docs/05_DATA_MODEL.md`(새 테이블·열 표) |
 
+## 분리 메모 (2026-11-13 팀장 확정)
+- **034a(이번)**: `20261113110000_channel_slots.sql` — 기본 한도 1(`private.channel_quotas`, 기존 계정은 현재 연결 수), 30일 새 채널 3회, 초과 채널 새 프로젝트·채널 변경 거부(CS004), 감사 이벤트 `channel_slot_events`, 웹 사전 검사·오류 문구(CS001~CS003). plans·subscriptions·connected_at 대신 단순 설계(아래 "할 것"의 요금제 부분은 P1 결제로).
+- **034b(024 병합 뒤)**: 초과 채널의 새 발행 예약 거부(prepare_publication·024 scheduled 전이), is_default 변경으로 초과 순위를 바꾸는 우회 차단.
+
 ## 할 것
 - plans(읽기 전용, 시드: starter 1 · pro 3 — 가설)·subscriptions(서버만 씀)·accounts.connected_at·channel_slot_events(감사, 서버만 씀·본인 읽기) 신설. 새 테이블 RLS + 정책 + 인덱스 + 코멘트
 - 한도 검사 함수(private 본체 + public 래퍼, service_role만 EXECUTE): 슬롯 = 업로드용 accounts 중 토큰 보유 행 수, 한도 = included_channels + extra_channels. 구독 행이 없으면 기본 한도 적용

@@ -179,9 +179,13 @@ end $$;
 select pg_temp.expect_fail(format('select public.youtube_save_connection(%L, %L, %L, %L, %s)',
   '00000000-0000-4000-f022-00000000000a', '00000000-0000-4000-f022-00000000010a', 'UC-OTHER', 'rt-x', pg_temp.scopes()),
   'OA001', '다른 채널로 재연결');
-select pg_temp.expect_fail(format('select public.youtube_save_connection(%L, %L, %L, %L, %s)',
-  '00000000-0000-4000-f022-00000000000a', '00000000-0000-4000-f022-00000000020a', 'UC-A', 'rt-x', pg_temp.scopes()),
-  '23505', '같은 채널을 다른 계정에');
+do $$ begin
+  if public.youtube_save_connection('00000000-0000-4000-f022-00000000000a', '00000000-0000-4000-f022-00000000020a', 'UC-A', 'rt-x',
+       array['https://www.googleapis.com/auth/youtube.upload', 'https://www.googleapis.com/auth/youtube.readonly',
+             'https://www.googleapis.com/auth/yt-analytics.readonly']) <> 'CS003' then
+    raise exception 'FAIL: 같은 채널을 본인 다른 계정에(CS003, 20261113110000)';
+  end if;
+end $$;
 select pg_temp.expect_fail(format('select public.youtube_save_connection(%L, %L, %L, %L, %s)',
   '00000000-0000-4000-f022-00000000000b', '00000000-0000-4000-f022-00000000020b', 'UC-A', 'rt-x', pg_temp.scopes()),
   '23505', '같은 채널을 다른 사용자 계정에');

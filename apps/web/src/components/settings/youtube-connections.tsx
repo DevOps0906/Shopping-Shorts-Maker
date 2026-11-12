@@ -11,6 +11,8 @@ export type YoutubeAccountRow = {
   id: string;
   channel_name: string;
   status: "connected" | "reconnect_required" | string;
+  first_connected_at?: string | null;
+  disconnected_at?: string | null;
 };
 
 const RESULT_TEXT: Record<string, { tone: BannerTone; text: string }> = {
@@ -28,7 +30,26 @@ const RESULT_TEXT: Record<string, { tone: BannerTone; text: string }> = {
   too_many: { tone: "warning", text: "연결 요청이 너무 많습니다. 잠시 후 다시 시도하세요." },
   revoke_failed: { tone: "error", text: "Google 권한 폐기에 실패했습니다. 잠시 후 다시 시도하세요." },
   failed: { tone: "error", text: "연결 처리 중 문제가 생겼습니다. 다시 시도하세요." },
+  CS001: { tone: "warning", text: "채널 연결 한도를 모두 썼습니다. 다른 채널을 해제한 뒤 연결해 주세요." },
+  CS002: { tone: "warning", text: "최근 30일 동안 새 채널 연결 3회를 모두 썼습니다." },
+  CS003: { tone: "warning", text: "이미 등록한 채널입니다. 목록의 해당 채널에서 다시 연결해 주세요." },
 };
+
+/** 채널 한도 결과는 값이 붙어 온다(CS001:<한도> · CS002:<YYYY-MM-DD>). 쿼리 값이라 형식이 맞을 때만 문구에 넣는다 */
+function slotText(result: string): { tone: BannerTone; text: string } | undefined {
+  const [code, value = ""] = result.split(":", 2);
+  if (code === "CS001" && /^[1-9]\d?$/.test(value)) {
+    return { tone: "warning", text: `채널은 ${value}개까지 연결할 수 있습니다. 다른 채널을 해제한 뒤 연결해 주세요.` };
+  }
+  const date = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (code === "CS002" && date) {
+    return {
+      tone: "warning",
+      text: `최근 30일 동안 새 채널 연결 3회를 모두 썼습니다. ${date[1]}년 ${Number(date[2])}월 ${Number(date[3])}일부터 다시 연결할 수 있습니다.`,
+    };
+  }
+  return Object.hasOwn(RESULT_TEXT, code) ? RESULT_TEXT[code] : undefined;
+}
 
 export function YoutubeConnections({
   accounts,
@@ -39,7 +60,7 @@ export function YoutubeConnections({
   configured: boolean;
   result: string | null;
 }) {
-  const banner = result ? RESULT_TEXT[result] : undefined;
+  const banner = result ? slotText(result) : undefined;
   return (
     <section className="flex flex-col gap-4 rounded-card border border-line bg-white p-6 shadow-card">
       <h2 className="text-base font-bold">YouTube 연결</h2>
@@ -56,6 +77,8 @@ export function YoutubeConnections({
         <ul className="flex flex-col divide-y divide-line">
           {accounts.map((a) => {
             const connected = a.status === "connected";
+            // 토큰이 만료돼도 해제 전까지 슬롯을 차지한다(task-034a) → 해제 버튼으로 슬롯을 돌려줄 수 있어야 한다
+            const holdsSlot = Boolean(a.first_connected_at) && !a.disconnected_at;
             return (
               <li key={a.id} className="flex flex-col gap-2 py-3 md:flex-row md:items-center md:justify-between">
                 <div className="min-w-0">
@@ -75,7 +98,7 @@ export function YoutubeConnections({
                       설정 필요
                     </button>
                   )}
-                  {connected ? <DisconnectButton accountId={a.id} /> : null}
+                  {connected || holdsSlot ? <DisconnectButton accountId={a.id} /> : null}
                 </div>
               </li>
             );

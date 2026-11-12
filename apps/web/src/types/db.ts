@@ -14,7 +14,9 @@ export type Database = {
           category_id: string | null
           channel_name: string
           created_at: string
+          disconnected_at: string | null
           external_channel_id: string | null
+          first_connected_at: string | null
           id: string
           is_default: boolean
           last_bio_no: number
@@ -31,7 +33,9 @@ export type Database = {
           category_id?: string | null
           channel_name: string
           created_at?: string
+          disconnected_at?: string | null
           external_channel_id?: string | null
+          first_connected_at?: string | null
           id?: string
           is_default?: boolean
           last_bio_no?: number
@@ -47,7 +51,9 @@ export type Database = {
           category_id?: string | null
           channel_name?: string
           created_at?: string
+          disconnected_at?: string | null
           external_channel_id?: string | null
+          first_connected_at?: string | null
           id?: string
           is_default?: boolean
           last_bio_no?: number
@@ -270,6 +276,44 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      channel_slot_events: {
+        Row: {
+          account_id: string | null
+          channel_limit: number
+          created_at: string
+          id: string
+          kind: string
+          slots: number
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          account_id?: string | null
+          channel_limit: number
+          created_at?: string
+          id?: string
+          kind: string
+          slots: number
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          channel_limit?: number
+          created_at?: string
+          id?: string
+          kind?: string
+          slots?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_slot_events_account_id_fkey"
+            columns: ["account_id"]
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       chat_messages: {
         Row: {
@@ -1222,6 +1266,17 @@ export type Database = {
       assign_bio_number: {
         Args: { p_project_id: string; p_service: string }
         Returns: number
+      }
+      channel_slot_status: {
+        Args: { p_account_id?: string; p_user_id: string }
+        Returns: {
+          allowed: boolean
+          channel_limit: number
+          code: string
+          next_at: string
+          recent_new: number
+          slots: number
+        }[]
       }
       chat_consume_proposal: { Args: { p_proposal_id: string }; Returns: Json }
       chat_create_proposal: {

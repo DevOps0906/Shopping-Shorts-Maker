@@ -466,6 +466,7 @@ YouTube는 2025년 7월 파트너 프로그램의 "반복 콘텐츠" 기준을 "
 
 - 데이터 초안(마이그레이션은 task-034): plans(id text PK, included\_channels int, monthly\_credits int, extra\_channel\_price int null=[미정], 읽기 전용) · subscriptions(user\_id PK, plan\_id → plans, extra\_channels int ≥ 0, status, period\_end, 서버만 씀) · accounts.connected\_at(서버 전용) · channel\_slot\_events(감사 로그: id, user\_id, account\_id, event 연결·해제·한도 거부·요금제 변경, slots\_used, slot\_limit, created\_at, 서버만 씀·본인 읽기)
 - 금액은 정수(원)이고 구독 변경 요청에는 멱등 키를 둡니다(AGENTS.md 4장)
+- 베타 확정(task-034a, 2026-11-13): 기본 한도 1(`private.channel_quotas` 행 없음), 기존 계정은 마이그레이션 시점 연결 수를 한도로 인정, 지난 30일 새 채널 연결 3회까지(같은 채널 재연결 제외), 토큰 만료(invalid\_grant)는 슬롯을 유지하고 사용자 해제만 슬롯을 돌려줍니다. plans·subscriptions는 P1 결제 작업에서 만듭니다
 
 ## 13. 환경설정
 

@@ -18,7 +18,10 @@ export type OAuthStore = {
   createState(userId: string, accountId: string, stateHash: string, verifier: string): Promise<void>;
   /** 1회 소모. 없음·재사용·만료·다른 사용자는 null */
   consumeState(userId: string, stateHash: string): Promise<{ accountId: string; codeVerifier: string } | null>;
-  /** 반환: connected | reconnect_required. 오류 코드: 42501 · OA001(다른 채널) · OA002(범위) · 23505(다른 계정 채널) */
+  /**
+   * 반환: connected | reconnect_required. 오류 코드: 42501 · OA001(다른 채널) · OA002(범위) · 23505(다른 사용자 채널)
+   * · CS001(채널 한도) · CS002(30일 새 채널 3회) · CS003(본인 다른 계정에 있는 채널). CS 는 DB 가 이벤트를 남기려고 반환값으로 준다.
+   */
   saveConnection(input: {
     userId: string;
     accountId: string;
@@ -28,6 +31,8 @@ export type OAuthStore = {
   }): Promise<string>;
   /** userId 를 주면 소유자까지 확인한다(해제 경로) */
   getRefreshToken(accountId: string, userId?: string): Promise<string | null>;
+  /** 연결 사전 검사(20261113110000). 오류 코드: 42501(남의 계정) */
+  slotStatus(userId: string, accountId: string): Promise<SlotStatus>;
   /** Vault 삭제 + 재연결 필요(해제 경로) */
   clearToken(accountId: string, userId?: string): Promise<void>;
   /** access token 발급용: 소유자 확인(42501) + 토큰 버전(Vault secret id). 토큰 없으면 null */
@@ -35,6 +40,12 @@ export type OAuthStore = {
   /** invalid_grant: 그 버전이 아직 현재일 때만 재연결 필요·Vault 삭제. 반환 = 바꿨는지 */
   expireToken(accountId: string, ref: string): Promise<boolean>;
 };
+
+/** 채널 슬롯 판정. code: null(통과) | CS001(한도) | CS002(30일 새 채널 3회, nextAt = 다시 가능한 시각) */
+export type SlotStatus = { allowed: boolean; code: string | null; limit: number; nextAt: string | null };
+
+/** DB 가 반환값으로 알리는 거부 코드(youtube_save_connection) */
+const SLOT_REJECTIONS = new Set(["CS001", "CS002", "CS003"]);
 
 type RpcError = { code?: string } | null;
 
@@ -70,7 +81,9 @@ export function createOAuthStore(): OAuthStore {
         p_scopes: scopes,
       });
       check(error);
-      return String(data);
+      const status = String(data);
+      if (SLOT_REJECTIONS.has(status)) throw new OAuthStoreError(status);
+      return status;
     },
     async getRefreshToken(accountId, userId) {
       const { data, error } = await db.rpc("youtube_refresh_token", {
@@ -79,6 +92,13 @@ export function createOAuthStore(): OAuthStore {
       });
       check(error);
       return typeof data === "string" && data !== "" ? data : null;
+    },
+    async slotStatus(userId, accountId) {
+      const { data, error } = await db.rpc("channel_slot_status", { p_user_id: userId, p_account_id: accountId });
+      check(error);
+      const row = data?.[0];
+      if (!row) throw new OAuthStoreError("unknown");
+      return { allowed: row.allowed, code: row.code ?? null, limit: row.channel_limit, nextAt: row.next_at ?? null };
     },
     async clearToken(accountId, userId) {
       const { error } = await db.rpc("youtube_clear_token", {
