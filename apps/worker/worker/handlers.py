@@ -11,6 +11,7 @@ from __future__ import annotations
 import os
 
 from .jobs import Handler, JobContext
+from .sources.analyze import handle as select_sources
 
 STUB_SECONDS = float(os.environ.get("WORKER_STUB_SECONDS", "1"))
 
@@ -23,4 +24,5 @@ HANDLERS: dict[str, Handler] = {
     "render": _stub,
     "tts": _stub,
     "analyze": _stub,
+    "select_sources": select_sources,  # task-016: 02 소스 후보 일치도·점수·상위 20편(analyze 큐 공유)
 }
