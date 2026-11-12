@@ -17,6 +17,7 @@ export type Database = {
           external_channel_id: string | null
           id: string
           is_default: boolean
+          last_bio_no: number
           oauth_token_ref: string | null
           platform: string
           status: string
@@ -33,6 +34,7 @@ export type Database = {
           external_channel_id?: string | null
           id?: string
           is_default?: boolean
+          last_bio_no?: number
           oauth_token_ref?: string | null
           platform: string
           status?: string
@@ -48,6 +50,7 @@ export type Database = {
           external_channel_id?: string | null
           id?: string
           is_default?: boolean
+          last_bio_no?: number
           oauth_token_ref?: string | null
           platform?: string
           status?: string
@@ -1343,6 +1346,7 @@ export type Database = {
         }
         Returns: Json
       }
+      publish_recheck: { Args: { p_project_id: string }; Returns: Json }
       request_step_change: {
         Args: { p_project_id: string; p_step: number }
         Returns: Json

@@ -426,10 +426,14 @@ declare v_found text[]; v_expected text[] := array[
   -- 사용자 세션 Route Handler → public 래퍼 → private 본체(auth.uid() 검사)
   'authenticated private.add_direct_source(uuid,text,text,text)',
   'authenticated private.approve_step(uuid,integer)',
+  'authenticated private.assign_bio_number(uuid,text)',
   'authenticated private.chat_consume_proposal(uuid)',
   'authenticated private.chat_start_collect(uuid,text,text,text)',
+  'authenticated private.confirm_policy_check(uuid,text,boolean)',
   'authenticated private.create_job(uuid,text,text,jsonb)',
   'authenticated private.mark_step_ready(uuid,integer,text)',
+  'authenticated private.prepare_publication(uuid,text,timestamp with time zone,text,text,text[],boolean,boolean)',
+  'authenticated private.publish_policy(uuid,text,text,text[])',
   'authenticated private.request_step_change(uuid,integer)',
   'authenticated private.save_source_use(uuid,jsonb,boolean,text)',
   'authenticated private.set_source_checks(uuid,uuid[])',
@@ -439,7 +443,9 @@ declare v_found text[]; v_expected text[] := array[
   'service_role private.ext_claim_job(uuid,uuid)',
   'service_role private.ext_collect_download(uuid,uuid,jsonb)',
   'service_role private.ext_collect_list(uuid,uuid,jsonb)',
-  'service_role private.ext_heartbeat(uuid)'];
+  'service_role private.ext_heartbeat(uuid)',
+  -- 06 발행 업로드 직전 재판정(서버, service_role, task-024) → public.publish_recheck
+  'service_role private.publish_recheck(uuid)'];
 begin
   select coalesce(array_agg(x order by x), '{}') into v_found
   from (

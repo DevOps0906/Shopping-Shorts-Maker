@@ -8,6 +8,7 @@ import { isProjectId } from "@/lib/steps/project-id";
 import { type StepNumber, parseStepStatus } from "@/lib/steps/state";
 import { createClient } from "@/lib/supabase/server";
 import { EditStep } from "./edit/edit-step";
+import { PublishStep } from "./publish/publish-step";
 import { ScriptStep } from "./script/script-step";
 import { SourceStep } from "./source/source-step";
 import { TopicStep } from "./topic/topic-step";
@@ -24,6 +25,7 @@ const STEP_BODIES: Partial<Record<StepNumber, (props: { projectId: string }) => 
   3: ScriptStep,
   4: VoiceStep,
   5: EditStep,
+  6: PublishStep,
 };
 
 /** PostgREST 임베드는 관계에 따라 객체 또는 배열로 온다 */

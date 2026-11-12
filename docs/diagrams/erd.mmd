@@ -248,6 +248,28 @@ erDiagram
     timestamptz tested_at
     timestamptz created_at
   }
+  chat_proposals {
+    uuid id PK
+    uuid user_id FK
+    uuid project_id FK
+    text tool
+    jsonb args
+    text args_hash
+    jsonb input_version
+    timestamptz expires_at
+    timestamptz consumed_at
+    timestamptz created_at
+  }
+  oauth_states {
+    text state_hash PK
+    uuid user_id FK
+    uuid account_id
+    text provider
+    text code_verifier
+    timestamptz expires_at
+    timestamptz used_at
+    timestamptz created_at
+  }
   categories ||--o{ trend_items : "category_id"
   categories ||--o{ accounts : "category_id"
   categories ||--o{ projects : "category_id"
@@ -272,5 +294,7 @@ erDiagram
   projects ||--o{ bio_items : "project_id"
   affiliate_links ||--o{ bio_items : "affiliate_link_id"
   affiliate_links ||--o{ link_clicks : "affiliate_link_id"
+  projects ||--o{ chat_proposals : "project_id"
+  accounts ||--o{ oauth_states : "account_id"
   jobs ||--o{ voice_takes : "job_id"
   jobs ||--o{ renders : "job_id"
