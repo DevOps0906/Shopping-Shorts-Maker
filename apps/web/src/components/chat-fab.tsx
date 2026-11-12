@@ -8,7 +8,7 @@ export function ChatFab() {
       type="button"
       aria-label="제작 파트너 (준비 중)"
       aria-disabled="true"
-      className="fixed right-(--fab-inset) bottom-(--fab-inset) z-50 flex h-(--fab-size) min-w-(--fab-size) cursor-not-allowed items-center justify-center gap-2 rounded-pill bg-accent px-3.5 text-sm font-bold text-white shadow-fab tablet:pr-5 tablet:pl-4"
+      className="fixed right-(--fab-inset) bottom-(--fab-inset) z-(--z-fab) flex h-(--fab-size) min-w-(--fab-size) cursor-not-allowed items-center justify-center gap-2 rounded-pill bg-accent px-3.5 text-sm font-bold text-white shadow-fab tablet:pr-5 tablet:pl-4"
     >
       <svg
         viewBox="0 0 24 24"

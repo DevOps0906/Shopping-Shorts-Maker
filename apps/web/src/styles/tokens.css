@@ -71,6 +71,17 @@
   --content-max: 1360px;
   --fab-inset: 24px;
   --fab-size: 56px;
+
+  /* 피드백·오버레이 — docs/ui-feedback.md 3-5 */
+  --toast-gap: 8px;
+  --toast-max-w: 480px;
+  --scrim: rgb(31 27 46 / 0.48); /* --ink 기반 */
+  --z-fab: 40;
+  --z-popover: 50;
+  --z-overlay: 60; /* 드로어·시트·모달 */
+  --z-toast: 70;
+  --motion-fast: 220ms; /* design.md 6장 0.22초 */
+  --partner-w: 400px; /* 제작 파트너 팝업 폭 — design.md 3장 */
 }
 
 /* 태블릿 768~1199 */
@@ -83,6 +94,7 @@
     --content-px: 24px;
     --content-pb: 104px;
     --fab-inset: 20px;
+    --partner-w: 380px;
   }
 }
 

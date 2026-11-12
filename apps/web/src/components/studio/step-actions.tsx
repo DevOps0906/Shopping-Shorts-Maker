@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { approveStep, requestStepChange } from "@/app/(dashboard)/studio/actions";
+import { InlineBanner, useFeedback } from "@/components/feedback";
 import { cn } from "@/lib/utils";
 import { STUDIO_STEPS } from "@/lib/routes";
 import {
@@ -32,6 +33,10 @@ type StepActionsProps = {
   onStatusChange: (status: StepStatusMap) => void;
 };
 
+const stepName = (n: number) => `${String(n).padStart(2, "0")} ${STUDIO_STEPS[n - 1].label}`;
+/** 받침 있으면 "을", 없으면 "를" */
+const withObject = (word: string) => word + ((word.charCodeAt(word.length - 1) - 0xac00) % 28 > 0 ? "을" : "를");
+
 function approveHint(status: StepStatusMap, step: StepNumber) {
   if (status[step] === "approved") return null;
   for (let n = 1; n < step; n++) {
@@ -44,7 +49,7 @@ function approveHint(status: StepStatusMap, step: StepNumber) {
 export function StepActions({ projectId, step, status, onStatusChange }: StepActionsProps) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [confirmReset, setConfirmReset] = useState(false);
+  const feedback = useFeedback();
 
   const state = status[step];
   const approvable = step <= LAST_APPROVABLE_STEP;
@@ -53,17 +58,31 @@ export function StepActions({ projectId, step, status, onStatusChange }: StepAct
 
   function run(action: typeof approveStep) {
     setError(null);
-    setConfirmReset(false);
     startTransition(async () => {
       const result = await action(projectId, step);
-      if (result.ok) onStatusChange(result.status);
-      else setError(result.error);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      onStatusChange(result.status);
+      // docs/ui-feedback.md 2장 #1: 승인 완료 토스트(4초)
+      if (action === approveStep) feedback.toast({ message: `${withObject(stepName(step))} 승인했습니다`, tone: "success" });
     });
   }
 
-  function onChangeClick() {
-    if (resets.length > 0) setConfirmReset(true);
-    else run(requestStepChange);
+  async function onChangeClick() {
+    // docs/ui-feedback.md 2장 #2: 뒤 단계 초기화는 알림 대화상자(첫 포커스 취소)
+    if (resets.length > 0) {
+      const range = resets.length > 1 ? `${stepName(resets[0])}~${stepName(resets[resets.length - 1])}` : stepName(resets[0]);
+      const ok = await feedback.confirm({
+        title: `${withObject(stepName(step))} 다시 열까요?`,
+        description: `${range} 결과가 초기화됩니다. 진행 중인 작업도 취소됩니다.`,
+        confirmLabel: "다시 열기",
+        danger: true,
+      });
+      if (!ok) return;
+    }
+    run(requestStepChange);
   }
 
   const nextStep = step < STUDIO_STEPS.length ? STUDIO_STEPS[step as Exclude<StepNumber, 6>] : null;
@@ -106,31 +125,7 @@ export function StepActions({ projectId, step, status, onStatusChange }: StepAct
         </div>
         {hint ? <p className="text-xs text-muted">{hint}</p> : null}
 
-        {confirmReset ? (
-          <div role="alertdialog" aria-labelledby="reset-title" className="rounded-btn border border-warning-fg bg-warning-bg p-3.5 text-warning-fg">
-            <p id="reset-title" className="text-sm font-bold">
-              뒤 단계가 처음으로 돌아갑니다
-            </p>
-            <p className="mt-1 text-sm">
-              {resets.map((n) => `${String(n).padStart(2, "0")} ${STUDIO_STEPS[n - 1].label}`).join(" · ")} 단계의 결과가
-              비워지고 대기로 바뀝니다. 진행 중인 작업도 취소됩니다.
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button type="button" onClick={() => run(requestStepChange)} disabled={pending} className={cn(btnClass, btnPrimaryClass)}>
-                초기화하고 변경 요청
-              </button>
-              <button type="button" onClick={() => setConfirmReset(false)} disabled={pending} className={btnClass}>
-                취소
-              </button>
-            </div>
-          </div>
-        ) : null}
-
-        {error ? (
-          <p role="alert" className="rounded-btn bg-danger-bg px-3.5 py-2.5 text-sm text-danger-fg">
-            {error}
-          </p>
-        ) : null}
+        {error ? <InlineBanner tone="error">{error}</InlineBanner> : null}
       </section>
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">

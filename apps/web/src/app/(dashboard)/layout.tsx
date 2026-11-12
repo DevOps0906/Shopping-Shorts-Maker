@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { ChatFab } from "@/components/chat-fab";
+import { FeedbackProvider } from "@/components/feedback";
 import { Gnb } from "@/components/gnb";
 import { LOGIN_PATH } from "@/lib/supabase/paths";
 import { createClient } from "@/lib/supabase/server";
@@ -11,12 +12,14 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
   if (!data?.claims) redirect(LOGIN_PATH);
 
   return (
-    <div className="min-h-screen">
-      <Gnb />
-      <main className="ml-(--gnb-w) min-w-0 px-(--content-px) pt-(--content-pt) pb-(--content-pb)">
-        {children}
-      </main>
-      <ChatFab />
-    </div>
+    <FeedbackProvider>
+      <div className="min-h-screen">
+        <Gnb />
+        <main className="ml-(--gnb-w) min-w-0 px-(--content-px) pt-(--content-pt) pb-(--content-pb)">
+          {children}
+        </main>
+        <ChatFab />
+      </div>
+    </FeedbackProvider>
   );
 }
