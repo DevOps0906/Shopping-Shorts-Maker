@@ -48,6 +48,7 @@
 | `docs/03_SCREENS_UX.md` · `design/spec.json` | 화면 표 S-01~S-16 · 화면별 사양(`spec <ID>`로 조회) |
 | `docs/diagrams/*.mmd` | 구조도 · 흐름도 · ERD (Mermaid) |
 | `docs/design.md` · `design/prototype/` | 디자인 시안 · 토큰 (`apps/web` 생성 후 토큰 파일이 정답) |
+| `docs/ui-feedback.md` | 토스트·스낵바·대화상자 등 피드백 패턴 사용 기준 |
 | `tasks/README.md` · `tasks/NOW.md` | 작업 표 · 현재 상태 |
 
 ## 6. 작업 방식

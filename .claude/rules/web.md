@@ -7,3 +7,4 @@ paths:
 - 화면은 `DESIGN.md`와 `src/styles/tokens.css`(정답)를 따른다. 근거는 `spec <화면 ID>` + `design/wireframes/<ID>.html`(기획 문서 통독 금지).
 - 상태(빈·로딩·오류·성공)를 spec대로 모두 구현하고, `shot <URL>`로 3구간(~767 / 768~1199 / 1200~)을 확인한다.
 - 서버 전용 코드는 `src/server/**`에만. 브라우저에서 LLM·결제·service_role을 직접 부르지 않는다.
+- 토스트·스낵바·대화상자·모달·배너는 `docs/ui-feedback.md` 기준대로 `@/components/feedback`(`useFeedback()`·`InlineBanner`)만 쓴다. 직접 만들지 않는다.
