@@ -1,14 +1,17 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "@/app/(auth)/actions";
 import { cn } from "@/lib/utils";
 import { SETTINGS_TABS, STUDIO_STEPS } from "@/lib/routes";
+import { createClient } from "@/lib/supabase/client";
 
 /*
  * 좌측 GNB — 구조 정본: docs/design.md 4장, 시각 참고: design/prototype/Main.dc.html .gnb
  * 기본 클래스 = 모바일 아이콘 레일, tablet: 이상 = 라벨이 있는 세로 메뉴. 폭은 --gnb-w 토큰.
- * 프로젝트 개수·채널 목록·프로필·크레딧·로그아웃은 데이터·인증 연동 작업에서 채운다.
+ * 프로젝트 개수·채널 목록·크레딧은 데이터 연동 작업에서 채운다. 프로필(이메일)·로그아웃은 task-009.
  */
 
 const ICONS = {
@@ -122,8 +125,26 @@ function SubMenu({ label, items }: { label: string; items: SubItem[] }) {
   );
 }
 
+/** 프로필 영역 표시용 이메일. 접근 제어는 proxy가 하므로 여기서는 보여 주기만 한다. */
+function useUserEmail() {
+  const [email, setEmail] = useState<string | null>(null);
+  useEffect(() => {
+    let active = true;
+    createClient()
+      .auth.getUser()
+      .then(({ data }) => {
+        if (active) setEmail(data.user?.email ?? null);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+  return email;
+}
+
 export function Gnb() {
   const pathname = usePathname();
+  const email = useUserEmail();
   const segments = pathname.split("/").filter(Boolean);
   const startsWith = (prefix: string) => pathname === prefix || pathname.startsWith(`${prefix}/`);
 
@@ -227,20 +248,22 @@ export function Gnb() {
           className="flex size-9.5 shrink-0 items-center justify-center rounded-full bg-avatar-bg text-sm font-bold text-nav-on-ink"
           aria-hidden="true"
         >
-          ?
+          {email ? email[0].toUpperCase() : "?"}
         </span>
         <span className="hidden min-w-0 flex-1 tablet:block">
           <b className="block text-sm">프로필</b>
-          <span className="text-xs text-muted">로그인 후 표시</span>
+          <span className="block truncate text-xs text-muted">{email ?? "불러오는 중…"}</span>
         </span>
-        <button
-          type="button"
-          aria-label="로그아웃 (준비 중)"
-          aria-disabled="true"
-          className="flex size-11 cursor-not-allowed items-center justify-center rounded-btn text-muted"
-        >
-          <Icon d={ICONS.logout} className="size-4.5" />
-        </button>
+        <form action={signOut}>
+          <button
+            type="submit"
+            aria-label="로그아웃"
+            title="로그아웃"
+            className="flex size-11 items-center justify-center rounded-btn text-muted transition-colors hover:bg-nav-hover hover:text-nav-on-ink"
+          >
+            <Icon d={ICONS.logout} className="size-4.5" />
+          </button>
+        </form>
       </div>
     </nav>
   );

@@ -29,6 +29,10 @@ services:
     healthcheck:
       start_period: 60s
       start_interval: 5s
+    environment:
+      # task-009 잠정 비밀번호 정책(최소 8자, 문자 종류 조건 없음). 확정은 팀장 결정.
+      GOTRUE_PASSWORD_MIN_LENGTH: 8
+      # 메일 자동 확인은 base의 ENABLE_EMAIL_AUTOCONFIRM(.env)을 그대로 쓴다: 개발 true, 운영 false.
 
   rest:
     image: postgrest/postgrest:v14.18@sha256:c7cd7e265a85b05248abf53f4473fcec7e327c282d0bd0cf60f1551996d09fcf
