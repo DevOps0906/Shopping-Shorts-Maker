@@ -426,11 +426,15 @@ declare v_found text[]; v_expected text[] := array[
   -- 사용자 세션 Route Handler → public 래퍼 → private 본체(auth.uid() 검사)
   'authenticated private.add_direct_source(uuid,text,text,text)',
   'authenticated private.approve_step(uuid,integer)',
+  'authenticated private.chat_consume_proposal(uuid)',
+  'authenticated private.chat_start_collect(uuid,text,text,text)',
   'authenticated private.create_job(uuid,text,text,jsonb)',
   'authenticated private.mark_step_ready(uuid,integer,text)',
   'authenticated private.request_step_change(uuid,integer)',
   'authenticated private.save_source_use(uuid,jsonb,boolean,text)',
   'authenticated private.set_source_checks(uuid,uuid[])',
+  -- 제작 파트너 Route Handler(서버, service_role) → 제안 저장
+  'service_role private.chat_create_proposal(uuid,uuid,text,jsonb)',
   -- 확장 Route Handler(서버, service_role) → public.extension_* 래퍼
   'service_role private.ext_claim_job(uuid,uuid)',
   'service_role private.ext_collect_download(uuid,uuid,jsonb)',
@@ -454,7 +458,7 @@ begin
   if v_found is distinct from (select array_agg(e order by e) from unnest(v_expected) e) then
     raise exception 'FAIL: private 실행 권한이 목록과 다름: %', v_found;
   end if;
-  raise notice 'PASS 12 private 함수 실행 권한 = 의도된 예외 11건만(PUBLIC·anon 0건)';
+  raise notice 'PASS 12 private 함수 실행 권한 = 의도된 예외 목록만(PUBLIC·anon 0건)';
 end $$;
 
 rollback;

@@ -14,6 +14,7 @@ export type Database = {
           category_id: string | null
           channel_name: string
           created_at: string
+          external_channel_id: string | null
           id: string
           is_default: boolean
           oauth_token_ref: string | null
@@ -29,6 +30,7 @@ export type Database = {
           category_id?: string | null
           channel_name: string
           created_at?: string
+          external_channel_id?: string | null
           id?: string
           is_default?: boolean
           oauth_token_ref?: string | null
@@ -43,6 +45,7 @@ export type Database = {
           category_id?: string | null
           channel_name?: string
           created_at?: string
+          external_channel_id?: string | null
           id?: string
           is_default?: boolean
           oauth_token_ref?: string | null
@@ -303,6 +306,53 @@ export type Database = {
           },
         ]
       }
+      chat_proposals: {
+        Row: {
+          args: NonNullable<Json>
+          args_hash: string
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          input_version: NonNullable<Json>
+          project_id: string
+          tool: string
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          args: NonNullable<Json>
+          args_hash: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          input_version: NonNullable<Json>
+          project_id: string
+          tool: string
+          user_id: string
+        }
+        Update: {
+          args?: NonNullable<Json>
+          args_hash?: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          input_version?: NonNullable<Json>
+          project_id?: string
+          tool?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_proposals_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       credit_ledger: {
         Row: {
           created_at: string
@@ -496,6 +546,47 @@ export type Database = {
           },
         ]
       }
+      oauth_states: {
+        Row: {
+          account_id: string
+          code_verifier: string
+          created_at: string
+          expires_at: string
+          provider: string
+          state_hash: string
+          used_at: string | null
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          account_id: string
+          code_verifier: string
+          created_at?: string
+          expires_at?: string
+          provider?: string
+          state_hash: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          code_verifier?: string
+          created_at?: string
+          expires_at?: string
+          provider?: string
+          state_hash?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oauth_states_account_id_user_id_fkey"
+            columns: ["account_id", "user_id"]
+            referencedRelation: "accounts"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
       policy_checks: {
         Row: {
           checked_at: string | null
@@ -634,43 +725,61 @@ export type Database = {
       publications: {
         Row: {
           account_id: string
+          body: string | null
           created_at: string
+          description: string | null
           error: string | null
+          hashtags: string[]
           id: string
           mode: string
+          pin_comment: boolean
           platform_video_id: string | null
+          prepared_at: string | null
           project_id: string
           published_at: string | null
           retry_count: number
           scheduled_at: string | null
           status: string
+          title: string | null
         }
         ComputedFields: never
         Insert: {
           account_id: string
+          body?: string | null
           created_at?: string
+          description?: string | null
           error?: string | null
+          hashtags?: string[]
           id?: string
           mode: string
+          pin_comment?: boolean
           platform_video_id?: string | null
+          prepared_at?: string | null
           project_id: string
           published_at?: string | null
           retry_count?: number
           scheduled_at?: string | null
           status?: string
+          title?: string | null
         }
         Update: {
           account_id?: string
+          body?: string | null
           created_at?: string
+          description?: string | null
           error?: string | null
+          hashtags?: string[]
           id?: string
           mode?: string
+          pin_comment?: boolean
           platform_video_id?: string | null
+          prepared_at?: string | null
           project_id?: string
           published_at?: string | null
           retry_count?: number
           scheduled_at?: string | null
           status?: string
+          title?: string | null
         }
         Relationships: [
           {
@@ -1098,6 +1207,33 @@ export type Database = {
         Args: { p_project_id: string; p_step: number }
         Returns: Json
       }
+      assign_bio_number: {
+        Args: { p_project_id: string; p_service: string }
+        Returns: number
+      }
+      chat_consume_proposal: { Args: { p_proposal_id: string }; Returns: Json }
+      chat_create_proposal: {
+        Args: {
+          p_args: Json
+          p_project_id: string
+          p_tool: string
+          p_user_id: string
+        }
+        Returns: string
+      }
+      chat_start_collect: {
+        Args: {
+          p_idempotency_key: string
+          p_platform: string
+          p_project_id: string
+          p_query: string
+        }
+        Returns: Json
+      }
+      confirm_policy_check: {
+        Args: { p_checked: boolean; p_item: string; p_project_id: string }
+        Returns: undefined
+      }
       create_job: {
         Args: {
           p_idempotency_key: string
@@ -1169,6 +1305,44 @@ export type Database = {
         Args: { p_project_id: string; p_status: string; p_step: number }
         Returns: Json
       }
+      oauth_state_consume: {
+        Args: { p_state_hash: string; p_user_id: string }
+        Returns: {
+          account_id: string
+          code_verifier: string
+        }[]
+      }
+      oauth_state_create: {
+        Args: {
+          p_account_id: string
+          p_state_hash: string
+          p_user_id: string
+          p_verifier: string
+        }
+        Returns: undefined
+      }
+      prepare_publication: {
+        Args: {
+          p_body: string
+          p_hashtags: string[]
+          p_mode: string
+          p_pin_comment: boolean
+          p_project_id: string
+          p_purchase_guide: boolean
+          p_scheduled_at: string
+          p_title: string
+        }
+        Returns: Json
+      }
+      publish_policy: {
+        Args: {
+          p_body: string
+          p_hashtags: string[]
+          p_project_id: string
+          p_title: string
+        }
+        Returns: Json
+      }
       request_step_change: {
         Args: { p_project_id: string; p_step: number }
         Returns: Json
@@ -1185,6 +1359,24 @@ export type Database = {
       set_source_checks: {
         Args: { p_project_id: string; p_source_ids: string[] }
         Returns: number
+      }
+      youtube_clear_token: {
+        Args: { p_account_id: string; p_user_id?: string }
+        Returns: undefined
+      }
+      youtube_refresh_token: {
+        Args: { p_account_id: string; p_user_id?: string }
+        Returns: string
+      }
+      youtube_save_connection: {
+        Args: {
+          p_account_id: string
+          p_channel_id: string
+          p_refresh_token: string
+          p_scopes: string[]
+          p_user_id: string
+        }
+        Returns: string
       }
     }
     Enums: {
