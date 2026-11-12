@@ -1,5 +1,6 @@
 "use client";
 
+import { createContext, useContext } from "react";
 import { cn } from "@/lib/utils";
 import { STUDIO_STEPS } from "@/lib/routes";
 import { STEP_PILL, stepBanner } from "@/lib/steps/banner";
@@ -18,6 +19,25 @@ const STEP_COPY: Record<StepNumber, { title: string; description: string }> = {
   5: { title: "편집하기", description: "원본 컷을 대사에 맞춰 이어 붙이고 MP4로 출력합니다." },
   6: { title: "발행하기", description: "제휴 링크를 붙이고 권리·정책 점검을 마친 뒤 채널에 올리거나 예약합니다." },
 };
+
+/**
+ * 단계별 본문 슬롯 — page.tsx가 단계 번호로 고른 본문(children)이 실시간 단계 상태를 읽고,
+ * 저장 뒤 서버가 돌려준 상태를 바로 반영할 때 쓴다. 승인·변경은 여기서 하지 않는다(StepActions만).
+ */
+type StudioStepContextValue = {
+  projectId: string;
+  step: StepNumber;
+  status: StepStatusMap;
+  setStatus: (status: StepStatusMap) => void;
+};
+
+const StudioStepContext = createContext<StudioStepContextValue | null>(null);
+
+export function useStudioStep(): StudioStepContextValue {
+  const value = useContext(StudioStepContext);
+  if (!value) throw new Error("useStudioStep은 StudioStepView 안에서만 쓸 수 있습니다.");
+  return value;
+}
 
 type StudioStepViewProps = {
   projectId: string;
@@ -68,7 +88,7 @@ export function StudioStepView({ projectId, step, initialStatus, runningStartedA
         </span>
       </div>
 
-      {children}
+      <StudioStepContext value={{ projectId, step, status, setStatus }}>{children}</StudioStepContext>
 
       <StepActions projectId={projectId} step={step} status={status} onStatusChange={setStatus} />
     </>

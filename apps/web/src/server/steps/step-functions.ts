@@ -20,6 +20,8 @@ function toMessage(code: string | undefined) {
       return "단계 상태가 이미 바뀌었습니다. 화면의 최신 상태를 확인한 뒤 다시 시도해 주세요.";
     case "22023":
       return "이 단계에서는 할 수 없는 동작입니다.";
+    case "BT001":
+      return "대본에 금지 표현이 있어 승인할 수 없습니다. 표시된 문장을 고친 뒤 다시 승인해 주세요.";
     default:
       return "요청을 처리하지 못했습니다. 잠시 뒤 다시 시도해 주세요.";
   }

@@ -7,9 +7,17 @@ import { findStudioStep } from "@/lib/routes";
 import { isProjectId } from "@/lib/steps/project-id";
 import { type StepNumber, parseStepStatus } from "@/lib/steps/state";
 import { createClient } from "@/lib/supabase/server";
+import { ScriptStep } from "./script/script-step";
+import { TopicStep } from "./topic/topic-step";
 
 type StudioStepPageProps = {
   params: Promise<{ projectId: string; step: string }>;
+};
+
+/** 단계별 본문 슬롯 — 단계 번호 → 서버 본문 로더. 본문이 없는 단계는 준비 중 안내 */
+const STEP_BODIES: Partial<Record<StepNumber, (props: { projectId: string }) => Promise<React.ReactNode>>> = {
+  1: TopicStep,
+  3: ScriptStep,
 };
 
 /** PostgREST 임베드는 관계에 따라 객체 또는 배열로 온다 */
@@ -74,6 +82,8 @@ export default async function StudioStepPage({ params }: StudioStepPageProps) {
     runningStartedAt = typeof started === "string" ? started : null;
   }
 
+  const StepBody = STEP_BODIES[stepNumber];
+
   return (
     <div className="mx-auto flex max-w-(--content-max) flex-col gap-4">
       <PageHeader eyebrow="PRODUCTION" title={title} />
@@ -90,9 +100,13 @@ export default async function StudioStepPage({ params }: StudioStepPageProps) {
         initialStatus={status}
         runningStartedAt={runningStartedAt}
       >
-        <section className="rounded-card border border-line bg-white p-6 shadow-card">
-          <p className="text-sm text-muted">이 단계의 작업 화면은 준비 중입니다.</p>
-        </section>
+        {StepBody ? (
+          <StepBody projectId={projectId} />
+        ) : (
+          <section className="rounded-card border border-line bg-white p-6 shadow-card">
+            <p className="text-sm text-muted">이 단계의 작업 화면은 준비 중입니다.</p>
+          </section>
+        )}
       </StudioStepView>
     </div>
   );
