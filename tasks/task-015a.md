@@ -30,7 +30,11 @@
 - 적용된 마이그레이션 수정(새 파일만), 권리 열(`rights_*`) 변경, 반응 지표 열 추가(점수표 반응 10% 저장 여부는 `팀장 결정 필요`)
 
 ## 완료 조건 (실행 가능한 확인)
-- [ ] `supabase db reset` 후 `supabase/tests/extension_collect.sql` 통과: 하트비트 끊김 → waiting_extension(진행분 행 유지) · waiting_since 24시간 → failed · 재claim → running
-- [ ] claim: 남의 job·폐기된 확장·이미 running → 0행
-- [ ] 수집 입력: 호스트 위장 platform·userinfo URL·handle 불일치·제어/양방향 문자·허용 외 키·과다 행 → 거부, collected_at은 서버 시각, 3필드(URL·작성자·수집 시각) 누락 0건
-- [ ] 모든 새 함수 anon·authenticated 실행 권한 없음, 새 테이블·열 RLS 유지, `sql2erd` 갱신
+- [x] `supabase db reset` 후 `supabase/tests/extension_collect.sql` 통과: 하트비트 끊김 → waiting_extension(진행분 행 유지) · waiting_since 24시간 → failed · 재claim → running
+- [x] claim: 남의 job·폐기된 확장·이미 running → 0행
+- [x] 수집 입력: 호스트 위장 platform·userinfo URL·handle 불일치·제어/양방향 문자·허용 외 키·과다 행 → 거부, collected_at은 서버 시각, 3필드(URL·작성자·수집 시각) 누락 0건
+- [x] 모든 새 함수 anon·authenticated 실행 권한 없음, 새 테이블·열 RLS 유지, `sql2erd` 갱신
+
+
+## 후속(2026-11-12 보안 재리뷰 🟡)
+- 직접 추가(add_direct_source, 원문 URL 비교)와 수집 경로(정규화 URL 비교)의 중복 판정이 달라 같은 영상이 두 행으로 들어갈 수 있다 → 새 마이그레이션에서 두 경로 정규화 통일·기존 충돌 정리·프로젝트별 유일 인덱스(015b 착수 전)
