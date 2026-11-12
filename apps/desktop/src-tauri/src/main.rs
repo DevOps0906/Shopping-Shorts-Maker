@@ -5,9 +5,11 @@
 use tauri::webview::NewWindowResponse;
 use tauri::{Url, WebviewUrl, WebviewWindowBuilder};
 
+#[cfg(debug_assertions)]
 const DEFAULT_WEB_URL: &str = "http://localhost:3000";
 
-/// 실행 시 `APP_WEB_URL` > 빌드 시 `APP_WEB_URL` > 개발 기본값 순서로 고른다.
+/// 개발 빌드: 실행 시 `APP_WEB_URL` > 빌드 시 `APP_WEB_URL` > http://localhost:3000.
+#[cfg(debug_assertions)]
 fn app_web_url() -> Url {
     let raw = std::env::var("APP_WEB_URL")
         .ok()
@@ -18,6 +20,16 @@ fn app_web_url() -> Url {
         matches!(url.scheme(), "http" | "https"),
         "APP_WEB_URL은 http(s) 절대 주소여야 합니다"
     );
+    url
+}
+
+/// 릴리스 빌드: 빌드 시 `APP_WEB_URL`(https 운영 주소)만 쓴다. 실행 환경변수로 덮어쓸 수 없고 기본값도 없다.
+#[cfg(not(debug_assertions))]
+fn app_web_url() -> Url {
+    let raw = option_env!("APP_WEB_URL")
+        .expect("릴리스 빌드에는 APP_WEB_URL(https 운영 주소)을 지정해야 합니다");
+    let url = Url::parse(raw).expect("APP_WEB_URL은 https 절대 주소여야 합니다");
+    assert!(url.scheme() == "https", "릴리스 빌드의 APP_WEB_URL은 https만 허용합니다");
     url
 }
 
@@ -40,7 +52,7 @@ fn main() {
                 .inner_size(1280.0, 800.0)
                 .min_inner_size(1200.0, 720.0)
                 .on_navigation(move |url| {
-                    if url.origin() == nav_origin || url.scheme() == "about" {
+                    if url.origin() == nav_origin || url.as_str() == "about:blank" {
                         return true;
                     }
                     open_external(url);

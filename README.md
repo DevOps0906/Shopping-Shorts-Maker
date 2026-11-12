@@ -206,7 +206,7 @@ pnpm tauri dev                               # 개발: http://localhost:3000 을
 pnpm tauri build                             # 설치 파일: Windows .msi/.exe · macOS .dmg (W7에서 번들 설정 후)
 ```
 
-- 앱이 열 주소는 `APP_WEB_URL` 환경 변수로 바꿉니다(기본 개발 `http://localhost:3000`, 배포 빌드는 운영 주소).
+- 앱이 열 주소: 개발 실행(`pnpm tauri dev`)은 `APP_WEB_URL` 환경 변수(없으면 `http://localhost:3000`). 릴리스 빌드는 **빌드할 때** `APP_WEB_URL=https://운영주소 pnpm tauri build`로 https 주소를 넣어야 하며, 실행 중에는 바꿀 수 없습니다.
 - 창 최소 크기는 1200px(데스크톱 구간)입니다. 외부 링크는 시스템 브라우저로 열립니다.
 - 배포용 코드 서명·공증 인증서와 자동 업데이트 서명 키는 CI 비밀에만 둡니다(저장소에 넣지 않음).
 
