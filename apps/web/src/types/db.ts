@@ -1364,6 +1364,10 @@ export type Database = {
         Args: { p_account_id: string; p_user_id?: string }
         Returns: undefined
       }
+      youtube_expire_token: {
+        Args: { p_account_id: string; p_token_ref: string }
+        Returns: boolean
+      }
       youtube_refresh_token: {
         Args: { p_account_id: string; p_user_id?: string }
         Returns: string
@@ -1377,6 +1381,13 @@ export type Database = {
           p_user_id: string
         }
         Returns: string
+      }
+      youtube_token_for: {
+        Args: { p_account_id: string; p_user_id: string }
+        Returns: {
+          refresh_token: string
+          token_ref: string
+        }[]
       }
     }
     Enums: {
