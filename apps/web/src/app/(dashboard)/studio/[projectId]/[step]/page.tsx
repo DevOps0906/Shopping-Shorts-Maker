@@ -8,6 +8,7 @@ import { isProjectId } from "@/lib/steps/project-id";
 import { type StepNumber, parseStepStatus } from "@/lib/steps/state";
 import { createClient } from "@/lib/supabase/server";
 import { ScriptStep } from "./script/script-step";
+import { SourceStep } from "./source/source-step";
 import { TopicStep } from "./topic/topic-step";
 
 type StudioStepPageProps = {
@@ -17,6 +18,7 @@ type StudioStepPageProps = {
 /** 단계별 본문 슬롯 — 단계 번호 → 서버 본문 로더. 본문이 없는 단계는 준비 중 안내 */
 const STEP_BODIES: Partial<Record<StepNumber, (props: { projectId: string }) => Promise<React.ReactNode>>> = {
   1: TopicStep,
+  2: SourceStep,
   3: ScriptStep,
 };
 

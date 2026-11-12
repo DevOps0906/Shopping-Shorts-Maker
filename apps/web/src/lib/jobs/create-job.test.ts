@@ -26,6 +26,16 @@ describe("createJob", () => {
     });
   });
 
+  it("02 원본 선정(select_sources)도 같은 함수로 만든다", async () => {
+    const supabase = client({
+      data: { id: "j2", project_id: "p1", step: 2, type: "select_sources", status: "queued", created: true },
+      error: null,
+    });
+    const result = await createJob(supabase, { projectId: "p1", type: "select_sources", idempotencyKey: "select-p1-0001" });
+    expect(supabase.rpc).toHaveBeenCalledWith("create_job", expect.objectContaining({ p_type: "select_sources" }));
+    expect(result).toMatchObject({ ok: true, job: { step: 2, type: "select_sources", created: true } });
+  });
+
   it("잔액 부족(CR001)이면 필요·잔액 크레딧을 돌려준다", async () => {
     const supabase = client({
       data: null,

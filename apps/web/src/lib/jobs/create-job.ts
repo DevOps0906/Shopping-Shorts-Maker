@@ -4,13 +4,13 @@ import type { Database, Json } from "@/types/db";
  * 작업 생성(docs/planning.md 17-5, ADR-0001). Route Handler·서버 액션에서 **사용자 세션 클라이언트**
  * (`@/lib/supabase/server`의 createClient)로 부른다. service_role 로 부르면 auth.uid()가 없어 거부된다.
  * - 같은 idempotencyKey 면 기존 작업을 돌려준다(created: false). 키는 버튼을 누를 때 한 번 만들어 재시도에 그대로 쓴다.
- * - 단계는 DB가 종류로 정한다(collect 02 · analyze 03 · tts 04 · render 05). 앞 단계 미승인·이미 승인이면 step_not_ready.
+ * - 단계는 DB가 종류로 정한다(collect·select_sources 02 · analyze 03 · tts 04 · render 05). 앞 단계 미승인·이미 승인이면 step_not_ready.
  * - 같은 키를 다른 프로젝트·종류에 쓰면 conflict. 키는 사용자 단위로 유일하다.
  * - 예상 크레딧은 DB(private.job_cost)가 정한다. 잔액이 부족하면 작업을 만들지 않고 필요·잔액을 돌려준다.
  */
 type CreateJobArgs = Database["public"]["Functions"]["create_job"]["Args"];
 
-export type JobType = "render" | "tts" | "analyze" | "collect";
+export type JobType = "render" | "tts" | "analyze" | "collect" | "select_sources";
 export type JobStatus = "queued" | "waiting_extension" | "running" | "succeeded" | "failed" | "canceled";
 
 export type CreateJobInput = {

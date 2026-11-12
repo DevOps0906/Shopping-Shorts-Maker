@@ -23,6 +23,15 @@ insert into public.sources (id, project_id, platform, url, author, file_path, us
   ('00000000-0000-4000-b300-00000000000a', '00000000-0000-4000-b200-00000000000a', 'tiktok',
    'https://www.tiktok.com/@seller/video/1', '@seller',
    '00000000-0000-4000-b000-00000000000a/00000000-0000-4000-b200-00000000000a/a.mp4', true);
+-- 02 승인 조건(20261112210000·210100): 사용 원본 5편 + 고지 확인. 출처 표기(attribution_notice)라 워터마크 제거 거부(PASS 30)는 그대로
+insert into public.sources (project_id, platform, url, author, file_path, used)
+select '00000000-0000-4000-b200-00000000000a', 'tiktok', 'https://www.tiktok.com/@seller/video/' || n, '@seller',
+       '00000000-0000-4000-b000-00000000000a/00000000-0000-4000-b200-00000000000a/' || n || '.mp4', true
+from generate_series(2, 5) n;
+update public.sources set rights_basis = 'attribution_notice', rights_confirmed_at = now()
+where project_id = '00000000-0000-4000-b200-00000000000a';
+update public.projects set sources_notice_ack_at = now(), sources_notice_ack_by = '00000000-0000-4000-b000-00000000000a'
+where id = '00000000-0000-4000-b200-00000000000a';
 
 insert into storage.objects (bucket_id, name, owner_id)
 values ('sources',
