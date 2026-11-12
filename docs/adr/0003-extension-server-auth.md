@@ -31,3 +31,20 @@ MVP 수집은 사용자 브라우저 확장(Chrome MV3)에서 돈다. 확장은 
 
 ## 버전·라이선스
 Chrome Manifest V3 · 새 의존성 없음.
+
+## 보강(2026-11-12)
+근거: challenger 검토, 사용자 결정 D13(`docs/planning.md#17-2`). 작업: `tasks/task-015.md`(015a~d).
+- ① **D8 3단계**: `collect`(확장, 목록·썸네일) → `select_sources`(워커, 썸네일 기준 점수·상위 20편) → 사용자 체크 10편 `collect_download`(확장, 파일) → 워커 ffprobe 재검사 후 `succeeded`. 두 확장 작업 모두 아래 전이를 따른다.
+- ② **수집 방식(D13)**: 사용자가 연 틱톡·샤오홍슈 탭에서만, 사람 속도, 백그라운드 자동 수집 없음. 캡차·위험 제어 감지 시 즉시 중단하고 사유를 배너에 표시. 영상은 플랫폼이 주는 워터마크 포함 사본만(워터마크 없는 재생 사본 금지, AGENTS 4장). 배포 방식은 task-028, 개발·베타는 수동 설치.
+- ③ **전이 정본**: 하트비트 2분 끊김은 `running`→`waiting_extension`(진행분 보존, 결정 본문대로). 24시간은 `jobs.waiting_since`(대기 진입 시각) 기준. 기존 `sweep_jobs`의 `failed` 처리·`created_at` 기준은 새 마이그레이션으로 교체한다.
+- ③ **claim·전달**: claim 조건에 `확장.user_id = 프로젝트 소유자`·`revoked_at is null` 추가. 대기 job은 하트비트 응답으로 전달(별도 폴링 없음).
+- ③ **수집 데이터 위조 방지**: platform은 서버가 정규화 URL의 호스트로 결정, URL 정규화(쿼리·조각·userinfo 제거·거부), `collected_at`은 서버 시각, 틱톡은 URL `@handle` = author, 필드 허용 목록, 검사는 직접 추가와 같은 DB 함수(`private.has_unsafe_chars` 등) 재사용.
+- ④ **host_permissions**: 틱톡·샤오홍슈 웹 호스트와 영상·이미지 CDN 호스트만. CDN 목록은 구현 시 실측 후 확정해 task-015d에 근거와 함께 기록. Storage 업로드는 서비스 도메인 경유 서명 URL이라 Supabase 호스트 권한을 따로 두지 않는다. `<all_urls>`·`cookies`·`webRequest` 금지.
+- ⑤ **MV3 운영**: 하트비트는 `chrome.alarms` 30초. 토큰 보관 위치·회전 유예 시간은 팀장 결정 필요. 파일은 파일 단위 스트림 업로드, 끊기면 그 파일만 재시도.
+- ⑤ **업로드 상한 통일**: 위 "업로드 크기"의 200MB(가설)와 `sources` 버킷 500MiB 중 하나로 통일(팀장 결정 필요). 썸네일은 이미지 MIME 전용 버킷.
+
+| 추가 위협 | 대응 |
+|---|---|
+| 확장이 platform·URL·시각·작성자 위조 | ③ 서버 결정·정규화·DB 함수 검사 |
+| 다른 사용자 job claim | ③ 소유자 조건 |
+| 워터마크 없는 사본으로 권리 우회 · 대량 수집으로 계정 제재 | ② 사용자 탭·사람 속도·워터마크 사본만 |

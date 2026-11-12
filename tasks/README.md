@@ -16,7 +16,11 @@
 | [task-012](task-012.md) | 큐·워커 골격·멱등·재시도·취소·크레딧 기록 | W2 | 005, 011, 030 | 높음 | builder | 보류(00_LEAN 통과 후) |
 | [task-013](task-013.md) | 6단계 상태 머신·승인·초기화·Realtime·StepStepper·StatusBanner | W2 | 008, 011 | 보통 | builder | 보류(00_LEAN 통과 후) |
 | [task-014](task-014.md) | 홈·새 프로젝트·프로젝트 관리·트렌드(시드) | W3 | 013 | 보통 | builder | 보류(00_LEAN 통과 후) |
-| [task-015](task-015.md) | 확장: 연결·로그인 수집·출처 기록·waiting_extension | W3 | 012 | 높음 | builder | 보류(00_LEAN 통과 후) |
+| [task-015](task-015.md) | 확장 수집 개요(015a~d 분할, D13·challenger 반영) | W3 | 012, 016 | 높음 | 팀장 | 재작성 완료·팀장 결정 대기 |
+| [task-015a](task-015a.md) | 확장 수집 DB: 3단계 작업·전이 정본·claim·입력 검증 | W3 | 012, 016 | 높음 | builder | 대기 |
+| [task-015b](task-015b.md) | 확장 수집 웹 서버: API·연결 페이지·확장 관리·S-07 배너 | W3 | 015a, 화면 승인 | 높음 | builder | 대기 |
+| [task-015c](task-015c.md) | 확장 수집 워커: 썸네일 점수·파일 재검사 | W3 | 015a, 016 | 높음 | builder | 대기 |
+| [task-015d](task-015d.md) | 확장 프로그램 MV3: 사용자 탭 수집·워터마크 사본만 | W3 | 015b | 높음 | builder | 대기 |
 | [task-016](task-016.md) | 소스 서버: 프레임 일치·점수·20편 선정 | W3 | 012 | 높음 | builder | 보류(00_LEAN 통과 후) |
 | [task-017](task-017.md) | 02 소스: SourceGrid·기본 체크 해제·권리 근거·직접 추가·승인 규칙 | W3 | 013, 016 | 높음 | builder | 보류(00_LEAN 통과 후) |
 | [task-018](task-018.md) | 01 소재·03 대본: LLM·ScriptEditor·금지 표현 | W3 | 013 | 높음 | builder | 보류(00_LEAN 통과 후) |
