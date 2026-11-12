@@ -185,6 +185,10 @@ reset role;
 update public.projects
 set step_status = jsonb_set(jsonb_set(step_status, '{3}', '"ready"'), '{4}', '"ready"')
 where id = '00000000-0000-4000-b200-00000000000a';
+-- 4단계 승인에는 음성 테이크가 필요하다(20261112230100)
+insert into public.voice_takes (project_id, source, audio_path, duration_sec)
+values ('00000000-0000-4000-b200-00000000000a', 'recording',
+        '00000000-0000-4000-b000-00000000000a/00000000-0000-4000-b200-00000000000a/v.webm', 15);
 
 set local role authenticated;
 select set_config('request.jwt.claims',

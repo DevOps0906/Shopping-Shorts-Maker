@@ -48,6 +48,7 @@ erDiagram
     uuid id PK
     uuid user_id FK
     uuid category_id FK
+    uuid sources_notice_ack_by FK
     uuid account_id
     text name
     smallint current_step
@@ -101,6 +102,7 @@ erDiagram
   voice_takes {
     uuid id PK
     uuid project_id FK
+    uuid job_id FK
     text voice_id
     text source
     text audio_path
@@ -112,6 +114,7 @@ erDiagram
   renders {
     uuid id PK
     uuid project_id FK
+    uuid job_id FK
     integer version
     jsonb cut_map
     text upscale_status
@@ -269,3 +272,5 @@ erDiagram
   projects ||--o{ bio_items : "project_id"
   affiliate_links ||--o{ bio_items : "affiliate_link_id"
   affiliate_links ||--o{ link_clicks : "affiliate_link_id"
+  jobs ||--o{ voice_takes : "job_id"
+  jobs ||--o{ renders : "job_id"
