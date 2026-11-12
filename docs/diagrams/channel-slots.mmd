@@ -1,0 +1,48 @@
+sequenceDiagram
+    autonumber
+    participant U as 사용자
+    participant W as 웹 화면
+    participant S as 서버 Route Handler
+    participant D as DB
+    participant G as Google OAuth
+
+    U->>W: 채널 추가 클릭
+    W->>S: 사전 한도 검사 요청
+    S->>D: 슬롯 수와 한도 조회 (plans, subscriptions, accounts)
+    D-->>S: 현재 슬롯 수와 한도
+    alt 한도 초과 · 결제 전
+        S-->>W: 거부 (현재 요금제는 채널 N개까지)
+        W-->>U: 거부 안내
+    else 한도 내 또는 결제 후 확인 완료
+        opt 한도 초과 · 결제 후
+            S-->>W: 추가 요금 확인 필요
+            W-->>U: 알림 대화상자 (취소 / 추가)
+            U->>W: 추가 선택
+            W->>S: 구독 변경 요청
+        end
+        W->>S: OAuth 시작 요청
+        S->>D: oauth_state 생성 (state 저장)
+        S-->>W: Google 인증 주소 (state 포함)
+        W->>G: 리다이렉트 · 동의 화면
+        U->>G: 계정 선택 · 권한 동의
+        G-->>W: 콜백 (code, state)
+        W->>S: 콜백 전달
+        S->>D: state 검증 후 youtube_save_connection 호출
+        Note over D: 사용자 단위 행 잠금 후 한도 최종 검사
+        alt 한도 내
+            D-->>S: 연결 저장 (토큰은 Vault에 보관)
+        else 한도 초과
+            D-->>S: 거부 (토큰 저장 안 함)
+        end
+        S->>D: channel_slot_events 기록 (연결 또는 거부)
+        S-->>W: 처리 결과
+        W-->>U: 연결 완료 또는 거부 안내
+    end
+
+    Note over U,D: 채널 해제 시 슬롯 즉시 반환
+    U->>W: 연결 해제 클릭
+    W->>S: 해제 요청
+    S->>D: youtube_clear_token 호출 (토큰 삭제, 슬롯 반환)
+    S->>D: channel_slot_events 기록 (해제)
+    S-->>W: 해제 완료
+    W-->>U: 채널 메뉴 제거
