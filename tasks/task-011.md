@@ -20,6 +20,6 @@
 - 결제 테이블(3단계 후보)
 
 ## 완료 조건 (실행 가능한 확인)
-- [ ] `supabase db reset` 성공
-- [ ] RLS·버킷 테스트: 타인 원본 객체 다운로드 거부, anon의 link_clicks 읽기 0행
-- [ ] `pnpm typecheck` 통과, ERD `mmd-check` 통과
+- [x] `supabase db reset` 성공(migrate.sh reset)
+- [x] RLS·버킷 테스트: 타인 원본 객체 다운로드 거부, anon의 link_clicks 읽기 0행
+- [x] `pnpm typecheck` 통과, ERD `mmd-check` 통과(db.ts·ERD는 task-012와 함께 커밋)
