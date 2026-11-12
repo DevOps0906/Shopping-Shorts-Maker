@@ -1,0 +1,176 @@
+/*
+ * 디자인 토큰 정본 (apps/web). 값의 근거: docs/design.md 2~3장, design/prototype/Main.dc.html.
+ * 색·크기 값(hex·px)은 이 파일에만 둔다. 화면 코드는 Tailwind 유틸리티 또는 var(--*)만 쓴다.
+ * 반응형 3구간: 모바일 ~767 / 태블릿 768~1199 / 데스크톱 1200~ (기본값 = 데스크톱).
+ */
+
+:root {
+  /* 색상 — design.md 2장 */
+  --accent: #7b4fd6;
+  --accent-weak: #f1eafe;
+  --accent-line: #d9c9f7;
+  --ink: #1f1b2e;
+  --muted: #5f5873;
+  --line: #ece6f6;
+  --success-bg: #e3f5eb;
+  --success-fg: #1a6e46;
+  --success-line: #1f9d63;
+  --warning-bg: #fff4d6;
+  --warning-fg: #7a4e00;
+  --danger-bg: #fde8e8;
+  --danger-fg: #b42318;
+  --alert: #e2553d;
+  --white: #ffffff;
+  --gradient-app: linear-gradient(135deg, #f6f1ff 0%, #fbf8ff 50%, #fff3ea 100%);
+
+  /* 플랫폼 태그 — 프로토타입 pt-yt · pt-ig · pt-tt · pt-xhs */
+  --pt-yt-bg: #fde8e8;
+  --pt-yt-fg: #b42318;
+  --pt-ig-bg: #fce7f3;
+  --pt-ig-fg: #9d174d;
+  --pt-tt-bg: #1f1b2e;
+  --pt-tt-fg: #ffffff;
+  --pt-xhs-bg: #c81e3a;
+  --pt-xhs-fg: #ffffff;
+
+  /* GNB 보조색 — 프로토타입 .gnb · .nav-i · .sub-i · .cnt · .avatar */
+  --gnb-bg: rgba(255, 255, 255, 0.82);
+  --nav-ink: #3c3650;
+  --nav-hover: #f4effd;
+  --nav-on-ink: #4b2e9e;
+  --sub-hover: #f6f2fd;
+  --sub-line: #eee8f8;
+  --count-bg: #efe9fa;
+  --hot-bg: #ffe9de;
+  --hot-fg: #9a3412;
+  --step-dot-line: #d8ceec;
+  --step-dot-ink: #6e6880;
+  --avatar-bg: #ede5fb;
+  --add-line: #cfc2ee;
+
+
+  /* 구간별 폰트 크기 — design.md 3장 (데스크톱) */
+  --fs-base: 15px;
+  --fs-sm: 13px;
+  --fs-xs: 12px;
+  --fs-h: 30px;
+  --fs-app: 26px;
+  --fs-rail: 10px; /* 모바일 아이콘 레일 라벨 (프로토타입 .nav-i 모바일) */
+  --lh-base: 1.55;
+
+  /* 선 두께 — 프로토타입 .sdot · .add-i */
+  --border-dot: 1.5px;
+  --focus-ring-width: 2px; /* 프로토타입 :focus-visible */
+  --focus-ring-offset: 2px;
+
+  /* 레이아웃 — design.md 3장 (데스크톱) */
+  --gnb-w: 248px;
+  --content-pt: 28px;
+  --content-px: 36px;
+  --content-pb: 112px; /* FAB 높이만큼 */
+  --content-max: 1360px;
+  --fab-inset: 24px;
+  --fab-size: 56px;
+}
+
+/* 태블릿 768~1199 */
+@media (width < 1200px) {
+  :root {
+    --fs-h: 26px;
+    --fs-app: 24px;
+    --gnb-w: 216px;
+    --content-pt: 24px;
+    --content-px: 24px;
+    --content-pb: 104px;
+    --fab-inset: 20px;
+  }
+}
+
+/* 모바일 ~767 */
+@media (width < 768px) {
+  :root {
+    --fs-base: 14px;
+    --fs-sm: 12.5px;
+    --fs-xs: 11.5px;
+    --fs-h: 22px;
+    --fs-app: 20px;
+    --gnb-w: 72px;
+    --gnb-bg: rgba(255, 255, 255, 0.96);
+    --content-pt: 16px;
+    --content-px: 12px;
+    --content-pb: 96px;
+    --fab-inset: 16px;
+    --fab-size: 52px;
+  }
+}
+
+/* Tailwind 구간(기본 = 모바일, tablet: 768~, desktop: 1200~) · 모양 · 그림자 */
+@theme {
+  --breakpoint-*: initial;
+  --breakpoint-tablet: 768px;
+  --breakpoint-desktop: 1200px;
+
+  /* 모양 — design.md 2장 "모양" */
+  --radius-card: 20px;
+  --radius-btn: 12px;
+  --radius-btn-sm: 10px;
+  --radius-pill: 999px;
+  --radius-logo: 11px;
+  --radius-chdot: 7px;
+
+  /* 그림자 */
+  --shadow-card: 0 6px 24px rgba(91, 60, 160, 0.06);
+  --shadow-fab: 0 12px 28px rgba(91, 60, 160, 0.35);
+}
+
+/* Tailwind 유틸리티 매핑 (기본 팔레트·글자 크기는 쓰지 않는다) */
+@theme inline {
+  --color-*: initial;
+  --color-accent: var(--accent);
+  --color-accent-weak: var(--accent-weak);
+  --color-accent-line: var(--accent-line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-success-bg: var(--success-bg);
+  --color-success-fg: var(--success-fg);
+  --color-success-line: var(--success-line);
+  --color-warning-bg: var(--warning-bg);
+  --color-warning-fg: var(--warning-fg);
+  --color-danger-bg: var(--danger-bg);
+  --color-danger-fg: var(--danger-fg);
+  --color-alert: var(--alert);
+  --color-white: var(--white);
+  --color-pt-yt-bg: var(--pt-yt-bg);
+  --color-pt-yt-fg: var(--pt-yt-fg);
+  --color-pt-ig-bg: var(--pt-ig-bg);
+  --color-pt-ig-fg: var(--pt-ig-fg);
+  --color-pt-tt-bg: var(--pt-tt-bg);
+  --color-pt-tt-fg: var(--pt-tt-fg);
+  --color-pt-xhs-bg: var(--pt-xhs-bg);
+  --color-pt-xhs-fg: var(--pt-xhs-fg);
+  --color-gnb-bg: var(--gnb-bg);
+  --color-nav-ink: var(--nav-ink);
+  --color-nav-hover: var(--nav-hover);
+  --color-nav-on-ink: var(--nav-on-ink);
+  --color-sub-hover: var(--sub-hover);
+  --color-sub-line: var(--sub-line);
+  --color-count-bg: var(--count-bg);
+  --color-hot-bg: var(--hot-bg);
+  --color-hot-fg: var(--hot-fg);
+  --color-step-dot-line: var(--step-dot-line);
+  --color-step-dot-ink: var(--step-dot-ink);
+  --color-avatar-bg: var(--avatar-bg);
+  --color-add-line: var(--add-line);
+
+  --text-*: initial;
+  --text-base: var(--fs-base);
+  --text-sm: var(--fs-sm);
+  --text-xs: var(--fs-xs);
+  --text-h: var(--fs-h);
+  --text-app: var(--fs-app);
+  --text-rail: var(--fs-rail);
+
+
+  --font-sans: var(--font-noto-sans-kr), system-ui, sans-serif;
+}

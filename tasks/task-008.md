@@ -22,6 +22,6 @@
 - 토큰 값·GNB 구조 변경
 
 ## 완료 조건 (실행 가능한 확인)
-- [ ] `pnpm lint` · `pnpm typecheck` 통과
-- [ ] `secscan license` GPL·AGPL 0건, `token-audit` hex·px 직접 사용 0건
-- [ ] 375·1024·1440 `shot`으로 GNB 3구간 확인
+- [x] `pnpm lint` · `pnpm typecheck` 통과
+- [x] `secscan license` GPL·AGPL 0건(secscan 판정 불가 → pnpm licenses로 확인, LGPL-3.0 sharp 1건), `token-audit` hex·px 직접 사용 0건(tokens.css 제외)
+- [x] 375·767·768·1024·1440 `shot`으로 GNB 3구간 확인(경계 767/768 포함)
