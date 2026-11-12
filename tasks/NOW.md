@@ -1,7 +1,7 @@
 # NOW — 재진입 스냅샷 (30줄 이내, 매 작업 끝에 덮어쓴다)
 
-- 갱신: 2026-11-12 밤 — 세션 종료(사용자 요청). README 진행 현황이 최신 요약
-- 현재 작업: W3. 커밋 완료 W2 전부·014·016·017·018·019·020·피드백 UI·Tauri 셸(c91f8c0). 미커밋: 015a(240000·240100 마이그레이션, extension_collect 테스트·동시성 스크립트, db.ts) — 보안 수정 도중 중단, 개발 DB에는 적용됨
+- 갱신: 2026-11-13 새벽 — 세션 종료(사용자 요청)
+- 현재 작업: W4. main 커밋 완료: 015a·021·022a·023·Tauri 셸 보안 반영·D14 기획·확장 순서 수정(c014369). 진행 중 작업은 브랜치 wip/w4-upload-retention(024a 업로더·024b 보관 정리, 보안 🔴 수정 도중 중단)
 - 마지막으로 한 일: task-002 확정(P1 생활·수납 압축팩 / P2 주방 밀폐용기 / P3 생활가전 보풀제거기, 회신 10일·구입비 제품당 5만·합계 15만·클립 2초↑·의뢰서 전체 발송). D7(사용자 결정): 원작자 허락 대신 출처 표기 + 노란 고지 확인 체크(체크해야 승인) + 경고 메일 대처 팁(접이식 7단계), 제작 파트너가 상위 7편 미리 체크, 영상 우하단·설명란 출처 자동 표기, 워터마크 제거는 출처 표기 원본에 금지, 정책 점검 2번 "출처 표기·고지 확인"으로 변경. 반영: planning 3장 02, design.md, 03_SCREENS_UX, spec.json·S-07 와이어(plan2spec 재생성), 프로토타입, 의뢰서 A2-1을 D7 위험 질문으로 교체. PoC 영상 우하단 @작성자 표기·credits.txt 저장 완료(데모 재실행 통과). task-003 원가 표에 이미지 이해(vision) 항목 추가 완료(dry-run 추정, 컷당 프레임 1장, 데모 편당 약 6,268 토큰)
 - 추가(2026-11-12 오후): D8 "20편 검색(목록) → 체크 10편만 다운로드 → 5편 사용, 승인 5편·예외 3~4편" 반영(planning 1·3·4·7장·오류표, design, 03, 프로토타입 dlLabel, spec). D9 "제작 전 모델별 AI 예상 비용" 반영(S-02 표·S-04 선택 바, 예시 단가 최저 약 30원/추천 약 160원/Claude만 약 1,020원). PoC: Gemini 영상 dry-run·--sources N·렌더 전 estimate 표(out/estimate.csv) 추가, 10편 기준 토큰 Claude 프레임 50,144 vs Gemini 4,080
 - Gemini 실호출: 사용자 무료 키가 루트 .env.local(GEMINI_API_KEY 또는 GOOGLE_API_KEY, 내용 열람 금지·권한 차단됨). `run.py --demo --live --llm gemini` 성공(gemini-2.5-flash, 실측 입력 4,771·출력 311·thinking 1,851 토큰, 0원). 합성 클립만 전송. 키 유출 검사 0건. 독립 보안 리뷰(Codex) 지적 5건 반영 완료: 생성 POST는 결과 불명 시 재시도 안 함(429만 1회), 본문 20MB 검사, 어댑터 dry_run 차단, 단가 미상은 빈칸, 렌더 시간에서 API 대기 제외. tests/test_gemini.py 5건 통과. .env.example 변경은 사용자가 이름만 추가됐는지 확인 필요
@@ -19,9 +19,12 @@
 - 잠정 결정(사용자 확인 전, 바꾸면 해당 문서 수정): GPL 거부를 서버 내부 FFmpeg에도 적용 / youtube.force-ssl MVP 제외(고정 댓글은 Studio 안내) / 서버 쓰기=service_role(서버 코드만)·워커=전용 역할 / 승인·권리·발행 열은 private SECURITY DEFINER 함수 전용, api.* 래퍼 / 보관: 미발행 원본 수집+30일, 음성·MP4 발행+30일
 - W2 완료: task-008 웹 뼈대(a0b571f), 030 Docker 스택(2fabdd0), 009 로그인(a658344), 010 마이그레이션1(f344d3c). 개발 DB 재생성: `MIGRATE_ALLOW_RESET=1 sh docker/migrate.sh reset`. 로그인 화면은 화면 표에 없음(추가 여부 결정)
 - 사용자 작업 필요: 루트 .env.example 작성(권한 설정이 .env* 쓰기 차단, 초안 scratchpad/env.example.draft + NEXT_PUBLIC_SUPABASE_URL·NEXT_PUBLIC_SUPABASE_ANON_KEY·SUPABASE_INTERNAL_URL), 개발 .env의 ENABLE_EMAIL_AUTOCONFIRM=true(메일 서버 없음)
-- 재개 순서: ① 015a 미커밋 파일 확인(240100이 보안 🔴 TOCTOU·claim 잠금·private ACL을 다 반영했는지) → SQL 테스트 전부 → 재리뷰 → 커밋 ② Tauri 셸 보안 리뷰 재실행 ③ 021 → W4
+- 재개 순서(2026-11-13): ① `git switch wip/w4-upload-retention` → 024b retention.ts 타입 오류 2·테스트 7 실패 마무리(삭제 직전 retention_confirm 재확인) + 024a 280200(일반 재시도 중복 업로드 차단) 검증 → `MIGRATE_ALLOW_RESET=1 sh docker/migrate.sh reset` 후 SQL·web·워커 테스트 전부 → 보안 재리뷰 → main 병합 ② 025 성과·단축 링크(시작 직후 중단, 파일 없음, 수집 주기 결정: 발행 후 7일 하루 4회·30일까지 하루 1회) ③ 034 채널 한도(D14) ④ 015b~d(015b는 확장 연결 화면 승인 필요) ⑤ 022b 키 탭·채널 화면. 주의: 개발 DB에는 WIP 마이그레이션(280000~290400)이 적용돼 있으니 main에서 작업할 때는 reset으로 맞출 것
+- 이전 재개 순서(참고): ① 015a 미커밋 파일 확인(240100이 보안 🔴 TOCTOU·claim 잠금·private ACL을 다 반영했는지) → SQL 테스트 전부 → 재리뷰 → 커밋 ② Tauri 셸 보안 리뷰 재실행 ③ 021 → W4
 - 이전 중단 시점(참고): 팀원 결과물은 작업 트리에 미커밋으로 남아 있을 수 있음 → `git status`로 확인, 각 작업은 독립 리뷰(codex-reviewer, 016·018은 security) 후 커밋. 다음: 019 목소리·020 편집. 워커 컨테이너는 stop 상태(.env WORKER_DB_PASSWORD 필요). 워커 파일 접근은 권고안(웹이 짧은 서명 URL을 job payload에 넣음)으로 진행 예정
 - 열린 결정(사용자 확인 필요):
+  - D14: 베타 기본 채널 한도(권고 3)·슬롯 회전 제한·해지 시 한도·해제 채널의 external_channel_id 유지
+  - Google OAuth 클라이언트(.env GOOGLE_OAUTH_CLIENT_ID·SECRET·OAUTH_REDIRECT_BASE_URL) 생성 — 실업로드 테스트 선행
   - 가입 시 무료 크레딧 지급 여부(지금은 잔액 0이라 모든 작업 거부)
   - 워커 Storage 접근 방식(권고: 서명 URL)
   - ADR-0002: 서버 내부 GPL 도구(libx264)에도 GPL 거부 적용? (현재안 적용 → LGPL FFmpeg + openh264, 화질 실측 필요)
