@@ -5,6 +5,7 @@ import { btnClass } from "@/components/studio/step-actions";
 import { BODY_MAX, TITLE_MAX } from "@/lib/publish/rules";
 import { cn } from "@/lib/utils";
 import { inputClass } from "./affiliate-picker";
+import { DESCRIPTION_MAX_BYTES, utf8Bytes } from "./upload-status-copy";
 
 /*
  * 제목 · 설명 · 해시태그 — planning 3장 06 · design 5-7.
@@ -39,6 +40,7 @@ export function PublishCopy({
   onHashtags,
   onRegenerate,
 }: PublishCopyProps) {
+  const descriptionBytes = utf8Bytes(description);
   const ids = { title: useId(), count: useId(), body: useId(), tags: useId() };
   const length = [...title].length;
 
@@ -94,6 +96,10 @@ export function PublishCopy({
         <pre aria-label="설명란 미리보기" className="max-h-80 overflow-y-auto rounded-btn border border-line bg-sub-hover px-3 py-2 font-sans text-sm whitespace-pre-wrap">
           {description || "본문을 입력하면 미리보기가 보입니다."}
         </pre>
+        <p className={cn("text-xs", descriptionBytes > DESCRIPTION_MAX_BYTES ? "text-danger-fg" : "text-muted")}>
+          설명란 {descriptionBytes.toLocaleString("ko-KR")} / {DESCRIPTION_MAX_BYTES.toLocaleString("ko-KR")}바이트
+          {descriptionBytes > DESCRIPTION_MAX_BYTES ? " · YouTube 한도를 넘어 발행할 수 없습니다. 본문을 줄여 주세요" : " (YouTube 한도, 한글 1자 = 3바이트)"}
+        </p>
       </div>
     </section>
   );

@@ -728,6 +728,8 @@ export type Database = {
       publications: {
         Row: {
           account_id: string
+          attempt_started_at: string | null
+          attempt_token: string | null
           body: string | null
           created_at: string
           description: string | null
@@ -735,6 +737,7 @@ export type Database = {
           hashtags: string[]
           id: string
           mode: string
+          next_attempt_at: string | null
           pin_comment: boolean
           platform_video_id: string | null
           prepared_at: string | null
@@ -748,6 +751,8 @@ export type Database = {
         ComputedFields: never
         Insert: {
           account_id: string
+          attempt_started_at?: string | null
+          attempt_token?: string | null
           body?: string | null
           created_at?: string
           description?: string | null
@@ -755,6 +760,7 @@ export type Database = {
           hashtags?: string[]
           id?: string
           mode: string
+          next_attempt_at?: string | null
           pin_comment?: boolean
           platform_video_id?: string | null
           prepared_at?: string | null
@@ -767,6 +773,8 @@ export type Database = {
         }
         Update: {
           account_id?: string
+          attempt_started_at?: string | null
+          attempt_token?: string | null
           body?: string | null
           created_at?: string
           description?: string | null
@@ -774,6 +782,7 @@ export type Database = {
           hashtags?: string[]
           id?: string
           mode?: string
+          next_attempt_at?: string | null
           pin_comment?: boolean
           platform_video_id?: string | null
           prepared_at?: string | null
@@ -799,10 +808,14 @@ export type Database = {
           created_at: string
           cut_map: Json | null
           duration_sec: number | null
+          file_deleted_at: string | null
           id: string
           job_id: string | null
           mp4_path: string | null
           project_id: string
+          purge_after: string
+          retention_reserved_at: string | null
+          retention_token: string | null
           upscale_status: string
           version: number
         }
@@ -812,10 +825,14 @@ export type Database = {
           created_at?: string
           cut_map?: Json | null
           duration_sec?: number | null
+          file_deleted_at?: string | null
           id?: string
           job_id?: string | null
           mp4_path?: string | null
           project_id: string
+          purge_after?: string
+          retention_reserved_at?: string | null
+          retention_token?: string | null
           upscale_status?: string
           version: number
         }
@@ -824,10 +841,14 @@ export type Database = {
           created_at?: string
           cut_map?: Json | null
           duration_sec?: number | null
+          file_deleted_at?: string | null
           id?: string
           job_id?: string | null
           mp4_path?: string | null
           project_id?: string
+          purge_after?: string
+          retention_reserved_at?: string | null
+          retention_token?: string | null
           upscale_status?: string
           version?: number
         }
@@ -900,11 +921,16 @@ export type Database = {
           project_id: string
           purge_after: string
           quarantined: boolean
+          retention_reserved_at: string | null
+          retention_token: string | null
           rights_basis: string | null
           rights_confirmed_at: string | null
           rights_confirmed_by: string | null
           score: number | null
+          thumbnail_deleted_at: string | null
           thumbnail_path: string | null
+          thumbnail_retention_reserved_at: string | null
+          thumbnail_retention_token: string | null
           title: string | null
           url: string
           used: boolean
@@ -926,11 +952,16 @@ export type Database = {
           project_id: string
           purge_after: string
           quarantined?: boolean
+          retention_reserved_at?: string | null
+          retention_token?: string | null
           rights_basis?: string | null
           rights_confirmed_at?: string | null
           rights_confirmed_by?: string | null
           score?: number | null
+          thumbnail_deleted_at?: string | null
           thumbnail_path?: string | null
+          thumbnail_retention_reserved_at?: string | null
+          thumbnail_retention_token?: string | null
           title?: string | null
           url: string
           used?: boolean
@@ -951,11 +982,16 @@ export type Database = {
           project_id?: string
           purge_after?: string
           quarantined?: boolean
+          retention_reserved_at?: string | null
+          retention_token?: string | null
           rights_basis?: string | null
           rights_confirmed_at?: string | null
           rights_confirmed_by?: string | null
           score?: number | null
+          thumbnail_deleted_at?: string | null
           thumbnail_path?: string | null
+          thumbnail_retention_reserved_at?: string | null
+          thumbnail_retention_token?: string | null
           title?: string | null
           url?: string
           used?: boolean
@@ -1141,10 +1177,14 @@ export type Database = {
           audio_path: string | null
           created_at: string
           duration_sec: number | null
+          file_deleted_at: string | null
           id: string
           job_id: string | null
           pauses: Json | null
           project_id: string
+          purge_after: string
+          retention_reserved_at: string | null
+          retention_token: string | null
           sentences: Json | null
           source: string
           voice_id: string | null
@@ -1155,10 +1195,14 @@ export type Database = {
           audio_path?: string | null
           created_at?: string
           duration_sec?: number | null
+          file_deleted_at?: string | null
           id?: string
           job_id?: string | null
           pauses?: Json | null
           project_id: string
+          purge_after?: string
+          retention_reserved_at?: string | null
+          retention_token?: string | null
           sentences?: Json | null
           source: string
           voice_id?: string | null
@@ -1168,10 +1212,14 @@ export type Database = {
           audio_path?: string | null
           created_at?: string
           duration_sec?: number | null
+          file_deleted_at?: string | null
           id?: string
           job_id?: string | null
           pauses?: Json | null
           project_id?: string
+          purge_after?: string
+          retention_reserved_at?: string | null
+          retention_token?: string | null
           sentences?: Json | null
           source?: string
           voice_id?: string | null
@@ -1263,11 +1311,16 @@ export type Database = {
           project_id: string
           purge_after: string
           quarantined: boolean
+          retention_reserved_at: string | null
+          retention_token: string | null
           rights_basis: string | null
           rights_confirmed_at: string | null
           rights_confirmed_by: string | null
           score: number | null
+          thumbnail_deleted_at: string | null
           thumbnail_path: string | null
+          thumbnail_retention_reserved_at: string | null
+          thumbnail_retention_token: string | null
           title: string | null
           url: string
           used: boolean
@@ -1337,6 +1390,44 @@ export type Database = {
         }
         Returns: Json
       }
+      publication_attempt_fail: {
+        Args: {
+          p_attempt_token: string
+          p_code: string
+          p_kind: string
+          p_publication_id: string
+        }
+        Returns: Json
+      }
+      publication_claim: { Args: never; Returns: Json }
+      publication_confirm_absent: { Args: { p_project_id: string }; Returns: Json }
+      publication_finish: {
+        Args: {
+          p_attempt_token: string
+          p_publication_id: string
+          p_test_private: boolean
+          p_video_id: string
+        }
+        Returns: Json
+      }
+      publication_reject_copy: {
+        Args: { p_attempt_token: string; p_code: string; p_publication_id: string }
+        Returns: Json
+      }
+      publication_retry: { Args: { p_project_id: string }; Returns: Json }
+      publication_session_begin: {
+        Args: { p_attempt_token: string; p_publication_id: string }
+        Returns: Json
+      }
+      publication_session_save: {
+        Args: {
+          p_attempt_token: string
+          p_publication_id: string
+          p_session_uri: string
+          p_total_bytes: number
+        }
+        Returns: undefined
+      }
       publish_policy: {
         Args: {
           p_body: string
@@ -1350,6 +1441,37 @@ export type Database = {
       request_step_change: {
         Args: { p_project_id: string; p_step: number }
         Returns: Json
+      }
+      retention_due: {
+        Args: {
+          p_after_due?: string
+          p_after_id?: string
+          p_after_kind?: string
+          p_limit: number
+        }
+        Returns: {
+          bucket: string
+          due_on: string
+          id: string
+          kind: string
+          path: string
+          project_id: string
+          user_id: string
+        }[]
+      }
+      retention_mark_deleted: {
+        Args: { p_ids: string[]; p_kind: string; p_token: string }
+        Returns: number
+      }
+      retention_reserve: {
+        Args: { p_ids: string[]; p_kind: string }
+        Returns: {
+          id: string
+          path: string
+          project_id: string
+          token: string
+          user_id: string
+        }[]
       }
       save_source_use: {
         Args: {

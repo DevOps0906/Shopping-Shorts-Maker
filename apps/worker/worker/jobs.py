@@ -28,6 +28,12 @@ class PermanentError(Exception):
     """입력·권한 오류. 재시도 없이 바로 failed. 메시지는 사용자에게 보여도 되는 문구만."""
 
 
+# DB 함수가 사용자 문구로 거부하는 SQLSTATE → 재시도하지 않고 그 문구로 failed (task-024b)
+PERMANENT_SQLSTATES = {
+    "RD001": "보관 기간이 지나 원본/음성 파일이 삭제되어 다시 렌더할 수 없습니다",
+}
+
+
 class Stopped(Exception):
     """취소·시간 초과로 처리기를 중단할 때 처리기가 던진다."""
 
@@ -171,6 +177,12 @@ def process_message(repo: Repo, heartbeat_repo: Repo, queue: str, msg: Message,
         log(f"failed job={msg.job_id} err=PermanentError")
         return "failed"
     except Exception as exc:  # TransientError 와 예상하지 못한 오류: 재시도(read_ct 상한은 DB가 판단)
+        sqlstate = getattr(exc, "sqlstate", None) or ""
+        permanent = PERMANENT_SQLSTATES.get(sqlstate)
+        if permanent is not None:
+            repo.fail(queue, msg, permanent)
+            log(f"failed job={msg.job_id} err=sqlstate {sqlstate}")
+            return "failed"
         # 오류 원문에 키·서명 URL이 섞일 수 있어 저장·로그에는 종류만 남긴다
         reason = str(exc) if isinstance(exc, TransientError) else f"일시 오류({type(exc).__name__})"
         delay = backoff_seconds(ctx.attempts)

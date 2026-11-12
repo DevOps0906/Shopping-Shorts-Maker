@@ -15,6 +15,8 @@ vi.mock("@/app/(dashboard)/studio/[projectId]/[step]/publish/actions", () => ({
   chooseBioServiceAction: vi.fn(),
   setUserCheckAction: vi.fn(),
   preparePublicationAction: vi.fn(),
+  retryUploadAction: vi.fn(),
+  confirmUploadAbsentAction: vi.fn(),
 }));
 vi.mock("@/app/(dashboard)/studio/actions", () => ({ approveStep: vi.fn(), requestStepChange: vi.fn() }));
 
@@ -143,6 +145,10 @@ describe("S-11 06 발행 렌더", () => {
         pinComment: false,
         preparedAt: "2026-11-12T00:00:00Z",
         status: "pending",
+        error: null,
+        nextAttemptAt: null,
+        retryCount: 0,
+        videoId: null,
       },
     });
     expect(out).toContain("발행 준비 완료 · 지금 올리기");
@@ -161,6 +167,10 @@ describe("S-11 06 발행 렌더", () => {
         pinComment: false,
         preparedAt: "2026-11-12T00:00:00Z",
         status: "invalidated",
+        error: null,
+        nextAttemptAt: null,
+        retryCount: 0,
+        videoId: null,
       },
     });
     expect(out).toContain("발행 준비가 풀렸습니다");
@@ -171,5 +181,66 @@ describe("S-11 06 발행 렌더", () => {
   it("제휴를 쓰지 않으면 링크인바이오는 번호를 받을 수 없다는 안내", () => {
     const out = panel({ link: { program: "none", url: null, disclosed: true, bioService: null, bioNo: null, bioRegistered: false } });
     expect(out).toContain("링크형 제휴 프로그램을 고르고");
+  });
+
+  it("업로드 상태: 예약 완료는 Studio 취소 안내, 결과 불명은 Studio 확인 뒤 다시 시도, 지난 예약은 다시 저장 안내", () => {
+    const pub = {
+      mode: "scheduled" as const,
+      scheduledAt: "2026-11-20T10:00:00Z",
+      title: "t",
+      body: "본문 하나",
+      description: "d",
+      hashtags: [],
+      pinComment: false,
+      preparedAt: "2026-11-12T00:00:00Z",
+      error: null,
+      nextAttemptAt: null,
+      retryCount: 0,
+      videoId: "dQw4w9WgXcQ",
+    };
+    const scheduled = panel({ publication: { ...pub, status: "scheduled" } });
+    expect(scheduled).toContain("YouTube Studio에서 해 주세요");
+    expect(scheduled).toContain("https://studio.youtube.com/video/dQw4w9WgXcQ/edit");
+    expect(isDisabled(scheduled)).toBe(true);
+
+    const unknown = panel({ publication: { ...pub, status: "needs_check", error: "unknown:response_lost", videoId: null } });
+    expect(unknown).toContain("YouTube Studio에서 이 영상이 올라갔는지 먼저 확인");
+    expect(unknown).toContain("영상 없음 확인 · 새로 업로드");
+    expect(unknown).not.toContain(">다시 시도<");
+
+    const reconnect = panel({ publication: { ...pub, status: "reconnect_wait", error: "reconnect:invalid_grant", videoId: null } });
+    expect(reconnect).toContain("채널 다시 연결");
+
+    const passed = panel({ publication: { ...pub, status: "invalidated", error: "confirm:schedule_passed", videoId: null } });
+    expect(passed).toContain("예약 시각이 지나 업로드하지 않았습니다");
+    expect(passed).not.toContain("발행 준비가 풀렸습니다");
+    expect(isDisabled(passed)).toBe(false);
+  });
+
+  it("설명란 바이트 수 표시, 5000바이트 초과면 발행 버튼 꺼짐 · needs_check 는 영상 없음 확인 버튼", () => {
+    const long = panel({ initialCopy: { title: "압축팩 정리 꿀팁", body: "가".repeat(4000), hashtags: [] } });
+    expect(long).toContain("YouTube 한도를 넘어 발행할 수 없습니다");
+    expect(isDisabled(long)).toBe(true);
+    const short = panel({ initialCopy: { title: "압축팩 정리 꿀팁", body: "가".repeat(100), hashtags: [] } });
+    expect(short).toMatch(/설명란 [\d,]+ \/ 5,000바이트/);
+
+    const unknown = panel({
+      publication: {
+        mode: "now",
+        scheduledAt: null,
+        title: "t",
+        body: "본문 하나",
+        description: "d",
+        hashtags: [],
+        pinComment: false,
+        preparedAt: "2026-11-12T00:00:00Z",
+        status: "needs_check",
+        error: "unknown:response_lost",
+        nextAttemptAt: null,
+        retryCount: 0,
+        videoId: null,
+      },
+    });
+    expect(unknown).toContain("영상 없음 확인 · 새로 업로드");
   });
 });

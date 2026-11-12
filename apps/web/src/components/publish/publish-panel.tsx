@@ -3,7 +3,9 @@
 import { useId, useMemo, useState, useTransition } from "react";
 import {
   chooseBioServiceAction,
+  confirmUploadAbsentAction,
   preparePublicationAction,
+  retryUploadAction,
   saveAffiliateAction,
   setUserCheckAction,
 } from "@/app/(dashboard)/studio/[projectId]/[step]/publish/actions";
@@ -32,11 +34,14 @@ import { LinkInBioCard } from "./link-in-bio-card";
 import { LinkPlacement } from "./link-placement";
 import { PolicyChecklist } from "./policy-checklist";
 import { PublishCopy } from "./publish-copy";
+import { UploadStatus } from "./upload-status";
+import { DESCRIPTION_MAX_BYTES, utf8Bytes } from "./upload-status-copy";
 
 /*
  * S-11 06 발행 본문 — docs/planning.md 3장 06 · 15-1 · 15-4 · 16-3 · 16-4, docs/design.md 5-7.
  * 상태: 빈(정책 점검 미통과 → 발행 버튼 비활성 + 사라지지 않는 경고 배너) · 로딩(발행 버튼 회전 아이콘)
- * · 오류(같은 화면 배너) · 성공(발행 준비 완료 배너). 실제 업로드·예약은 task-024 — 버튼은 발행 준비 저장까지.
+ * · 오류(같은 화면 배너) · 성공(발행 준비 완료 배너). 버튼은 발행 준비 저장까지, 업로드는 서버 uploader(task-024a)가
+ * 하고 이 화면은 업로드 상태 표시·다시 시도만 한다.
  * 버튼 활성은 UX일 뿐이고, DB(prepare_publication)가 6/6 통과를 다시 확인한다.
  */
 
@@ -95,7 +100,10 @@ export function PublishPanel({
   const busy = pending || publishing;
   const program = link?.program ?? null;
   const allPassed = canPublish(items);
-  const canSubmit = allPassed && ready && !locked && !busy && title.trim() !== "" && (mode === "now" || scheduledAt !== null);
+  // 설명란 YouTube 한도(5000바이트). DB(prepare_publication)가 저장 때 다시 검사한다
+  const descriptionTooLong = utf8Bytes(description) > DESCRIPTION_MAX_BYTES;
+  const canSubmit =
+    allPassed && ready && !locked && !busy && !descriptionTooLong && title.trim() !== "" && (mode === "now" || scheduledAt !== null);
 
   function run(action: () => Promise<PolicyActionResult>, done?: string) {
     setError(null);
@@ -123,6 +131,39 @@ export function PublishPanel({
     setTitle(variants[next].title);
     setBody(variants[next].body);
     setHashtagText(variants[next].hashtags.join(" "));
+  }
+
+  function retryUpload() {
+    setError(null);
+    startPublish(async () => {
+      const result = await retryUploadAction(projectId);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setPublication(result.publication);
+      feedback.toast({ message: "업로드를 다시 시도합니다", tone: "success" });
+    });
+  }
+
+  async function confirmAbsent() {
+    const yes = await feedback.confirm({
+      title: "YouTube Studio에서 이 영상이 올라가지 않은 것을 확인했나요?",
+      description: "확인하면 새로 업로드합니다. 이미 올라가 있었다면 같은 영상이 두 번 올라갑니다.",
+      confirmLabel: "확인했습니다 · 새로 업로드",
+      danger: true,
+    });
+    if (!yes) return;
+    setError(null);
+    startPublish(async () => {
+      const result = await confirmUploadAbsentAction(projectId);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setPublication(result.publication);
+      feedback.toast({ message: "새로 업로드합니다", tone: "success" });
+    });
   }
 
   function publish() {
@@ -265,16 +306,20 @@ export function PublishPanel({
             정책 점검 {items.length - passed}개 항목이 아직 통과하지 않아 발행 버튼이 꺼져 있습니다. 위 점검 목록의 안내를 따라 주세요.
           </InlineBanner>
         ) : null}
+        {descriptionTooLong && !locked ? (
+          <InlineBanner tone="warning">설명란이 YouTube 한도(5000바이트)를 넘습니다. 본문을 줄여 다시 발행 준비해 주세요.</InlineBanner>
+        ) : null}
         {error ? <InlineBanner tone="error">{error}</InlineBanner> : null}
-        {publication?.status === "invalidated" ? (
+        {publication?.status === "invalidated" && !publication.error?.startsWith("confirm:") ? (
           <InlineBanner tone="warning">점검 내용이 바뀌어 발행 준비가 풀렸습니다. 6개 항목을 다시 확인한 뒤 발행 준비를 다시 저장해 주세요.</InlineBanner>
         ) : null}
         {publication && prepared ? (
           <InlineBanner tone="success">
             발행 준비 완료 · {publication.mode === "scheduled" && publication.scheduledAt ? `${formatSlot(new Date(publication.scheduledAt))} 예약` : "지금 올리기"}.
-            실제 업로드는 YouTube 연결 기능이 열리면 이 설정으로 진행됩니다.
+            곧 이 설정으로 YouTube에 올립니다.
           </InlineBanner>
         ) : null}
+        {publication ? <UploadStatus publication={publication} busy={busy} onRetry={retryUpload} onConfirmAbsent={confirmAbsent} /> : null}
 
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" onClick={publish} disabled={!canSubmit} aria-busy={publishing} className={cn(btnClass, btnPrimaryClass)}>

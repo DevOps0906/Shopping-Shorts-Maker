@@ -137,6 +137,23 @@ def test_transient_error_retries_with_backoff_then_fails_after_3() -> None:
     assert repo.archived
 
 
+def test_retention_deleted_sqlstate_fails_permanently_with_user_message() -> None:
+    repo = FakeRepo()
+
+    class FakeDbError(Exception):
+        sqlstate = "RD001"
+
+    def handler(ctx):
+        raise FakeDbError("ERROR: 내부 원문")
+
+    assert run_one(repo, handler) == "failed"
+    assert repo.status == "failed"
+    assert [c[0] for c in repo.calls].count("retry") == 0
+    error = next(c[1] for c in repo.calls if c[0] == "fail")
+    assert error == "보관 기간이 지나 원본/음성 파일이 삭제되어 다시 렌더할 수 없습니다"
+    assert repo.ledger == ["reserve", "release"]
+
+
 def test_unexpected_error_retries_without_leaking_message() -> None:
     repo = FakeRepo()
 

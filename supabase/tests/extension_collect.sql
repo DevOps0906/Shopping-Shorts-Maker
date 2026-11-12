@@ -433,6 +433,8 @@ declare v_found text[]; v_expected text[] := array[
   'authenticated private.create_job(uuid,text,text,jsonb)',
   'authenticated private.mark_step_ready(uuid,integer,text)',
   'authenticated private.prepare_publication(uuid,text,timestamp with time zone,text,text,text[],boolean,boolean)',
+  'authenticated private.publication_confirm_absent(uuid)',
+  'authenticated private.publication_retry(uuid)',
   'authenticated private.publish_policy(uuid,text,text,text[])',
   'authenticated private.request_step_change(uuid,integer)',
   'authenticated private.save_source_use(uuid,jsonb,boolean,text)',
@@ -445,7 +447,19 @@ declare v_found text[]; v_expected text[] := array[
   'service_role private.ext_collect_list(uuid,uuid,jsonb)',
   'service_role private.ext_heartbeat(uuid)',
   -- 06 발행 업로드 직전 재판정(서버, service_role, task-024) → public.publish_recheck
-  'service_role private.publish_recheck(uuid)'];
+  'service_role private.publish_recheck(uuid)',
+  -- YouTube 업로더(Compose uploader, service_role, task-024a) → public.publication_*
+  'service_role private.publication_attempt_fail(uuid,uuid,text,text)',
+  'service_role private.publication_claim()',
+  'service_role private.publication_finish(uuid,uuid,text,boolean)',
+  'service_role private.publication_reject_copy(uuid,uuid,text)',
+  'service_role private.publication_session_begin(uuid,uuid)',
+  'service_role private.publication_session_save(uuid,uuid,text,bigint)',
+  -- 보관 기간 지난 파일 삭제(서버 retention, service_role, task-024b) → public.retention_*
+  'service_role private.retention_confirm(text,uuid[],uuid)',
+  'service_role private.retention_due(integer,date,text,uuid)',
+  'service_role private.retention_mark_deleted(text,uuid[],uuid)',
+  'service_role private.retention_reserve(text,uuid[])'];
 begin
   select coalesce(array_agg(x order by x), '{}') into v_found
   from (

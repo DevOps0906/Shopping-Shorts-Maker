@@ -27,7 +27,8 @@ import { createAdminClient } from "@/server/supabase-admin";
  *   (제작 파트너 AI 도구 목록에는 없다, 17-7).
  * - affiliate_links.url 은 서버(SR)만 쓴다: 사용자 세션으로 소유를 확인하고 프로그램별 허용 도메인을 검사한 뒤 service_role 로 쓴다.
  * - 정책이 바뀌면 DB가 pending 발행 행을 invalidated 로 돌린다. 업로드 직전 재판정은 public.publish_recheck(서버 service_role, task-024).
- * - 실제 업로드·단축 링크는 task-024·025. 발행 버튼은 "발행 준비 완료"(publications 행 + projects.status = awaiting_publish)까지.
+ * - 발행 버튼은 "발행 준비 완료"(publications 행 + projects.status = awaiting_publish)까지. 실제 업로드는 Compose 서비스
+ *   uploader(src/server/publish/uploader.ts, task-024a)가 publications 상태로 한다. 화면은 상태 표시와 다시 시도만.
  */
 
 export type LinkView = {
@@ -49,6 +50,11 @@ export type PublicationView = {
   pinComment: boolean;
   preparedAt: string | null;
   status: string;
+  /** 업로드 실패 분류 코드(kind:code, 원문 응답·토큰 없음) */
+  error: string | null;
+  nextAttemptAt: string | null;
+  retryCount: number;
+  videoId: string | null;
 };
 
 export type CopyInput = { title: string; body: string; hashtags: string[] };
@@ -76,7 +82,8 @@ export type PrepareResult = { ok: true; publication: PublicationView; policy: Po
 const NOT_FOUND = { ok: false, error: "프로젝트를 찾을 수 없거나 권한이 없습니다." } as const;
 const INVALID = { ok: false, error: "잘못된 요청입니다." } as const;
 const LINK_COLUMNS = "program, url, disclosed, bio_service, bio_no, bio_registered_at";
-const PUBLICATION_COLUMNS = "mode, scheduled_at, title, body, description, hashtags, pin_comment, prepared_at, status";
+const PUBLICATION_COLUMNS =
+  "mode, scheduled_at, title, body, description, hashtags, pin_comment, prepared_at, status, error, next_attempt_at, retry_count, platform_video_id";
 
 type Client = NonNullable<Awaited<ReturnType<typeof loadOwnedProject>>["supabase"]>;
 
@@ -91,6 +98,12 @@ function toMessage(code: string | undefined) {
       return "입력값을 확인해 주세요(제목 1~100자, 예약 시각은 지금 이후, 해시태그 15개·30자 이하).";
     case "PC001":
       return "정책 점검 6개 항목을 모두 통과해야 발행할 수 있습니다.";
+    case "PC002":
+      return "설명란이 YouTube 한도(5000바이트)를 넘습니다. 본문을 줄여 다시 발행 준비해 주세요.";
+    case "PC003":
+      return "해시태그가 YouTube 태그 한도(500자)를 넘습니다. 해시태그를 줄여 주세요.";
+    case "RT001":
+      return "보관 정리 중인 파일이 있어 잠시 후 다시 시도해 주세요.";
     default:
       return "요청을 처리하지 못했습니다. 잠시 뒤 다시 시도해 주세요.";
   }
@@ -120,6 +133,10 @@ function toPublicationView(row: Record<string, unknown> | null): PublicationView
     pinComment: row.pin_comment === true,
     preparedAt: typeof row.prepared_at === "string" ? row.prepared_at : null,
     status: typeof row.status === "string" ? row.status : "pending",
+    error: typeof row.error === "string" ? row.error : null,
+    nextAttemptAt: typeof row.next_attempt_at === "string" ? row.next_attempt_at : null,
+    retryCount: typeof row.retry_count === "number" ? row.retry_count : 0,
+    videoId: typeof row.platform_video_id === "string" ? row.platform_video_id : null,
   };
 }
 
@@ -323,4 +340,38 @@ export async function preparePublication(projectId: string, input: unknown, rawC
   const publication = await readPublication(supabase, project.id);
   if (!publication || !policy) return { ok: false, error: toMessage(undefined) };
   return { ok: true, publication, policy };
+}
+
+export type RetryResult = { ok: true; publication: PublicationView } | { ok: false; error: string };
+
+/** 업로드 다시 시도(failed·needs_check·reconnect_wait). 소유자·상태·영상 ID 없음·세션 미완료는 DB가 검사한다 */
+export async function retryUpload(projectId: string): Promise<RetryResult> {
+  const { supabase, project } = await loadOwnedProject(projectId);
+  if (!project || !supabase) return NOT_FOUND;
+  const { error } = await supabase.rpc("publication_retry", { p_project_id: project.id });
+  if (error) {
+    return {
+      ok: false,
+      error: error.code === "55000" ? "지금은 다시 시도할 수 없습니다. 화면을 새로 고쳐 상태를 확인해 주세요." : toMessage(error.code),
+    };
+  }
+  const publication = await readPublication(supabase, project.id);
+  if (!publication) return { ok: false, error: toMessage(undefined) };
+  return { ok: true, publication };
+}
+
+/** 결과 불명(needs_check)에서 사용자가 Studio 에 영상이 없음을 확인 → 세션 폐기·새 업로드. 소유자·상태는 DB가 검사, 감사 이벤트 기록 */
+export async function confirmUploadAbsent(projectId: string): Promise<RetryResult> {
+  const { supabase, project } = await loadOwnedProject(projectId);
+  if (!project || !supabase) return NOT_FOUND;
+  const { error } = await supabase.rpc("publication_confirm_absent", { p_project_id: project.id });
+  if (error) {
+    return {
+      ok: false,
+      error: error.code === "55000" ? "지금은 새로 업로드할 수 없습니다. 화면을 새로 고쳐 상태를 확인해 주세요." : toMessage(error.code),
+    };
+  }
+  const publication = await readPublication(supabase, project.id);
+  if (!publication) return { ok: false, error: toMessage(undefined) };
+  return { ok: true, publication };
 }

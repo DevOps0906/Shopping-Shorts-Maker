@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "uploader": "node --conditions=react-server scripts/uploader.mjs",
+    "retention": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --env-file-if-exists=../../.env src/server/retention/retention.ts"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

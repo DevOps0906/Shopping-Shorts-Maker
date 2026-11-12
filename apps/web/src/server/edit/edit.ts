@@ -22,6 +22,8 @@ import { createAdminClient } from "@/server/supabase-admin";
 const LINK_TTL_SEC = 30 * 60;
 const PLAY_TTL_SEC = 10 * 60;
 const MAX_VERSIONS = 10;
+/** DB render_job_context 의 RD001 · 워커 PERMANENT_SQLSTATES 와 같은 문구(task-024b 보관 기간 삭제) */
+const FILES_PURGED = "보관 기간이 지나 원본/음성 파일이 삭제되어 다시 렌더할 수 없습니다";
 
 export type EditTake = { id: string; source: "tts" | "recording"; durationSec: number; sentences: SentenceSpan[] };
 export type EditStepData = {
@@ -114,6 +116,7 @@ async function loadInputs(supabase: Client, projectId: string) {
       .select("id, source, duration_sec, sentences, audio_path")
       .eq("project_id", projectId)
       .not("audio_path", "is", null)
+      .is("file_deleted_at", null)
       .order("created_at", { ascending: false })
       .order("id", { ascending: false })
       .limit(1)
@@ -135,6 +138,36 @@ async function loadInputs(supabase: Client, projectId: string) {
         }
       : null;
   return { lines, take };
+}
+
+/**
+ * 보관 기간이 지나 입력 파일이 지워졌는지(render_job_context 의 RD001 과 같은 기준).
+ * 남은 음성이 없는데 지워진 테이크가 있거나, 편집 입력 원본(edit_input_sources 는 이미 삭제 원본 제외)이 0개인데 지워진 사용 원본이 있으면 true
+ */
+async function inputsPurged(supabase: Client, projectId: string, hasTake: boolean, sourceCount: number): Promise<boolean> {
+  const [takeRes, sourceRes] = await Promise.all([
+    hasTake
+      ? null
+      : supabase
+          .from("voice_takes")
+          .select("id")
+          .eq("project_id", projectId)
+          .not("audio_path", "is", null)
+          .not("file_deleted_at", "is", null)
+          .limit(1),
+    sourceCount > 0
+      ? null
+      : supabase
+          .from("sources")
+          .select("id")
+          .eq("project_id", projectId)
+          .eq("used", true)
+          .not("file_path", "is", null)
+          .not("file_deleted_at", "is", null)
+          .limit(1),
+  ]);
+  if (takeRes?.error || sourceRes?.error) throw new Error("edit_load_failed");
+  return (takeRes?.data?.length ?? 0) > 0 || (sourceRes?.data?.length ?? 0) > 0;
 }
 
 /** 본문 로더: 승인 대본 · 음성 · 매칭 후보 · 버전 목록 · 진행 중/최근 실패 render 작업 */
@@ -178,6 +211,7 @@ export async function startRender(projectId: string, assignment: unknown, idempo
   if (blocked) return { ok: false, error: blocked };
 
   const [{ lines, take }, sources] = await Promise.all([loadInputs(supabase, project.id), loadSources(supabase, project.id)]);
+  if (await inputsPurged(supabase, project.id, take !== null, sources.length)) return { ok: false, error: FILES_PURGED };
   if (!take) return { ok: false, error: "04 목소리의 음성이 없습니다. 음성을 만든 뒤 다시 시도해 주세요." };
   const ids = assignment as string[];
   if (ids.length !== lines.length) return { ok: false, error: "컷 구성이 대본과 맞지 않습니다. 화면을 새로 고친 뒤 다시 시도해 주세요." };

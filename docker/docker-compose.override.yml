@@ -7,7 +7,7 @@
 #    - 개발: 호스트의 pnpm dev·psql·Studio가 붙도록 루프백만 연다.
 #    - 운영: Caddy(task-031) 뒤에 두고 api-gw·supavisor 포트는 `!reset []`로 아예 지운다.
 # 3) api-gw 외부 라우트: Studio·/pg/ 제거본(docker/api-gw/lds.template.yaml)으로 교체
-# 4) 우리 서비스: worker(FFmpeg LGPL), web(profile `web`)
+# 4) 우리 서비스: worker(FFmpeg LGPL), web·uploader(profile `web`)
 
 services:
   studio:
@@ -149,3 +149,78 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
+
+  # YouTube 업로더(task-024a). web 과 같은 Dockerfile·같은 소스(apps/web/src/server/publish)를 build 단계 이미지로
+  # 실행한다(standalone 실행 이미지에는 스크립트가 없다). FFmpeg 없음, 포트 게시 없음, 비root.
+  # 영상 워커에는 OAuth 토큰을 넘기지 않는다 — 토큰은 이 프로세스가 시도마다 새로 받는다.
+  uploader:
+    container_name: shorts-uploader
+    image: shopping-shorts/web-uploader:dev
+    profiles: ["web"]
+    build:
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+      target: build
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${SUPABASE_PUBLIC_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${ANON_KEY}
+    restart: unless-stopped
+    depends_on:
+      api-gw:
+        condition: service_healthy
+    user: "1000:1000"
+    working_dir: /repo/apps/web
+    command: ["node", "--conditions=react-server", "scripts/uploader.mjs"]
+    environment:
+      NODE_ENV: production
+      SUPABASE_INTERNAL_URL: http://api-gw:8000
+      # 값은 루트 .env 에만(이름만 여기). 이미지·로그 금지
+      SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY:-}
+      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-}
+      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:-}
+      OAUTH_REDIRECT_BASE_URL: ${OAUTH_REDIRECT_BASE_URL:-}
+      # 1 = 테스트 업로드: privacyStatus=private, publishAt 없음(서버 전용 설정, 사용자는 고를 수 없음)
+      UPLOAD_TEST_PRIVATE: ${UPLOAD_TEST_PRIVATE:-}
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: ${UPLOADER_MEM_LIMIT:-1g}
+    pids_limit: 128
+
+  # 보관 기간 지난 파일 삭제 (task-024b). 하루 1회 루프(RETENTION_INTERVAL_HOURS), 출처 행은 남긴다.
+  # Storage 삭제는 service_role 만 가능하므로 워커가 아니라 이 서버 프로세스가 한다. 웹과 같은 profile `web`.
+  # 웹 Dockerfile 의 build 단계(소스·의존성 포함)를 재사용해 Node 타입 제거 실행으로 TS 파일을 바로 돈다.
+  retention:
+    container_name: shorts-retention
+    image: shopping-shorts/retention:dev
+    profiles: ["web"]
+    build:
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+      target: build
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${SUPABASE_PUBLIC_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${ANON_KEY}
+    working_dir: /repo/apps/web
+    command: ["node", "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON", "src/server/retention/retention.ts"]
+    user: "1000:1000"
+    restart: unless-stopped
+    depends_on:
+      api-gw:
+        condition: service_healthy
+    environment:
+      SUPABASE_INTERNAL_URL: http://api-gw:8000
+      # 키는 루트 .env 에서 실행 시에만 받는다(이미지·로그 금지)
+      SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      RETENTION_INTERVAL_HOURS: ${RETENTION_INTERVAL_HOURS:-24}
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true

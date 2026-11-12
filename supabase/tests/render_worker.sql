@@ -274,4 +274,40 @@ begin
   raise notice 'PASS 8 컷 원본 스냅샷·설명란 문구는 DB 값';
 end $$;
 
+-- 보관 기간 삭제(task-024b, 20261112290100): 지워진 음성은 건너뛰고, 쓸 음성·원본이 모두 지워졌으면 RD001
+insert into public.jobs (id, project_id, step, type, status, idempotency_key) values
+  ('00000000-0000-4000-d020-0000000004a6', '00000000-0000-4000-d020-0000000002a1', 5, 'render', 'running', 'render-test-6');
+update public.voice_takes set file_deleted_at = now() where id = '00000000-0000-4000-d020-0000000005a1';
+set local role worker_login;
+do $$
+declare v jsonb; v_state text;
+begin
+  v := private.render_job_context('00000000-0000-4000-d020-0000000004a6');
+  if v->'take'->>'id' <> '00000000-0000-4000-d020-0000000005a0' then
+    raise exception 'FAIL: 지워진 음성 테이크가 선택됨 %', v->'take'->>'id';
+  end if;
+end $$;
+reset role;
+update public.voice_takes set file_deleted_at = now() where id = '00000000-0000-4000-d020-0000000005a0';
+set local role worker_login;
+do $$
+begin
+  perform private.render_job_context('00000000-0000-4000-d020-0000000004a6');
+  raise exception 'FAIL: 음성이 모두 지워졌는데 거부되지 않음';
+exception when sqlstate 'RD001' then null;
+end $$;
+reset role;
+update public.voice_takes set file_deleted_at = null where project_id = '00000000-0000-4000-d020-0000000002a1';
+update public.sources set file_deleted_at = now()
+where id in ('00000000-0000-4000-d020-0000000030a1', '00000000-0000-4000-d020-0000000030a2');
+set local role worker_login;
+do $$
+begin
+  perform private.render_job_context('00000000-0000-4000-d020-0000000004a6');
+  raise exception 'FAIL: 편집 입력 원본이 모두 지워졌는데 거부되지 않음';
+exception when sqlstate 'RD001' then
+  raise notice 'PASS 9 보관 삭제: 지워진 음성 제외, 음성·원본이 모두 지워지면 RD001';
+end $$;
+reset role;
+
 rollback;
