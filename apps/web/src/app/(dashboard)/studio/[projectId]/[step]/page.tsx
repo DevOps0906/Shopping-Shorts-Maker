@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ScriptStep } from "./script/script-step";
 import { SourceStep } from "./source/source-step";
 import { TopicStep } from "./topic/topic-step";
+import { VoiceStep } from "./voice/voice-step";
 
 type StudioStepPageProps = {
   params: Promise<{ projectId: string; step: string }>;
@@ -20,6 +21,7 @@ const STEP_BODIES: Partial<Record<StepNumber, (props: { projectId: string }) => 
   1: TopicStep,
   2: SourceStep,
   3: ScriptStep,
+  4: VoiceStep,
 };
 
 /** PostgREST 임베드는 관계에 따라 객체 또는 배열로 온다 */

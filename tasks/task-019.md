@@ -21,6 +21,6 @@
 - 녹음 파일 공개 URL
 
 ## 완료 조건 (실행 가능한 확인)
-- [ ] 공급자 목(mock) 테스트: 성공 시 settle, 오류 시 release + 사용자 문구
-- [ ] 단어 타이밍이 대본 단어 수와 맞는지 테스트
-- [ ] `spec S-09` 렌더 테스트, `pnpm typecheck` 통과
+- [x] 공급자 목(mock) 테스트: 성공 시 settle, 오류 시 release + 사용자 문구
+- [x] 단어 타이밍이 대본 단어 수와 맞는지 테스트
+- [x] `spec S-09` 렌더 테스트, `pnpm typecheck` 통과

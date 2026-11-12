@@ -12,6 +12,7 @@ import os
 
 from .jobs import Handler, JobContext
 from .sources.analyze import handle as select_sources
+from .voice.tts import handle as tts
 
 STUB_SECONDS = float(os.environ.get("WORKER_STUB_SECONDS", "1"))
 
@@ -22,7 +23,7 @@ def _stub(ctx: JobContext) -> None:
 
 HANDLERS: dict[str, Handler] = {
     "render": _stub,
-    "tts": _stub,
+    "tts": tts,  # task-019: 04 목소리 TTS·문장/단어 타이밍·서명 URL 업로드
     "analyze": _stub,
     "select_sources": select_sources,  # task-016: 02 소스 후보 일치도·점수·상위 20편(analyze 큐 공유)
 }

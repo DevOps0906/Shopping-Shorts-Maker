@@ -83,6 +83,11 @@ services:
       WORKER_DB_NAME: ${POSTGRES_DB}
       WORKER_DB_USER: worker_login
       WORKER_DB_PASSWORD: ${WORKER_DB_PASSWORD:-}
+      # task-019 tts: 테스트 공급자 Gemini TTS 키(값은 루트 .env, 없으면 tts 작업이 사용자 문구로 실패·release)
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_TTS_MODEL: ${GEMINI_TTS_MODEL:-}
+      # 음성 업로드: 웹 서버가 payload 에 넣은 서명 업로드 URL의 경로만 쓰고, 접속지는 내부망 게이트웨이로 고정
+      WORKER_STORAGE_URL: http://api-gw:8000
     read_only: true
     tmpfs:
       - /tmp
