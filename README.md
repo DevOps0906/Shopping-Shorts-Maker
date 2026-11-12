@@ -170,7 +170,7 @@ flowchart LR
 | 사이트맵 | 전체 메뉴 | [sitemap.mmd](./docs/diagrams/sitemap.mmd) | 없음 |
 | 사용자 흐름 | `/trends` → `/studio/[projectId]/[step]` → `/analytics` | [user-flow.mmd](./docs/diagrams/user-flow.mmd) | 없음 |
 | 시스템 구성 | - | [system-architecture.mmd](./docs/diagrams/system-architecture.mmd) | 없음 |
-| 설치형 앱 실행 | - | [설치형 앱 실행](#설치형-앱-실행-tauri--capacitor) · [ADR-0005](./docs/adr/0005-installable-app-shell.md) | 없음(W7에서 생성) |
+| 설치형 앱 실행 | - | [설치형 앱 실행](#설치형-앱-실행-tauri--capacitor) · [ADR-0005](./docs/adr/0005-installable-app-shell.md) | `apps/desktop`(Tauri 개발용 셸) · 모바일은 W7 |
 
 ## 핵심 기능
 
@@ -235,7 +235,7 @@ flowchart TD
 
 ## 설치형 앱 실행 (Tauri · Capacitor)
 
-> **아직 앱 폴더가 없습니다.** `apps/desktop`(Tauri)과 `apps/mobile`(Capacitor)은 웹 대시보드 완성 뒤 W7(task-032·033)에서 만듭니다. 아래 절차는 확정된 구성([ADR-0005](docs/adr/0005-installable-app-shell.md))을 기준으로 쓴 것이고, 앱을 만든 뒤에 그대로 쓸 수 있습니다.
+> `apps/desktop`(Tauri)은 **개발용 셸만** 있습니다(서명·자동 업데이트·설치 파일 배포는 W7 task-032). `apps/mobile`(Capacitor)은 아직 없고 W7(task-033)에서 만듭니다. 아래 절차는 확정된 구성([ADR-0005](docs/adr/0005-installable-app-shell.md))을 기준으로 쓴 것이고, 앱을 만든 뒤에 그대로 쓸 수 있습니다.
 
 두 앱 모두 **운영 웹 주소를 여는 셸**입니다. 앱 안에 API 키나 서버 코드가 없으므로, 앱을 실행하기 전에 웹이 먼저 떠 있어야 합니다.
 
@@ -257,8 +257,8 @@ pnpm install && pnpm dev                     # 웹 http://localhost:3000
 | Node·pnpm | 루트 `package.json`의 버전 |
 
 ```bash
-pnpm --filter desktop tauri dev              # 개발: http://localhost:3000 을 창으로 연다
-pnpm --filter desktop tauri build            # 설치 파일: Windows .msi/.exe · macOS .dmg
+pnpm tauri dev                               # 개발: http://localhost:3000 을 창으로 연다(첫 실행은 Rust 빌드로 수 분)
+pnpm tauri build                             # 설치 파일: Windows .msi/.exe · macOS .dmg (W7에서 번들 설정 후)
 ```
 
 - 앱이 열 주소는 `APP_WEB_URL` 환경 변수로 바꿉니다(기본 개발 `http://localhost:3000`, 배포 빌드는 운영 주소).

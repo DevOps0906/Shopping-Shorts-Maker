@@ -13,3 +13,5 @@ id_rsa*
 id_ed25519*
 __pycache__/
 *.pyc
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/gen/schemas/

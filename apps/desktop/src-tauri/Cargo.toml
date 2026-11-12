@@ -1,0 +1,14 @@
+[package]
+name = "shopping-shorts-desktop"
+version = "0.1.0"
+description = "Shopping Shorts Maker 데스크톱 셸 (운영 웹 주소를 여는 창)"
+edition = "2021"
+rust-version = "1.90"
+publish = false
+
+[build-dependencies]
+tauri-build = { version = "=2.7.4", features = [] }
+
+[dependencies]
+tauri = { version = "=2.12.5", features = [] }
+tauri-plugin-opener = "=2.7.3"
