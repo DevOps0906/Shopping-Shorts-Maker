@@ -1,7 +1,7 @@
 # NOW — 재진입 스냅샷 (30줄 이내, 매 작업 끝에 덮어쓴다)
 
-- 갱신: 2026-11-12 (W1 설계 문서 task-005·006·007 초안, task-001 확인, live 싱크 실측)
-- 현재 작업: W0 task-001·002·003 — 상태: 002 결정 확정, 사용자 실측·발송 대기
+- 갱신: 2026-11-12 (D12: 회신 없이 D7 제작 + W2 착수, task-008·030·009·010 완료)
+- 현재 작업: W2 task-011(마이그레이션2·승인 함수·버킷) 진행 → 다음 task-012(큐·워커)·013(단계 상태 머신) 병렬
 - 마지막으로 한 일: task-002 확정(P1 생활·수납 압축팩 / P2 주방 밀폐용기 / P3 생활가전 보풀제거기, 회신 10일·구입비 제품당 5만·합계 15만·클립 2초↑·의뢰서 전체 발송). D7(사용자 결정): 원작자 허락 대신 출처 표기 + 노란 고지 확인 체크(체크해야 승인) + 경고 메일 대처 팁(접이식 7단계), 제작 파트너가 상위 7편 미리 체크, 영상 우하단·설명란 출처 자동 표기, 워터마크 제거는 출처 표기 원본에 금지, 정책 점검 2번 "출처 표기·고지 확인"으로 변경. 반영: planning 3장 02, design.md, 03_SCREENS_UX, spec.json·S-07 와이어(plan2spec 재생성), 프로토타입, 의뢰서 A2-1을 D7 위험 질문으로 교체. PoC 영상 우하단 @작성자 표기·credits.txt 저장 완료(데모 재실행 통과). task-003 원가 표에 이미지 이해(vision) 항목 추가 완료(dry-run 추정, 컷당 프레임 1장, 데모 편당 약 6,268 토큰)
 - 추가(2026-11-12 오후): D8 "20편 검색(목록) → 체크 10편만 다운로드 → 5편 사용, 승인 5편·예외 3~4편" 반영(planning 1·3·4·7장·오류표, design, 03, 프로토타입 dlLabel, spec). D9 "제작 전 모델별 AI 예상 비용" 반영(S-02 표·S-04 선택 바, 예시 단가 최저 약 30원/추천 약 160원/Claude만 약 1,020원). PoC: Gemini 영상 dry-run·--sources N·렌더 전 estimate 표(out/estimate.csv) 추가, 10편 기준 토큰 Claude 프레임 50,144 vs Gemini 4,080
 - Gemini 실호출: 사용자 무료 키가 루트 .env.local(GEMINI_API_KEY 또는 GOOGLE_API_KEY, 내용 열람 금지·권한 차단됨). `run.py --demo --live --llm gemini` 성공(gemini-2.5-flash, 실측 입력 4,771·출력 311·thinking 1,851 토큰, 0원). 합성 클립만 전송. 키 유출 검사 0건. 독립 보안 리뷰(Codex) 지적 5건 반영 완료: 생성 POST는 결과 불명 시 재시도 안 함(429만 1회), 본문 20MB 검사, 어댑터 dry_run 차단, 단가 미상은 빈칸, 렌더 시간에서 API 대기 제외. tests/test_gemini.py 5건 통과. .env.example 변경은 사용자가 이름만 추가됐는지 확인 필요
@@ -17,6 +17,8 @@
 - W1 설계 문서만 선행(사용자 결정, 게이트 전): task-005 ADR 0001~0005(제안, challenger 🔴3·🟡7 반영, fable 사실 검증 틀림 0), task-007 docs/04_API.md(YouTube 절). 셀프 호스팅 이미지 supabase/postgres:17.6.1.136에서 pgmq 1.5.1·pg_cron 1.6.4 사용 가능, vault 0.3.1 설치됨
 - task-006 docs/05_DATA_MODEL.md(23 테이블, RLS 빈 칸 0, 보안 리뷰 🔴4 반영 후 재검증 ACCEPT). task-001 3구간 캡처·비밀 0건 완료(폼 제출 확인은 계정 필요). live 싱크 실측: Gemini TTS→MP4 영상·음성 15.000초, 경계 오차 0.004초(out/listen/demo_15s_live_synced.mp4)
 - 잠정 결정(사용자 확인 전, 바꾸면 해당 문서 수정): GPL 거부를 서버 내부 FFmpeg에도 적용 / youtube.force-ssl MVP 제외(고정 댓글은 Studio 안내) / 서버 쓰기=service_role(서버 코드만)·워커=전용 역할 / 승인·권리·발행 열은 private SECURITY DEFINER 함수 전용, api.* 래퍼 / 보관: 미발행 원본 수집+30일, 음성·MP4 발행+30일
+- W2 완료: task-008 웹 뼈대(a0b571f), 030 Docker 스택(2fabdd0), 009 로그인(a658344), 010 마이그레이션1(f344d3c). 개발 DB 재생성: `MIGRATE_ALLOW_RESET=1 sh docker/migrate.sh reset`. 로그인 화면은 화면 표에 없음(추가 여부 결정)
+- 사용자 작업 필요: 루트 .env.example 작성(권한 설정이 .env* 쓰기 차단, 초안 scratchpad/env.example.draft + NEXT_PUBLIC_SUPABASE_URL·NEXT_PUBLIC_SUPABASE_ANON_KEY·SUPABASE_INTERNAL_URL), 개발 .env의 ENABLE_EMAIL_AUTOCONFIRM=true(메일 서버 없음)
 - 열린 결정(사용자 확인 필요):
   - ADR-0002: 서버 내부 GPL 도구(libx264)에도 GPL 거부 적용? (현재안 적용 → LGPL FFmpeg + openh264, 화질 실측 필요)
   - YouTube: 고정 댓글 API 미지원 → 15-2 스위치를 Studio 안내로 바꿀지, youtube.force-ssl(예약 시각 변경·댓글) 범위 추가 여부
@@ -27,8 +29,8 @@
   - 실무 모델 결정(D10: Claude Sonnet / OpenAI Sol·Terra·Luna, OpenAI 공식 단가 미확인)
   - Fish Audio S2의 한국어 지원 실호출 확인(키 필요)
 - 주의: D7은 법적 허락이 아님 — 법률 검토 회신으로 재판단. 00_LEAN 기준 ②(권리 확인 원본 7편)는 D7과 의미가 어긋나 사용자 판단 필요. W1~W6은 00_LEAN 통과 전 보류. C 경로를 뺐으므로 기준 ②(2개 카테고리 7편)는 A+B만으로 채워야 함. plan2spec은 docs/diagrams에 flow·sitemap도 쓰므로 필요 없으면 되돌릴 것. 경고 색은 주의 토큰(#FFF4D6/#7A4E00) — 순수 노랑 글자는 대비 부족. 프로토타입 변경은 JS 문법 검사만, 화면 확인은 미실시. 실제 API 연결 시 task-003 독립 코드 리뷰 필요
-- SDLC 단계: 01 검증(W0) 진행 중
+- SDLC 단계: 04 구현(W2) 진행 — 00_LEAN 판정 전(D12 예외), W0 실측은 사용자 진행
 - 담당 모델/역할: 팀장 · Opus 5.5 / builder
 - 수정 파일: 모두 커밋됨
-- 테스트 상태: poc --demo 통과, --voice-file 렌더 15.000초·싱크 0.001초, tests 5건 통과, 프로토타입 JS 문법 통과
+- 테스트 상태: web lint·typecheck·test 21·build 통과, RLS rls_core 25 PASS, compose 12 서비스 healthy, PoC unittest 통과
 - 남은 작업: 위 열린 결정, /token-audit, /secure setup(task-008에 포함)
