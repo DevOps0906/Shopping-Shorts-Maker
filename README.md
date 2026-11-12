@@ -170,6 +170,7 @@ flowchart LR
 | 사이트맵 | 전체 메뉴 | [sitemap.mmd](./docs/diagrams/sitemap.mmd) | 없음 |
 | 사용자 흐름 | `/trends` → `/studio/[projectId]/[step]` → `/analytics` | [user-flow.mmd](./docs/diagrams/user-flow.mmd) | 없음 |
 | 시스템 구성 | - | [system-architecture.mmd](./docs/diagrams/system-architecture.mmd) | 없음 |
+| 설치형 앱 실행 | - | [설치형 앱 실행](#설치형-앱-실행-tauri--capacitor) · [ADR-0005](./docs/adr/0005-installable-app-shell.md) | 없음(W7에서 생성) |
 
 ## 핵심 기능
 
@@ -231,3 +232,63 @@ flowchart TD
 | 인프라 | Docker Compose, 개발·운영 동일 구성, 자체 서버 운영 |
 | LLM | Claude/OpenAI API |
 | 음성 | Fish Audio/ElevenLabs |
+
+## 설치형 앱 실행 (Tauri · Capacitor)
+
+> **아직 앱 폴더가 없습니다.** `apps/desktop`(Tauri)과 `apps/mobile`(Capacitor)은 웹 대시보드 완성 뒤 W7(task-032·033)에서 만듭니다. 아래 절차는 확정된 구성([ADR-0005](docs/adr/0005-installable-app-shell.md))을 기준으로 쓴 것이고, 앱을 만든 뒤에 그대로 쓸 수 있습니다.
+
+두 앱 모두 **운영 웹 주소를 여는 셸**입니다. 앱 안에 API 키나 서버 코드가 없으므로, 앱을 실행하기 전에 웹이 먼저 떠 있어야 합니다.
+
+### 0. 웹 먼저 실행 (공통)
+
+```bash
+docker compose up -d --wait                  # Supabase·워커 개발 스택
+sh docker/migrate.sh up                      # DB 마이그레이션 적용
+pnpm install && pnpm dev                     # 웹 http://localhost:3000
+```
+
+### 1. 데스크톱 앱 — Tauri 2.12.5
+
+| 준비물 | 설치 |
+| --- | --- |
+| Rust | [rustup](https://rustup.rs) 설치 후 `rustup default stable` |
+| Windows | Visual Studio Build Tools(“C++를 사용한 데스크톱 개발”), WebView2(Windows 11은 기본 포함) |
+| macOS | `xcode-select --install` |
+| Node·pnpm | 루트 `package.json`의 버전 |
+
+```bash
+pnpm --filter desktop tauri dev              # 개발: http://localhost:3000 을 창으로 연다
+pnpm --filter desktop tauri build            # 설치 파일: Windows .msi/.exe · macOS .dmg
+```
+
+- 앱이 열 주소는 `APP_WEB_URL` 환경 변수로 바꿉니다(기본 개발 `http://localhost:3000`, 배포 빌드는 운영 주소).
+- 창 최소 크기는 1200px(데스크톱 구간)입니다. 외부 링크는 시스템 브라우저로 열립니다.
+- 배포용 코드 서명·공증 인증서와 자동 업데이트 서명 키는 CI 비밀에만 둡니다(저장소에 넣지 않음).
+
+### 2. 모바일 앱 — Capacitor 8.6.0
+
+| 준비물 | 설치 |
+| --- | --- |
+| Android | Android Studio(SDK·에뮬레이터), JDK 21 |
+| iOS | macOS + Xcode(시뮬레이터), Apple 개발자 계정(실기기·TestFlight) |
+
+```bash
+cd apps/mobile
+pnpm install
+pnpm exec cap sync                           # 설정·플러그인을 android/ios 프로젝트에 반영
+pnpm exec cap run android                    # 에뮬레이터·연결된 기기에서 실행
+pnpm exec cap open ios                       # Xcode에서 열어 실행(macOS만)
+```
+
+- 앱이 열 주소는 `capacitor.config.ts`의 `server.url`이며 `APP_WEB_URL`로 바꿉니다.
+  - Android 에뮬레이터에서 내 PC의 웹: `http://10.0.2.2:3000`
+  - 실기기: 같은 와이파이의 PC IP(예: `http://192.168.0.10:3000`), 웹을 `pnpm --filter web exec next dev -H 0.0.0.0`으로 실행
+  - iOS 시뮬레이터: `http://localhost:3000`
+- `http://` 개발 주소는 개발 빌드에서만 허용합니다(`server.cleartext`). 배포 빌드는 운영 HTTPS 주소만 씁니다.
+- 마이크(직접 녹음) 권한 문구: Android `RECORD_AUDIO`, iOS `NSMicrophoneUsageDescription`.
+- 로그인: Google은 앱 웹뷰 로그인을 막으므로 이메일 로그인을 쓰고, YouTube 연결(OAuth)은 시스템 브라우저로 열렸다가 앱으로 돌아옵니다.
+
+### 앱에서 하지 않는 것
+
+- 틱톡·샤오홍슈 원본 수집: 앱 웹뷰는 사용자 브라우저 로그인을 쓸 수 없으므로 PC 브라우저 확장으로만 수집합니다.
+- 앱에 API 키·비밀 넣기: 모든 키는 서버에만 있습니다.
