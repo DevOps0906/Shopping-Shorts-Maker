@@ -2,7 +2,7 @@
 
 사용:
   python poc/agency/run.py --demo [--sources N]     # 합성 클립 생성 + 샘플 2편(15·20초)
-  python poc/agency/run.py samples/x.json [...]     # 실제 cut_map (권리 확인 원본만)
+  python poc/agency/run.py samples/x.json [...]     # 실제 cut_map (컷마다 rights_basis 필수, 출처 표기 원본은 notice_ack)
 표준 라이브러리 + ffmpeg/ffprobe만 쓴다. TTS·LLM은 기본 dry-run(호출 없음, 0원).
 """
 from __future__ import annotations
@@ -49,8 +49,33 @@ def make_demo_sources() -> None:
     print(f"합성 클립 {len(DEMO_SOURCES)}개 → {src}")
 
 
+RIGHTS_CONFIRMED = {"own", "seller", "licensed"}  # 자체 촬영·판매자 제공·허락받음
+ATTRIBUTION = "attribution"  # D7: 회신 없이 출처 표기 + 고지 확인으로 사용(법적 허락 아님)
+
+
+def check_rights(cm: dict) -> None:
+    """컷마다 rights_basis 필수. attribution은 작성자·플랫폼·URL과 cut_map의 notice_ack(노란 고지 확인)가 있어야 하고 워터마크 제거 금지."""
+    attr = []
+    for c in cm["cuts"]:
+        basis = c.get("rights_basis")
+        if basis not in RIGHTS_CONFIRMED | {ATTRIBUTION}:
+            raise ValueError(f"컷 {c['no']} rights_basis 없음/잘못됨: {basis!r} (own·seller·licensed·attribution)")
+        if basis == ATTRIBUTION:
+            missing = [k for k in ("author", "platform", "url") if not c.get(k)]
+            if missing:
+                raise ValueError(f"컷 {c['no']} 출처 표기 원본에 {', '.join(missing)} 없음")
+            if c.get("remove_watermark"):
+                raise ValueError(f"컷 {c['no']} 출처 표기 원본은 워터마크 제거 불가(권리 확인 원본만)")
+            attr.append(c["no"])
+    if attr and cm.get("notice_ack") is not True:
+        raise ValueError(f"출처 표기 원본(컷 {attr})이 있어 notice_ack: true(고지 확인 체크)가 필요합니다")
+    if attr:
+        print(f"  주의: 컷 {attr}은 판매자 허락 없이 출처 표기로 사용(D7, 법적 허락 아님). 정책 점검 2번 '출처 표기·고지 확인' 대상")
+
+
 def load_cut_map(path: Path) -> dict:
     cm = json.loads(path.read_text(encoding="utf-8"))
+    check_rights(cm)
     total = 0.0
     for c in cm["cuts"]:
         src = (path.parent / c["source"]).resolve()

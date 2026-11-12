@@ -6,6 +6,7 @@
     "mode": "tts",
     "voice_id": ""
   },
+  "notice_ack": true,
   "cuts": [
     {
       "no": 1,
@@ -14,7 +15,9 @@
       "start": 1.0,
       "end": 4.0,
       "author": "demo_creator_a",
-      "platform": "tiktok"
+      "platform": "tiktok",
+      "rights_basis": "attribution",
+      "url": "https://example.com/demo/demo_creator_a/1"
     },
     {
       "no": 2,
@@ -23,7 +26,9 @@
       "start": 1.0,
       "end": 4.0,
       "author": "demo_xhs_b",
-      "platform": "xiaohongshu"
+      "platform": "xiaohongshu",
+      "rights_basis": "attribution",
+      "url": "https://example.com/demo/demo_xhs_b/2"
     },
     {
       "no": 3,
@@ -32,7 +37,9 @@
       "start": 1.0,
       "end": 4.0,
       "author": "demo_creator_a",
-      "platform": "tiktok"
+      "platform": "tiktok",
+      "rights_basis": "attribution",
+      "url": "https://example.com/demo/demo_creator_a/3"
     },
     {
       "no": 4,
@@ -41,7 +48,9 @@
       "start": 1.0,
       "end": 4.0,
       "author": "demo_xhs_b",
-      "platform": "xiaohongshu"
+      "platform": "xiaohongshu",
+      "rights_basis": "attribution",
+      "url": "https://example.com/demo/demo_xhs_b/4"
     },
     {
       "no": 5,
@@ -50,7 +59,9 @@
       "start": 1.0,
       "end": 4.0,
       "author": "demo_creator_c",
-      "platform": "tiktok"
+      "platform": "tiktok",
+      "rights_basis": "attribution",
+      "url": "https://example.com/demo/demo_creator_c/5"
     }
   ]
 }

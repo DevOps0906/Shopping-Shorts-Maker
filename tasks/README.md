@@ -9,7 +9,7 @@
 | [task-005](task-005.md) | ADR: Supabase Queues·워커 언어·확장 통신·셀프 호스팅 구성 | W1 | 004 | 높음 | planner | 초안 완료·사용자 결정 대기(설계 문서만, 게이트 전) |
 | [task-006](task-006.md) | 스키마·RLS 표(권리 근거·확인자·삭제 예정일) | W1 | 004 | 높음 | planner | 초안 완료·사용자 결정 대기(설계 문서만, 게이트 전) |
 | [task-007](task-007.md) | YouTube OAuth·업로드·분석 API 요건·쿼터 조사 | W1 | 004 | 높음 | planner | 초안 완료·사용자 결정 대기(설계 문서만, 게이트 전) |
-| [task-008](task-008.md) | 프로젝트 생성·토큰·3구간·대시보드 셸·라우트(+ /secure setup) | W2 | 005 | 높음 | builder | 보류(00_LEAN 통과 후) |
+| [task-008](task-008.md) | 프로젝트 생성·토큰·3구간·대시보드 셸·라우트(+ /secure setup) | W2 | 005 | 높음 | builder | 진행(D12, 게이트 전 착수) |
 | [task-009](task-009.md) | Supabase Auth·로그인·세션 | W2 | 008, 030 | 높음 | builder | 보류(00_LEAN 통과 후) |
 | [task-010](task-010.md) | 마이그레이션1 사용자·채널·프로젝트·카테고리·trend_items·이벤트 | W2 | 006, 009, 030 | 높음 | builder | 보류(00_LEAN 통과 후) |
 | [task-011](task-011.md) | 마이그레이션2 제작·jobs·credit_ledger·발행·성과·비공개 버킷 | W2 | 010 | 높음 | builder | 보류(00_LEAN 통과 후) |
@@ -31,7 +31,7 @@
 | [task-027](task-027.md) | 6단계 E2E·실패 시나리오·3구간 UI 회귀 | W5 | 021, 024, 025 | 보통 | tester | 보류(00_LEAN 통과 후) |
 | [task-028](task-028.md) | 운영 배포·보안 L2·전문가 검토 통과 게이트 | W6 | 026, 027, 031 | 높음 | builder | 보류(00_LEAN 통과 후) |
 | [task-029](task-029.md) | 베타 20명·30편 측정 | W6 | 028 | 보통 | planner | 보류(00_LEAN 통과 후) |
-| [task-030](task-030.md) | Docker Compose 개발 스택(Supabase 셀프 호스팅·웹·워커) | W2 | 005 | 높음 | builder | 보류(00_LEAN 통과 후) |
+| [task-030](task-030.md) | Docker Compose 개발 스택(Supabase 셀프 호스팅·웹·워커) | W2 | 005 | 높음 | builder | 진행(D12, 게이트 전 착수) |
 | [task-031](task-031.md) | 운영 서버 셀프 호스팅: 프록시 TLS·방화벽·키 회전·백업/복구·모니터링·업그레이드 | W6 | 026 | 높음 | builder | 보류(00_LEAN 통과 후) |
 | [task-032](task-032.md) | 데스크톱 설치 앱(Tauri): 셸·서명·자동 업데이트·다운로드 페이지 | W7 | 028 | 높음 | builder | 보류(대시보드 완성 후) |
 | [task-033](task-033.md) | 모바일 앱(Capacitor): Android APK·iOS TestFlight·딥링크·권한 | W7 | 028 | 높음 | builder | 보류(대시보드 완성 후) |
