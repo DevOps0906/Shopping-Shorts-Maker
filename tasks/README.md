@@ -6,9 +6,9 @@
 | [task-002](task-002.md) | 권리 확인 원본 5편 확보 실측(테스트 카테고리 3개)·전문가 검토 의뢰 | W0 | — | 보통 | planner | 진행 |
 | [task-003](task-003.md) | 대행 파이프라인·TTS 6종·원가 측정(권리 확인 원본만) | W0 | 002 | 높음 | builder | 진행 |
 | [task-004](task-004.md) | 문서 정합(D1~D9·5편 규칙·권리 동의 문구) | W1 | 002 | 낮음 | planner | 보류(00_LEAN 통과 후) |
-| [task-005](task-005.md) | ADR: Supabase Queues·워커 언어·확장 통신·셀프 호스팅 구성 | W1 | 004 | 높음 | planner | 보류(00_LEAN 통과 후) |
+| [task-005](task-005.md) | ADR: Supabase Queues·워커 언어·확장 통신·셀프 호스팅 구성 | W1 | 004 | 높음 | planner | 초안 완료·사용자 결정 대기(설계 문서만, 게이트 전) |
 | [task-006](task-006.md) | 스키마·RLS 표(권리 근거·확인자·삭제 예정일) | W1 | 004 | 높음 | planner | 보류(00_LEAN 통과 후) |
-| [task-007](task-007.md) | YouTube OAuth·업로드·분석 API 요건·쿼터 조사 | W1 | 004 | 높음 | planner | 보류(00_LEAN 통과 후) |
+| [task-007](task-007.md) | YouTube OAuth·업로드·분석 API 요건·쿼터 조사 | W1 | 004 | 높음 | planner | 초안 완료·사용자 결정 대기(설계 문서만, 게이트 전) |
 | [task-008](task-008.md) | 프로젝트 생성·토큰·3구간·대시보드 셸·라우트(+ /secure setup) | W2 | 005 | 높음 | builder | 보류(00_LEAN 통과 후) |
 | [task-009](task-009.md) | Supabase Auth·로그인·세션 | W2 | 008, 030 | 높음 | builder | 보류(00_LEAN 통과 후) |
 | [task-010](task-010.md) | 마이그레이션1 사용자·채널·프로젝트·카테고리·trend_items·이벤트 | W2 | 006, 009, 030 | 높음 | builder | 보류(00_LEAN 통과 후) |
