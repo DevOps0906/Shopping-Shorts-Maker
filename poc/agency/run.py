@@ -238,7 +238,9 @@ def render(cm: dict, cfg: dict, tts) -> tuple[Path, list[Usage]]:
     for c in cm["cuts"]:
         dur = c.get("dur", c["end"] - c["start"])
         name = f"cut_{c['no']}.mp4"
-        ff(["-ss", str(c["start"]), "-t", f"{dur:.3f}", "-i", str(c["source_path"]), "-vf", vf, "-an",
+        # 원본 남은 길이가 컷보다 짧으면 마지막 프레임을 정지 화면으로 늘려 컷 길이를 채운다
+        ff(["-ss", str(c["start"]), "-i", str(c["source_path"]), "-vf", f"{vf},tpad=stop_mode=clone:stop_duration={dur:.3f}",
+            "-t", f"{dur:.3f}", "-an",
             "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-pix_fmt", "yuv420p", name], cwd=work)
         concat_lines.append(f"file '{name}'")
         timeline.append((c, t, t + dur))
@@ -441,14 +443,15 @@ LIVE_PROMPT = ("첨부한 쇼핑 숏폼 원본 영상을 분석해 (1) 화면에
 
 
 def estimate_table(cms: list[dict], n: int, cfg: dict) -> list[dict]:
-    """렌더 전 영상 1편 기준 모델 조합별 예상 토큰·원(dry-run 추정, 호출 없음). 첫 cut_map 기준."""
-    cm = cms[0]
+    """렌더 전 영상 1편 기준 모델 조합별 예상 토큰·원(dry-run 추정, 호출 없음). config `estimate` 가정 우선, 없으면 첫 cut_map 기준."""
+    cm, es = cms[0], cfg.get("estimate", {})
     prompt = "다음 대사를 쇼츠 대본으로 다듬어 주세요:\n" + "\n".join(c["line"] for c in cm["cuts"])
     s_in = s_out = ClaudeLLM.estimate_tokens(prompt)  # dry-run 출력 길이 ≈ 입력 길이
-    avg = sum(c["end"] - c["start"] for c in cm["cuts"]) / len(cm["cuts"])
+    s_in, s_out = int(es.get("script_input_tokens") or s_in), int(es.get("script_output_tokens") or s_out)
+    avg = float(es.get("source_avg_sec") or sum(c["end"] - c["start"] for c in cm["cuts"]) / len(cm["cuts"]))
     frames = math.ceil(avg)
     srcs = sorted({c["source_path"] for c in cm["cuts"]})
-    sizes = [probe_video_size(x) for x in srcs]
+    sizes = [tuple(es["source_frame"])] if es.get("source_frame") else [probe_video_size(x) for x in srcs]
     c_vid = sum(ClaudeLLM.estimate_image_tokens(*sizes[(i * frames + k) % len(sizes)]) for i in range(n) for k in range(frames))
     g_vid = GeminiVideo(True, int(cfg.get("gemini", {}).get("tokens_per_frame", 70))).analyze(avg, n).units["input_tokens"]
     c_th, g_th = THUMBS * ClaudeLLM.estimate_image_tokens(*THUMB_SIZE), THUMBS * GEMINI_IMG_TOKENS

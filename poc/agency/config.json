@@ -51,6 +51,16 @@
   "vision": {
     "frames_per_cut": 1
   },
+  "estimate": {
+    "_comment": "제작 전 예상 비용 표 가정(화면 S-02·S-04 예시와 같은 값). W0 실측 후 여기만 고친다. 비우면 cut_map 데모 값으로 계산",
+    "script_input_tokens": 20000,
+    "script_output_tokens": 3000,
+    "source_avg_sec": 15,
+    "source_frame": [
+      720,
+      1280
+    ]
+  },
   "gemini": {
     "model": "gemini-3.5-flash-lite",
     "tokens_per_frame": 70,
