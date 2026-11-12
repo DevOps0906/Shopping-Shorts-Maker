@@ -1,0 +1,2 @@
+# 실행 의존성 (ADR-0002). psycopg 3은 순수 파이썬 + 시스템 libpq(libpq5, PostgreSQL License)
+psycopg==3.3.8

@@ -64,8 +64,208 @@ erDiagram
     text event
     timestamptz created_at
   }
+  topics {
+    uuid id PK
+    uuid project_id FK
+    integer round
+    text name
+    text reason
+    text__ evidence_urls
+    boolean picked
+    timestamptz created_at
+  }
+  sources {
+    uuid id PK
+    uuid project_id FK
+    uuid rights_confirmed_by FK
+    text platform
+    text url
+    text author
+    text title
+    timestamptz collected_at
+    integer width
+    integer height
+    numeric duration_sec
+    numeric score
+    string more_7_cols
+  }
+  scripts {
+    uuid id PK
+    uuid project_id FK
+    integer version
+    jsonb lines
+    numeric est_sec
+    timestamptz approved_at
+    timestamptz created_at
+  }
+  voice_takes {
+    uuid id PK
+    uuid project_id FK
+    text voice_id
+    text source
+    text audio_path
+    jsonb words
+    jsonb pauses
+    numeric duration_sec
+    timestamptz created_at
+  }
+  renders {
+    uuid id PK
+    uuid project_id FK
+    integer version
+    jsonb cut_map
+    text upscale_status
+    text clean_status
+    text mp4_path
+    timestamptz created_at
+  }
+  chat_messages {
+    uuid id PK
+    uuid project_id FK
+    text role
+    text kind
+    text text
+    jsonb payload
+    timestamptz created_at
+  }
+  extension_connections {
+    uuid id PK
+    uuid user_id FK
+    text access_token_hash
+    timestamptz access_expires_at
+    text refresh_token_hash
+    timestamptz refresh_expires_at
+    uuid family_id
+    timestamptz last_heartbeat_at
+    timestamptz revoked_at
+    timestamptz created_at
+  }
+  jobs {
+    uuid id PK
+    uuid project_id FK
+    uuid extension_id FK
+    smallint step
+    text type
+    text status
+    text idempotency_key
+    integer attempts
+    integer max_attempts
+    jsonb payload
+    text error
+    timestamptz started_at
+    string more_2_cols
+  }
+  credit_ledger {
+    uuid id PK
+    uuid user_id FK
+    uuid project_id FK
+    uuid job_id FK
+    text kind
+    integer delta
+    text reason
+    text idempotency_key
+    timestamptz created_at
+  }
+  publications {
+    uuid id PK
+    uuid project_id
+    uuid account_id
+    text mode
+    timestamptz scheduled_at
+    timestamptz published_at
+    text platform_video_id
+    text status
+    text error
+    integer retry_count
+    timestamptz created_at
+  }
+  video_metrics {
+    uuid id PK
+    uuid publication_id FK
+    date date
+    integer views
+    integer link_clicks
+    numeric avg_view_pct
+    integer est_revenue
+  }
+  policy_checks {
+    uuid id PK
+    uuid project_id FK
+    text item
+    text result
+    text detail
+  }
+  affiliate_links {
+    uuid id PK
+    uuid project_id FK
+    text program
+    text url
+    text short_url
+    text partner_id_ref
+    boolean disclosed
+    text bio_service
+    integer bio_no
+    timestamptz bio_registered_at
+    timestamptz created_at
+  }
+  bio_pages {
+    uuid id PK
+    uuid account_id FK
+    text service
+    text url
+    timestamptz created_at
+  }
+  bio_items {
+    uuid id PK
+    uuid bio_page_id FK
+    uuid project_id FK
+    uuid affiliate_link_id FK
+    integer no
+    text short_url
+    text title
+    text thumb_url
+    timestamptz registered_at
+    timestamptz archived_at
+  }
+  link_clicks {
+    uuid id PK
+    uuid affiliate_link_id FK
+    text short_url
+    timestamptz clicked_at
+    text referrer
+    text platform
+  }
+  api_keys {
+    uuid id PK
+    uuid user_id FK
+    text provider
+    uuid secret_ref
+    text last4
+    text status
+    timestamptz tested_at
+    timestamptz created_at
+  }
   categories ||--o{ trend_items : "category_id"
   categories ||--o{ accounts : "category_id"
   categories ||--o{ projects : "category_id"
   accounts ||--o{ projects : "account_id"
   projects ||--o{ project_events : "project_id"
+  projects ||--o{ topics : "project_id"
+  projects ||--o{ sources : "project_id"
+  projects ||--o{ scripts : "project_id"
+  projects ||--o{ voice_takes : "project_id"
+  projects ||--o{ renders : "project_id"
+  projects ||--o{ chat_messages : "project_id"
+  projects ||--o{ jobs : "project_id"
+  extension_connections ||--o{ jobs : "extension_id"
+  projects ||--o{ credit_ledger : "project_id"
+  jobs ||--o{ credit_ledger : "job_id"
+  projects ||--o{ publications : "project_id"
+  publications ||--o{ video_metrics : "publication_id"
+  projects ||--o{ policy_checks : "project_id"
+  projects ||--o{ affiliate_links : "project_id"
+  accounts ||--o{ bio_pages : "account_id"
+  bio_pages ||--o{ bio_items : "bio_page_id"
+  projects ||--o{ bio_items : "project_id"
+  affiliate_links ||--o{ bio_items : "affiliate_link_id"
+  affiliate_links ||--o{ link_clicks : "affiliate_link_id"

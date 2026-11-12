@@ -4,3 +4,6 @@
 .env*
 Dockerfile
 .dockerignore
+tests
+.pytest_cache
+requirements-dev.txt

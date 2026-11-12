@@ -42,8 +42,12 @@ FROM ${PYTHON_IMAGE}
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-      libopenh264-8 libass9 libfreetype6 libfontconfig1 libfribidi0 libharfbuzz0b fonts-noto-cjk \
+      libopenh264-8 libass9 libfreetype6 libfontconfig1 libfribidi0 libharfbuzz0b fonts-noto-cjk libpq5 \
  && rm -rf /var/lib/apt/lists/*
+
+# psycopg 3(순수 파이썬, 시스템 libpq 사용). 버전 고정: requirements.txt
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir --no-compile -r /tmp/requirements.txt && rm /tmp/requirements.txt
 
 COPY --from=ffmpeg-build /opt/ffmpeg /opt/ffmpeg
 ENV PATH="/opt/ffmpeg/bin:${PATH}" \

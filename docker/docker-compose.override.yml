@@ -76,10 +76,13 @@ services:
       db:
         condition: service_healthy
     environment:
-      # 접속 정보만. 워커 전용 DB 역할·비밀번호는 마이그레이션 작업(ADR-0001)에서 만든다. service_role 미사용.
+      # 접속 정보만. 로그인 역할 worker_login(= worker_role 권한, 마이그레이션 20261112180000)으로 붙는다. service_role 미사용.
+      # 비밀번호는 루트 .env 의 WORKER_DB_PASSWORD(마이그레이션에 두지 않음, DB에는 `alter role worker_login password`로 설정).
       WORKER_DB_HOST: db
       WORKER_DB_PORT: ${POSTGRES_PORT}
       WORKER_DB_NAME: ${POSTGRES_DB}
+      WORKER_DB_USER: worker_login
+      WORKER_DB_PASSWORD: ${WORKER_DB_PASSWORD:-}
     read_only: true
     tmpfs:
       - /tmp

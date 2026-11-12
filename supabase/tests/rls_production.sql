@@ -263,25 +263,29 @@ grant worker_role to postgres;  -- 트랜잭션 ROLLBACK 으로 함께 취소된
 set local role worker_role;
 do $$
 begin
-  insert into public.credit_ledger (user_id, project_id, job_id, kind, delta, idempotency_key)
-  values ('00000000-0000-4000-b000-00000000000a', '00000000-0000-4000-b200-00000000000a',
-          '00000000-0000-4000-b500-00000000000a', 'settle', -25, 'rls-test-settle-1');
-  raise notice 'PASS 22 워커 settle 1건 INSERT';
+  -- 20261112180300 이후 워커는 원장에 직접 쓰지 못하고 private.settle_job/release_job만 쓴다.
+  -- 이중 settle·settle 뒤 release 거부는 supabase/tests/jobs_queue.sql에서 함수 경로로 검사한다.
   begin
     insert into public.credit_ledger (user_id, project_id, job_id, kind, delta, idempotency_key)
     values ('00000000-0000-4000-b000-00000000000a', '00000000-0000-4000-b200-00000000000a',
-            '00000000-0000-4000-b500-00000000000a', 'settle', -25, 'rls-test-settle-2');
-    raise exception 'FAIL: 이중 settle 허용됨';
-  exception when unique_violation then
-    raise notice 'PASS 23 같은 작업 이중 settle 거부';
+            '00000000-0000-4000-b500-00000000000a', 'settle', -25, 'rls-test-settle-1');
+    raise exception 'FAIL: 워커 settle 직접 INSERT 허용됨';
+  exception when insufficient_privilege then
+    raise notice 'PASS 22 워커 settle 직접 INSERT 거부(정산 함수만)';
   end;
   begin
     insert into public.credit_ledger (user_id, project_id, job_id, kind, delta, idempotency_key)
     values ('00000000-0000-4000-b000-00000000000a', '00000000-0000-4000-b200-00000000000a',
             '00000000-0000-4000-b500-00000000000a', 'release', 30, 'rls-test-release-1');
-    raise exception 'FAIL: settle 뒤 release 허용됨';
-  exception when unique_violation then
-    raise notice 'PASS 24 settle 뒤 release 거부(작업당 정산 1건)';
+    raise exception 'FAIL: 워커 release 직접 INSERT 허용됨';
+  exception when insufficient_privilege then
+    raise notice 'PASS 23 워커 release 직접 INSERT 거부(정산 함수만)';
+  end;
+  begin
+    perform 1 from public.credit_ledger limit 1;
+    raise exception 'FAIL: 워커 원장 조회 허용됨';
+  exception when insufficient_privilege then
+    raise notice 'PASS 24 워커 원장 조회 거부';
   end;
   begin
     insert into public.credit_ledger (user_id, kind, delta, idempotency_key)

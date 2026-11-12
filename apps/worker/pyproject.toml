@@ -1,0 +1,9 @@
+[project]
+name = "shorts-worker"
+version = "0.1.0"
+description = "영상 워커 (ADR-0002): pgmq 소비 · FFmpeg LGPL"
+requires-python = ">=3.15"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
