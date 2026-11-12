@@ -1,0 +1,71 @@
+erDiagram
+  categories {
+    uuid id PK
+    text name
+    text__ keywords_ko
+    text__ keywords_en
+    text__ keywords_zh
+    text__ banned_terms
+  }
+  trend_items {
+    uuid id PK
+    uuid category_id FK
+    text name
+    text period
+    numeric overseas_growth
+    numeric kr_search_growth
+    numeric kr_competition
+    numeric opportunity_score
+    boolean sellable
+    timestamptz captured_at
+  }
+  user_profiles {
+    uuid user_id PK,FK
+    text name
+    text email
+    text default_tone
+    text default_lang
+    text subtitle_style
+    smallint default_len
+    boolean notify_done
+    boolean notify_weekly
+  }
+  accounts {
+    uuid id PK
+    uuid user_id FK
+    uuid category_id FK
+    text platform
+    text channel_name
+    text tone
+    text target
+    integer weekly_goal
+    boolean is_default
+    uuid oauth_token_ref
+    text status
+    timestamptz created_at
+  }
+  projects {
+    uuid id PK
+    uuid user_id FK
+    uuid category_id FK
+    uuid account_id
+    text name
+    smallint current_step
+    jsonb step_status
+    text status
+    smallint target_sec
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  project_events {
+    uuid id PK
+    uuid project_id FK
+    smallint step
+    text event
+    timestamptz created_at
+  }
+  categories ||--o{ trend_items : "category_id"
+  categories ||--o{ accounts : "category_id"
+  categories ||--o{ projects : "category_id"
+  accounts ||--o{ projects : "account_id"
+  projects ||--o{ project_events : "project_id"

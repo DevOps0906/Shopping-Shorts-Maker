@@ -20,6 +20,6 @@
 - 적용된 마이그레이션 수정(새 번호 파일로만)
 
 ## 완료 조건 (실행 가능한 확인)
-- [ ] `supabase db reset` 성공
-- [ ] RLS 테스트: 다른 사용자의 projects 읽기·쓰기 0행
-- [ ] `supabase gen types` 후 `pnpm typecheck` 통과, `sql2erd` 갱신 후 `mmd-check` 통과
+- [x] `supabase db reset` 성공(셀프 호스팅이라 `MIGRATE_ALLOW_RESET=1 sh docker/migrate.sh reset`으로 대체)
+- [x] RLS 테스트: 다른 사용자의 projects 읽기·쓰기 0행
+- [x] `supabase gen types` 후 `pnpm typecheck` 통과, `sql2erd` 갱신 후 `mmd-check` 통과

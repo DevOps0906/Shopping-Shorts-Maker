@@ -1,0 +1,76 @@
+-- task-010 개발 시드: 카테고리 10종(docs/planning.md 11장) + 트렌드 예시(10장).
+-- 트렌드 수치는 화면 개발용 가상 값이다(실데이터·개인정보 없음).
+-- 기회 점수 = 0.4·해외 영상 증가 + 0.3·국내 검색 증가 + 0.3·(100 - 국내 숏폼 경쟁), 0~100 정규화 값 기준.
+
+insert into public.categories (name, keywords_ko, keywords_en, keywords_zh, banned_terms) values
+  ('생활·수납',
+   array['수납', '압축팩', '정리', '점착 롤러'],
+   array['storage', 'vacuum bag', 'organizer', 'lint roller'],
+   array['收纳', '压缩袋', '整理', '粘毛器'],
+   array['최저가 보장', '무조건']),
+  ('주방',
+   array['밀폐용기', '냉장고 정리', '주방 꿀템'],
+   array['food container', 'fridge organizer', 'kitchen gadget'],
+   array['密封盒', '冰箱收纳', '厨房好物'],
+   array['최저가 보장', '무조건', '항균 100%']),
+  ('생활가전',
+   array['보풀제거기', '소형가전', '무선'],
+   array['lint remover', 'small appliance', 'cordless'],
+   array['去球器', '小家电', '无线'],
+   array['최저가 보장', '무조건', '전기료 0원']),
+  ('뷰티',
+   array['브러시 클리너', '메이크업', '뷰티 디바이스'],
+   array['brush cleaner', 'makeup', 'beauty device'],
+   array['化妆刷清洗', '彩妆', '美容仪'],
+   array['피부 재생', '여드름 치료', '주름 제거', '미백 효과 보장', '부작용 없음']),
+  ('패션잡화',
+   array['머리끈', '헤어 액세서리', '가방 소품'],
+   array['hair tie', 'hair accessory', 'bag charm'],
+   array['发圈', '发饰', '包挂'],
+   array['최저가 보장', '정품 보장']),
+  ('디지털 소품',
+   array['케이블 정리', '데스크 셋업', '거치대'],
+   array['cable clip', 'desk setup', 'stand'],
+   array['理线器', '桌面布置', '支架'],
+   array['최저가 보장', '무조건']),
+  ('반려동물',
+   array['자동 급수기', '반려동물 용품', '고양이'],
+   array['pet water fountain', 'pet supplies', 'cat'],
+   array['宠物饮水机', '宠物用品', '猫咪'],
+   array['질병 예방', '치료 효과']),
+  ('유아·키즈',
+   array['턱받이', '육아템', '실리콘'],
+   array['baby bib', 'parenting gadget', 'silicone'],
+   array['围兜', '育儿好物', '硅胶'],
+   array['100% 안전', '무독성 보장', 'KC 인증 면제']),
+  ('캠핑·차량',
+   array['차량 수납', '틈새 포켓', '캠핑 용품'],
+   array['car organizer', 'seat gap pocket', 'camping gear'],
+   array['车载收纳', '座椅缝隙', '露营装备'],
+   array['최저가 보장', '무조건']),
+  ('건강·운동',
+   array['폼롤러', '홈트', '스트레칭'],
+   array['foam roller', 'home workout', 'stretching'],
+   array['泡沫轴', '居家健身', '拉伸'],
+   array['질병 치료', '다이어트 보장', '살 빠지는', '통증 완치']);
+
+insert into public.trend_items
+  (category_id, name, period, overseas_growth, kr_search_growth, kr_competition, opportunity_score, sellable)
+select c.id, t.name, t.period, t.overseas_growth, t.kr_search_growth, t.kr_competition,
+       round(0.4 * t.overseas_growth + 0.3 * t.kr_search_growth + 0.3 * (100 - t.kr_competition), 1),
+       t.sellable
+from (values
+  ('생활·수납',   '의류 압축팩',           '7d',    92, 64, 28, true),
+  ('생활·수납',   '점착 롤러',             'today', 71, 52, 45, true),
+  ('주방',        '밀폐용기 세트',         '7d',    78, 70, 40, true),
+  ('주방',        '냉장고 트레이',         '30d',   66, 58, 35, true),
+  ('생활가전',    '보풀제거기',            '7d',    84, 61, 50, true),
+  ('뷰티',        '메이크업 브러시 클리너', '7d',    88, 55, 30, true),
+  ('패션잡화',    '코일 머리끈',           'today', 75, 48, 22, true),
+  ('디지털 소품', '케이블 정리 클립',      '7d',    69, 44, 33, true),
+  ('반려동물',    '자동 급수기',           '30d',   81, 67, 42, true),
+  ('유아·키즈',   '실리콘 턱받이',         '7d',    58, 49, 38, false),
+  ('캠핑·차량',   '차량용 틈새 수납 포켓', '7d',    90, 72, 25, true),
+  ('건강·운동',   '접이식 폼롤러',         '30d',   73, 60, 47, true)
+) as t(category, name, period, overseas_growth, kr_search_growth, kr_competition, sellable)
+join public.categories c on c.name = t.category;
