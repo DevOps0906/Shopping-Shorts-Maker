@@ -42,6 +42,16 @@ import { PublishCopy } from "./publish-copy";
 
 const copyKey = (c: CopyInput) => JSON.stringify([c.title, c.body, c.hashtags]);
 
+/** naver.me 단축 주소는 저장은 되지만 /l/ 단축 링크가 그쪽으로 보내지 않는다(task-025) */
+function isNaverMe(url: string) {
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    return host === "naver.me" || host.endsWith(".naver.me");
+  } catch {
+    return false;
+  }
+}
+
 export function PublishPanel({
   productName,
   categoryName,
@@ -114,6 +124,15 @@ export function PublishPanel({
     });
   }
 
+  async function copyShortUrl(value: string) {
+    try {
+      await navigator.clipboard.writeText(value);
+      feedback.toast({ message: "단축 링크를 복사했습니다", tone: "success" });
+    } catch {
+      feedback.snackbar({ message: "복사하지 못했습니다. 주소를 직접 선택해 복사해 주세요.", tone: "error" });
+    }
+  }
+
   const saveLink = (next: { program: ProgramId; url: string | null; disclosed: boolean }, done?: string) =>
     run(() => saveAffiliateAction(projectId, next, copy), done);
 
@@ -159,6 +178,23 @@ export function PublishPanel({
             onDisclosed={(on) => program && saveLink({ program, url: link?.url ?? null, disclosed: on })}
             onPinComment={setPinComment}
           />
+          {link?.url && isNaverMe(link.url) ? (
+            <InlineBanner tone="warning">naver.me 단축 주소는 단축 링크로 연결되지 않습니다. 원래 상품 주소를 붙여 넣어 주세요.</InlineBanner>
+          ) : null}
+          {link?.url && link.shortUrl ? (
+            <section aria-label="단축 링크" className="flex flex-col gap-2 rounded-card border border-line bg-white p-4 shadow-card tablet:p-6">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm font-semibold">단축 링크</p>
+                <button type="button" onClick={() => void copyShortUrl(link.shortUrl as string)} className={btnClass}>
+                  복사
+                </button>
+              </div>
+              <p className="rounded-btn-sm border border-accent-line bg-accent-weak px-3 py-2 text-sm break-all text-nav-on-ink">{link.shortUrl}</p>
+              <p className="text-xs text-muted">
+                링크인바이오·설명란에 이 단축 링크를 쓰면 클릭이 성과 분석에 집계됩니다. 제휴 링크를 바꿔도 단축 링크는 그대로입니다.
+              </p>
+            </section>
+          ) : null}
           <LinkPlacement platform={channel.platform} />
           <LinkInBioCard
             enabled={isLinkProgram(program) && Boolean(link?.url)}
@@ -166,7 +202,7 @@ export function PublishPanel({
             bioNo={link?.bioNo ?? null}
             registered={link?.bioRegistered ?? false}
             productName={productName}
-            url={link?.url ?? null}
+            url={link?.shortUrl ?? link?.url ?? null}
             disclosure={policy.disclosure}
             purchaseGuide={purchaseGuide}
             disabled={busy || locked}

@@ -270,6 +270,18 @@ erDiagram
     timestamptz used_at
     timestamptz created_at
   }
+  click_salts {
+    date day PK
+    bytea salt
+  }
+  metrics_runs {
+    bigint id PK
+    timestamptz started_at
+    timestamptz finished_at
+    integer ok
+    integer skipped
+    text error
+  }
   categories ||--o{ trend_items : "category_id"
   categories ||--o{ accounts : "category_id"
   categories ||--o{ projects : "category_id"

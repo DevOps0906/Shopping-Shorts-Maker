@@ -518,27 +518,33 @@ export type Database = {
         Row: {
           affiliate_link_id: string
           clicked_at: string
+          counted: boolean
           id: string
           platform: string | null
           referrer: string | null
           short_url: string | null
+          visitor_hash: string | null
         }
         ComputedFields: never
         Insert: {
           affiliate_link_id: string
           clicked_at?: string
+          counted?: boolean
           id?: string
           platform?: string | null
           referrer?: string | null
           short_url?: string | null
+          visitor_hash?: string | null
         }
         Update: {
           affiliate_link_id?: string
           clicked_at?: string
+          counted?: boolean
           id?: string
           platform?: string | null
           referrer?: string | null
           short_url?: string | null
+          visitor_hash?: string | null
         }
         Relationships: [
           {
@@ -1101,6 +1107,7 @@ export type Database = {
       video_metrics: {
         Row: {
           avg_view_pct: number | null
+          collected_at: string
           date: string
           est_revenue: number | null
           id: string
@@ -1111,6 +1118,7 @@ export type Database = {
         ComputedFields: never
         Insert: {
           avg_view_pct?: number | null
+          collected_at?: string
           date: string
           est_revenue?: number | null
           id?: string
@@ -1120,6 +1128,7 @@ export type Database = {
         }
         Update: {
           avg_view_pct?: number | null
+          collected_at?: string
           date?: string
           est_revenue?: number | null
           id?: string
@@ -1308,6 +1317,21 @@ export type Database = {
         Args: { p_project_id: string; p_status: string; p_step: number }
         Returns: Json
       }
+      metrics_run_finish: {
+        Args: { p_error: string; p_id: number; p_ok: number; p_skipped: number }
+        Returns: undefined
+      }
+      metrics_run_start: { Args: Record<PropertyKey, never>; Returns: number }
+      metrics_targets: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          account_id: string
+          platform_video_id: string
+          publication_id: string
+          published_at: string
+          user_id: string
+        }[]
+      }
       oauth_state_consume: {
         Args: { p_state_hash: string; p_user_id: string }
         Returns: {
@@ -1347,6 +1371,18 @@ export type Database = {
         Returns: Json
       }
       publish_recheck: { Args: { p_project_id: string }; Returns: Json }
+      record_link_click: {
+        Args: {
+          p_code: string
+          p_ip: string
+          p_platform: string
+          p_ref_host: string
+        }
+        Returns: {
+          program: string
+          url: string
+        }[]
+      }
       request_step_change: {
         Args: { p_project_id: string; p_step: number }
         Returns: Json
@@ -1359,6 +1395,15 @@ export type Database = {
           p_uses: Json
         }
         Returns: Json
+      }
+      save_video_metrics: {
+        Args: {
+          p_end: string
+          p_publication_id: string
+          p_rows: Json
+          p_start: string
+        }
+        Returns: number
       }
       set_source_checks: {
         Args: { p_project_id: string; p_source_ids: string[] }

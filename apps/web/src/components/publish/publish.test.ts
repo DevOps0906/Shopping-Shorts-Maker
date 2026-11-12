@@ -35,7 +35,7 @@ const base: PublishStepData = {
   channel: { platform: "youtube", name: "E2E 채널" },
   scriptLines: ["좁은 틈에도 쏙 들어가요."],
   bannedTerms: ["최저가 보장"],
-  link: { program: "coupang_partners", url: "https://link.coupang.com/a/test", disclosed: true, bioService: "inpock", bioNo: 5, bioRegistered: true },
+  link: { program: "coupang_partners", url: "https://link.coupang.com/a/test", disclosed: true, bioService: "inpock", bioNo: 5, bioRegistered: true, shortUrl: "https://app.test/l/Ab3dEf7h" },
   publication: null,
   variants: [
     { title: "진공 압축팩 써 보니 이렇게 편해요", body: "본문 하나", hashtags: ["수납"] },
@@ -169,7 +169,17 @@ describe("S-11 06 발행 렌더", () => {
   });
 
   it("제휴를 쓰지 않으면 링크인바이오는 번호를 받을 수 없다는 안내", () => {
-    const out = panel({ link: { program: "none", url: null, disclosed: true, bioService: null, bioNo: null, bioRegistered: false } });
+    const out = panel({ link: { program: "none", url: null, disclosed: true, bioService: null, bioNo: null, bioRegistered: false, shortUrl: null } });
     expect(out).toContain("링크형 제휴 프로그램을 고르고");
+  });
+
+  it("단축 링크를 보여 주고 링크인바이오 항목에 쓴다, naver.me 는 주의 문구(task-025)", () => {
+    const out = panel({});
+    expect(out).toContain("https://app.test/l/Ab3dEf7h");
+    expect(out).not.toContain("naver.me 단축 주소는");
+    const naver = panel({
+      link: { program: "naver_shopping_connect", url: "https://naver.me/xYz", disclosed: true, bioService: null, bioNo: null, bioRegistered: false, shortUrl: null },
+    });
+    expect(naver).toContain("naver.me 단축 주소는 단축 링크로 연결되지 않습니다. 원래 상품 주소를 붙여 넣어 주세요.");
   });
 });

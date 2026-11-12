@@ -8,5 +8,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   // 정적 파일·이미지 최적화 경로는 건너뛴다.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
+  // 익명 경로도 건너뛴다: 단축 링크 /l/{코드}(task-025)·내부 호출 /api/internal/*(키 인증, 리버스 프록시가 외부 차단).
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|l/|api/internal/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
 };

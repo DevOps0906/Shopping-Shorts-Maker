@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<title>성과·단축 링크 계획</title>
+<link rel="stylesheet" href="htmlplan.css">
+<script src="htmlplan.js" defer></script>
+<style data-mock-shared>
+  .ui { font: 14px/1.45 "Pretendard", -apple-system, "Segoe UI", sans-serif; color: #1c1b19; background: #fff; border: 1px solid #ddd8cc; border-radius: 10px; overflow: hidden; }
+  .ui .hd { padding: 10px 14px; border-bottom: 1px solid #eee9dd; font-weight: 650; display: flex; gap: 8px; align-items: center; justify-content: space-between; }
+  .ui .hd small { color: #8a8578; font-weight: 400; }
+  .ui .ln { padding: 8px 14px; border-bottom: 1px solid #f3efe6; color: #5f5a4f; display: flex; justify-content: space-between; gap: 10px; }
+  .ui .ln b { color: #1c1b19; font-weight: 600; }
+  .ui .in { border: 1px solid #ddd8cc; border-radius: 7px; padding: 6px 10px; color: #5f5a4f; font-size: 13px; }
+  .ui .short { background: #f3f0ff; border: 1px solid #d9d0ff; border-radius: 7px; padding: 6px 10px; font-family: ui-monospace, monospace; font-size: 13px; color: #3b2bb5; }
+  .ui .btn { font-weight: 600; font-size: 12.5px; padding: 5px 10px; border-radius: 7px; border: 1px solid #ddd8cc; background: #fff; }
+  .ui .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 10px 14px; }
+  .ui .tile { border: 1px solid #eee9dd; border-radius: 8px; padding: 8px 10px; }
+  .ui .tile small { color: #8a8578; display: block; font-size: 11.5px; }
+  .ui .tile b { font-size: 17px; }
+  .ui .bars { display: flex; align-items: flex-end; gap: 4px; height: 70px; padding: 6px 14px 10px; border-bottom: 1px solid #f3efe6; }
+  .ui .bars i { flex: 1; background: #7c6cf0; border-radius: 3px 3px 0 0; }
+  .ui table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .ui th, .ui td { padding: 6px 8px; border-bottom: 1px solid #f3efe6; text-align: right; }
+  .ui th:first-child, .ui td:first-child { text-align: left; }
+  .ui th { color: #8a8578; font-weight: 500; }
+  .ui .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px 14px; }
+  .ui .card { border: 1px solid #eee9dd; border-radius: 8px; padding: 8px 10px; font-size: 12.5px; }
+  .ui .ft { padding: 8px 14px; color: #8a8578; font-size: 12px; background: #faf8f3; display: flex; justify-content: space-between; }
+  .ui .dim { color: #8a8578; } .ui .ok { color: #1f7a52; font-weight: 650; }
+</style>
+<body>
+
+<header>
+  <h1>Shopping-Shorts-Maker 성과 수집과 단축 링크</h1>
+  <doc-changes new="11" changed="5"></doc-changes>
+  <details class="thread"><summary>Why · 3 근거</summary>
+    <doc-quote via="doc" from="tasks/task-025.md">단축 링크: 등록된 제휴 도메인으로만 이동, link_clicks는 서버만 기록(IP 원문 저장 안 함) · YouTube 조회 수 주기 수집 job · 성과 화면: 조회·링크 클릭</doc-quote>
+    <doc-quote via="doc" from="docs/planning.md#17-8">단축 링크: 등록된 제휴 도메인으로만 이동시켜 열린 리다이렉트를 막고, 클릭 기록에 IP 원문을 저장하지 않습니다. 클릭 부풀리기는 같은 출처의 반복 클릭을 속도 제한하고 집계에서 뺍니다</doc-quote>
+    <doc-quote via="doc" from="tasks/NOW.md" at="2026-11-13">수집 주기 결정: 발행 후 7일 하루 4회·30일까지 하루 1회</doc-quote>
+  </details>
+</header>
+
+<main>
+<doc-plan>
+
+<!-- ═════ 1 ═════ -->
+<doc-claim>
+  <p>제휴 링크를 저장하면 서버가 바뀌지 않는 단축 링크를 하나 만든다.</p>
+  <doc-mock frame="none" w="440"><template>
+<div class="ui">
+  <div class="hd">제휴 링크 <small>06 발행</small></div>
+  <div class="ln"><span>쿠팡 파트너스</span><span class="in">https://link.coupang.com/a/bXk2…</span></div>
+  <div class="ln" data-ref="short"><span>단축 링크</span><span class="short">https://앱도메인/l/q7Hn2xKa</span></div>
+  <div class="ln"><span class="dim">링크인바이오 7번에 이 단축 링크를 등록하세요</span><span class="btn">복사</span></div>
+</div></template>
+    <doc-pin ref="short" anchor="r" offset="8,0" title="새 줄">제휴 URL을 바꾸어도 코드는 그대로이다.</doc-pin>
+  </doc-mock>
+
+  <doc-claim>
+    <p>saveAffiliate()는 url을 쓸 때 short_url이 없으면 코드를 만든다.</p>
+    <doc-calls title="단축 링크 만들기" caption="코드는 처음 한 번만 만든다. 이미 등록한 링크인바이오가 깨지지 않는다.">
+<script type="text/plain">
+  <PublishPanel/>                                @ apps/web/src/components/publish/publish-panel.tsx:117
+~ saveAffiliate(projectId, input, copy)          @ apps/web/src/server/publish/publish.ts:235
+    checkAffiliateUrl(program, raw)              @ apps/web/src/lib/publish/rules.ts:47
++   **ensureShortCode**(admin, projectId)        @ apps/web/src/server/analytics/short-link.ts:1
++   update affiliate_links set url, short_url    @ apps/web/src/server/publish/publish.ts:258
+~   readLink() returns shortUrl                  @ apps/web/src/server/publish/publish.ts:250
+</script>
+    </doc-calls>
+    <doc-claim at="apps/web/src/server/analytics/short-link.ts:1">
+      <p><b>short-link.ts</b> · ensureShortCode()</p>
+      <doc-code title="short-link.ts · sketch" lang="ts">
+<script type="text/plain">
+import "server-only";
+import { randomBytes } from "node:crypto";
+
+const ALPHABET = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+export function newShortCode(len = 8): string {
+  const bytes = randomBytes(len);
+  return Array.from(bytes, (b) => ALPHABET[b % ALPHABET.length]).join("");
+}
+
+// short_url 이 이미 있으면 그대로 둔다. unique 충돌이면 3회까지 다시 뽑는다.
+export async function ensureShortCode(admin: Admin, projectId: string): Promise<string> { /* … */ }
+</script>
+      </doc-code>
+    </doc-claim>
+  </doc-claim>
+
+  <doc-claim>
+    <p>단축 링크는 앱 도메인의 <code>/l/{코드}</code> 경로를 쓴다.</p>
+    <doc-code title="short_url 값 · sketch" lang="ts">
+<script type="text/plain">
+// affiliate_links.short_url 에는 코드만 저장한다. 도메인이 바뀌어도 행을 고치지 않는다.
+short_url = "q7Hn2xKa"
+// 화면에 보여 줄 때만 붙인다
+const shown = `${process.env.PUBLIC_APP_URL}/l/${short_url}`;
+</script>
+    </doc-code>
+    <doc-ask id="host">
+      <p>단축 링크를 어느 도메인에 둘까요?</p>
+      <label><input type="radio" name="host" value="app" checked> 앱 도메인 <code>/l/</code> 경로 <small>새 도메인·인증서 없음</small></label>
+      <label><input type="radio" name="host" value="short"> 별도 짧은 도메인 <small>도메인 구입과 DNS가 먼저 필요</small></label>
+    </doc-ask>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 2 ═════ -->
+<doc-claim>
+  <p>단축 링크를 누른 시청자는 등록된 제휴 도메인으로만 간다.</p>
+  <doc-mock frame="terminal" title="curl" w="470"><template><span class="dim">$</span> curl -sI https://앱도메인/l/q7Hn2xKa
+HTTP/1.1 <span class="g">302</span> Found
+location: https://link.coupang.com/a/bXk2…
+cache-control: no-store
+
+<span class="dim">$</span> curl -sI https://앱도메인/l/없는코드
+HTTP/1.1 <span class="r">404</span> Not Found</template></doc-mock>
+
+  <doc-claim>
+    <p>리다이렉트 직전에 서버가 도메인 규칙을 다시 검사한다.</p>
+    <doc-calls title="GET /l/[code]" caption="익명 요청이다. 세션을 읽지 않는다.">
+<script type="text/plain">
++ **GET** /l/[code]                              @ apps/web/src/app/l/[code]/route.ts:1
++   select url, program from affiliate_links     @ apps/web/src/app/l/[code]/route.ts:12   -- service_role, 코드로만 조회
++   checkAffiliateUrl(program, url)              @ apps/web/src/lib/publish/rules.ts:47    -- 실패면 404, 이동 없음
++   **recordClick**(req, link)                   @ apps/web/src/server/analytics/clicks.ts:1
++   NextResponse.redirect(url, 302)              @ apps/web/src/app/l/[code]/route.ts:24
+</script>
+    </doc-calls>
+    <doc-claim at="apps/web/src/app/l/[code]/route.ts:1">
+      <p><b>route.ts</b> · GET /l/[code]</p>
+      <doc-code title="app/l/[code]/route.ts · sketch" lang="ts" hl="9-10" wrap>
+<script type="text/plain">
+export const dynamic = "force-dynamic";
+
+export async function GET(req: Request, { params }: { params: Promise<{ code: string }> }) {
+  const { code } = await params;
+  if (!/^[A-Za-z0-9]{8}$/.test(code)) return notFound();
+  const { data } = await createAdminClient()
+    .from("affiliate_links").select("id, program, url").eq("short_url", code).maybeSingle();
+  if (!data?.url) return notFound();
+  const checked = checkAffiliateUrl(data.program, data.url);   // DB CHECK 와 같은 규칙을 한 번 더
+  if (!checked.ok) return notFound();
+  await recordClick(req, data.id).catch(() => {});            // 기록 실패는 이동을 막지 않는다
+  return NextResponse.redirect(checked.url, { status: 302, headers: { "cache-control": "no-store" } });
+}
+</script>
+      </doc-code>
+    </doc-claim>
+  </doc-claim>
+
+  <doc-claim>
+    <p>클릭 행에는 IP 원문이 없다. 리퍼러는 호스트만 남는다.</p>
+    <doc-code title="clicks.ts · sketch" lang="ts" hl="4-6">
+<script type="text/plain">
+export async function recordClick(req: Request, affiliateLinkId: string) {
+  const ref = hostOf(req.headers.get("referer"));          // "m.youtube.com" 만, 경로·쿼리 버림
+  const visitor = await dailyVisitorHash(req);             // IP+UA+오늘 소금 → sha256, IP 는 메모리에서만
+  const counted = !(await seenWithin(visitor, affiliateLinkId, "10 minutes"));
+  await createAdminClient().from("link_clicks").insert({
+    affiliate_link_id: affiliateLinkId, referrer: ref, platform: platformOf(ref), visitor_hash: visitor, counted,
+  });
+}
+</script>
+    </doc-code>
+    <doc-ask id="dedupe">
+      <p>같은 출처의 반복 클릭을 어떻게 가려낼까요?</p>
+      <label><input type="radio" name="dedupe" value="hash" checked> 매일 바뀌는 소금 해시 <small>10분 안 반복은 counted=false, 소금은 다음 날 폐기</small></label>
+      <label><input type="radio" name="dedupe" value="none"> 가려내지 않는다 <small>모든 클릭을 센다. 17-8과 어긋남</small></label>
+      <label><input type="radio" name="dedupe" value="memory"> 서버 메모리 속도 제한만 <small>재시작하면 초기화, 행에 식별값 없음</small></label>
+    </doc-ask>
+    <div data-if="dedupe=none"><doc-note tone="warn">그러면 공유 스키마의 visitor_hash·counted 열이 빠지고 docs/planning.md#17-8 문장을 고쳐야 한다.</doc-note></div>
+  </doc-claim>
+
+  <doc-claim>
+    <p>소유자는 affiliate_links를 거쳐 자기 클릭만 읽는다.</p>
+    <doc-code src="supabase/migrations/20261112170200_publishing_affiliate.sql" lines="289-297"></doc-code>
+    <doc-note tone="info"><strong>문서 차이</strong> 기획 17-4는 "bio_items를 거쳐 읽는다"고 쓴다. 실제 정책은 affiliate_links 경유이다. 정책을 두고 17-4 문장을 고친다.</doc-note>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 3 ═════ -->
+<doc-claim>
+  <p>발행한 영상의 조회와 시청 비율을 정해진 주기로 가져온다.</p>
+  <doc-mock frame="terminal" title="metrics collect" w="470"><template><span class="dim">06:00</span> collect start · 대상 <b>12</b>편 (7일 안 9 · 30일 안 3)
+<span class="dim">06:00</span> <span class="g">✓</span> pub 3f2a… views 1,204 · avg 61% · clicks 37
+<span class="dim">06:00</span> <span class="y">!</span> pub 9c11… token expired → 채널 재연결 필요, 건너뜀
+<span class="dim">06:01</span> collect done · upsert <b>11</b> · skip 1 · quota 12</template></doc-mock>
+
+  <doc-claim>
+    <p>pg_cron이 6시간마다 웹 내부 경로를 부르고, 웹이 토큰을 쓴다.</p>
+    <doc-calls title="수집 1회" caption="YouTube 토큰과 클라이언트 비밀은 웹 서버 밖으로 나가지 않는다.">
+<script type="text/plain">
++ cron.schedule('collect-metrics', '0 */6 * * *')     @ supabase/migrations/20261113100000_analytics.sql:60
++   net.http_post(INTERNAL_URL, x-internal-key)       @ supabase/migrations/20261113100000_analytics.sql:64
+
++ **POST** /api/internal/metrics                      @ apps/web/src/app/api/internal/metrics/route.ts:1   -- 공유 비밀 헤더, 타이밍 안전 비교
++   **collectDue**(now)                               @ apps/web/src/server/analytics/collect.ts:1
++     select due publications                         @ apps/web/src/server/analytics/collect.ts:20
+      getAccessToken(userId, accountId)               @ apps/web/src/server/oauth/access-token.ts:10
++     **fetchVideoDaily**(token, videoId, from)       @ apps/web/src/server/oauth/google.ts:12   -- reports.query, dimensions=day
++     upsert video_metrics on (publication_id, date)  @ apps/web/src/server/analytics/collect.ts:48
+</script>
+    </doc-calls>
+    <doc-ask id="runner">
+      <p>예약 수집은 어디서 돌릴까요?</p>
+      <label><input type="radio" name="runner" value="net" checked> pg_cron + pg_net → 웹 내부 경로 <small>토큰은 웹에만. pg_net 확장 추가</small></label>
+      <label><input type="radio" name="runner" value="worker"> 파이썬 워커가 직접 수집 <small>워커에 토큰 함수 권한과 클라이언트 비밀 필요</small></label>
+      <label><input type="radio" name="runner" value="cron"> compose에 cron 컨테이너 추가 <small>새 이미지 의존성, curl로 웹 경로 호출</small></label>
+    </doc-ask>
+    <div data-if="runner=worker"><doc-note tone="risk">키 권한 범위가 넓어진다. challenger 검토와 보안 리뷰가 먼저 필요하다. apps/worker/worker/handlers.py:28의 analyze 스텁을 수집기로 바꾼다.</doc-note></div>
+  </doc-claim>
+
+  <doc-claim>
+    <p>발행 후 7일은 하루 4회, 30일까지는 하루 1회 수집한다.</p>
+    <doc-code title="collect.ts · 대상 고르기 · sketch" lang="sql">
+<script type="text/plain">
+select p.id, p.platform_video_id, p.published_at, a.user_id, a.id as account_id
+from publications p join accounts a on a.id = p.account_id
+where p.status = 'published'
+  and p.published_at > now() - interval '30 days'
+  and (p.published_at > now() - interval '7 days'          -- 6시간마다 전부
+       or extract(hour from now() at time zone 'Asia/Seoul') between 6 and 11);  -- 그 뒤는 하루 1회
+</script>
+    </doc-code>
+  </doc-claim>
+
+  <doc-claim>
+    <p>예상 수익은 수집할 때 정수 원으로 계산해 저장한다.</p>
+    <doc-code title="collect.ts · 예상 수익 · sketch" lang="ts">
+<script type="text/plain">
+// 15-3 가정값: 구매 전환율 3% · 평균 결제액 25,000원 · 수수료율 3% → 클릭당 22.5원
+const ASSUME = { conversion: 0.03, avgOrderWon: 25_000, commission: 0.03 };
+export const estRevenueWon = (clicks: number) =>
+  Math.round(clicks * ASSUME.conversion * ASSUME.avgOrderWon * ASSUME.commission);
+// link_clicks 는 counted = true 만, 한국 날짜 기준으로 묶어 video_metrics.link_clicks 에 넣는다
+</script>
+    </doc-code>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ 4 ═════ -->
+<doc-claim>
+  <p>사용자는 /analytics에서 최근 14일 성과를 채널별로 본다.</p>
+  <doc-mock frame="none" w="480"><template>
+<div class="ui">
+  <div class="hd">성과 분석 <span class="btn" data-ref="filter">채널: 전체 ▾</span></div>
+  <div class="tiles">
+    <div class="tile"><small>조회수</small><b>18,420</b></div>
+    <div class="tile"><small>링크 클릭</small><b>412</b></div>
+    <div class="tile"><small>클릭률</small><b>2.2%</b></div>
+    <div class="tile" data-ref="rev"><small>예상 제휴 수익</small><b>9,270원</b></div>
+  </div>
+  <div class="bars"><i style="height:30%"></i><i style="height:42%"></i><i style="height:35%"></i><i style="height:60%"></i><i style="height:55%"></i><i style="height:72%"></i><i style="height:48%"></i><i style="height:40%"></i><i style="height:66%"></i><i style="height:80%"></i><i style="height:58%"></i><i style="height:62%"></i><i style="height:90%"></i><i style="height:70%"></i></div>
+  <table>
+    <tr><th>영상</th><th>조회</th><th>평균 시청</th><th>클릭</th><th>클릭률</th><th>예상 수익</th></tr>
+    <tr><td>압축팩 20초</td><td>7,210</td><td>64%</td><td>188</td><td>2.6%</td><td>4,230원</td></tr>
+    <tr><td>밀폐용기 15초</td><td>5,980</td><td>58%</td><td>121</td><td>2.0%</td><td>2,723원</td></tr>
+  </table>
+  <div class="cards" data-ref="insights"><div class="card"><b>클릭률 최고</b><br>생활·수납 2.6%</div><div class="card"><b>시청 유지 최고</b><br>압축팩 20초 64%</div></div>
+  <div class="ft"><span>예상 수익 = 클릭 × 3% × 25,000원 × 3%</span><span>지표 수집 06:01</span></div>
+</div></template>
+    <doc-pin ref="filter" anchor="l" title="채널 필터">1 계정 다중 채널(D14)</doc-pin>
+    <doc-pin ref="insights" anchor="tl" title="인사이트">결정 참고</doc-pin>
+  </doc-mock>
+
+  <doc-claim>
+    <p>화면은 RLS가 걸린 사용자 세션으로만 읽는다.</p>
+    <doc-calls title="/analytics" caption="service_role을 쓰지 않는다. 타인 행은 0행이다.">
+<script type="text/plain">
+~ AnalyticsPage()                                     @ apps/web/src/app/(dashboard)/analytics/page.tsx:3
++   **loadAnalytics**(channelId, 14)                  @ apps/web/src/server/analytics/queries.ts:1
++     select video_metrics join publications          @ apps/web/src/server/analytics/queries.ts:15
++   <**StatTiles**/>                                  @ apps/web/src/components/analytics/stat-tiles.tsx:1
++   <**ViewsChart**/>                                 @ apps/web/src/components/analytics/views-chart.tsx:1
++   <**VideoTable**/>                                 @ apps/web/src/components/analytics/video-table.tsx:1
+</script>
+    </doc-calls>
+    <doc-ask id="insights">
+      <p>S-12 인사이트 카드 3개 중 무엇을 이번에 만들까요?</p>
+      <label><input type="radio" name="insights" value="two" checked> 2개 <small>클릭률 최고·시청 유지 최고. 추천 발행 시간은 뒤로</small></label>
+      <label><input type="radio" name="insights" value="three"> 3개 모두 <small>발행 수가 적으면 추천 시간이 무의미</small></label>
+      <label><input type="radio" name="insights" value="none"> 만들지 않는다 <small>카드 영역을 숨긴다</small></label>
+    </doc-ask>
+  </doc-claim>
+
+  <doc-claim>
+    <p>발행한 영상이 없으면 빈 상태 문구를 보여 준다.</p>
+    <doc-mock frame="none" w="400"><template>
+<div class="ui"><div class="hd">성과 분석</div><div class="ln" style="justify-content:center;padding:28px 14px"><span class="dim">이 채널에서 발행한 영상이 아직 없습니다.</span></div></div></template>
+    </doc-mock>
+  </doc-claim>
+</doc-claim>
+
+<!-- ═════ shared · scope ═════ -->
+<doc-claim aux="shared">
+  <p>공유: 새 마이그레이션 한 개.</p>
+  <doc-schema id="mig" wrap lang="sql" title="supabase/migrations/20261113100000_analytics.sql · sketch" caption="기존 테이블은 고치지 않고 열과 함수만 더한다.">
+<script type="text/plain">
+-- 단축 코드 형식 고정(8자, 혼동 문자 제외)
+alter table public.affiliate_links
+  add constraint affiliate_links_short_url_fmt check (short_url ~ '^[A-Za-z0-9]{8}$');
+
+-- 반복 클릭 가려내기(IP 원문 없음, 매일 바뀌는 소금 해시)
+alter table public.link_clicks
+  add column visitor_hash text check (char_length(visitor_hash) = 64),
+  add column counted boolean not null default true;
+create index link_clicks_dedupe_idx on public.link_clicks (affiliate_link_id, visitor_hash, clicked_at);
+
+-- "지표 수집 시각" 표시용
+alter table public.video_metrics add column collected_at timestamptz not null default now();
+
+-- 예약 수집(결정 runner=net 일 때)
+create extension if not exists pg_net;
+select cron.schedule('collect-metrics', '0 */6 * * *', $$ select private.call_collect_metrics() $$);
+-- private.call_collect_metrics(): Vault 의 internal_key 로 net.http_post. 반환값은 버린다
+</script>
+  </doc-schema>
+  <doc-ask id="retain">
+    <p>link_clicks 행은 얼마나 보관할까요?</p>
+    <label><input type="radio" name="retain" value="90" checked> 90일, 그 뒤 visitor_hash만 지운다 <small>일별 집계는 video_metrics에 남음</small></label>
+    <label><input type="radio" name="retain" value="forever"> 계정 삭제까지 그대로</label>
+  </doc-ask>
+</doc-claim>
+
+<doc-claim aux="scope">
+  <p>바꾸지 않는 것: 매출 추적, 소재 추천, 발행 흐름.</p>
+  <ul>
+    <li>매출·전환 추적과 성과 기반 소재 추천은 하지 않는다(task-025 "하지 않을 것").</li>
+    <li>OAuth 범위는 그대로이다. <code>yt-analytics.readonly</code>는 이미 요청한다. 수익 범위는 요청하지 않는다.</li>
+    <li>assign_bio_number·prepare_publication·정책 점검 6항목은 고치지 않는다.</li>
+    <li>쓰기 허용 경로 밖: <code>supabase/migrations/</code>, <code>server/publish/publish.ts</code>, <code>server/oauth/google.ts</code>, <code>docs/planning.md#17-4</code>. 이 계획 승인이 곧 확장 승인이다.</li>
+    <li>task-025의 <code>apps/worker/src/analytics/**</code>는 실제 경로가 없다. runner=worker를 고를 때만 <code>apps/worker/worker/</code>를 쓴다.</li>
+    <li>새 환경 변수 이름(<code>PUBLIC_APP_URL</code>·<code>INTERNAL_METRICS_KEY</code>)은 사용자가 <code>.env.example</code>에 추가한다.</li>
+  </ul>
+</doc-claim>
+
+</doc-plan>
+</main>
+</body>
+</html>
