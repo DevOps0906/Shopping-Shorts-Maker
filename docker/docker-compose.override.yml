@@ -1,0 +1,139 @@
+# Shopping-Shorts-Maker override (ADR-0004)
+# 공식 base(docker/supabase/docker-compose.yml)는 원본 그대로 두고, 우리 변경은 전부 이 파일에 둔다.
+# 상대 경로는 base의 project_directory(docker/supabase) 기준이다.
+#
+# 1) 이미지: 모든 이미지를 태그@sha256:digest로 고정 (2026-11-12 확인, latest 금지)
+# 2) 포트: base가 0.0.0.0에 게시하는 포트를 지우고 127.0.0.1에만 다시 게시 (Docker는 UFW를 우회한다)
+#    - 개발: 호스트의 pnpm dev·psql·Studio가 붙도록 루프백만 연다.
+#    - 운영: Caddy(task-031) 뒤에 두고 api-gw·supavisor 포트는 `!reset []`로 아예 지운다.
+# 3) api-gw 외부 라우트: Studio·/pg/ 제거본(docker/api-gw/lds.template.yaml)으로 교체
+# 4) 우리 서비스: worker(FFmpeg LGPL), web(profile `web`)
+
+services:
+  studio:
+    image: supabase/studio:2026.11.02-sha-a05e7ec@sha256:727a7f37b15f4c76c44e0d765e6be231d8d71c67f2933b2df8c6cbcc9b04c5d0
+    # 공개 라우트 없음. 루프백 + SSH 터널로만 접속
+    ports:
+      - 127.0.0.1:${STUDIO_PORT:-8300}:3000
+
+  api-gw:
+    image: envoyproxy/envoy:v1.39.6@sha256:1fde8efee875e4e4f6a39a90fe49d9338e1caacce5762034ef9fb4bbb9ad6aed
+    ports: !override
+      - 127.0.0.1:${API_GW_HTTP_PORT:-8000}:8000/tcp
+    volumes:
+      - ../api-gw/lds.template.yaml:/etc/envoy/lds.template.yaml:ro
+
+  auth:
+    image: supabase/gotrue:v2.197.0@sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b
+    # 첫 기동 시 auth 마이그레이션 동안 healthcheck 3회 실패로 `up --wait`가 실패하던 문제 대응
+    healthcheck:
+      start_period: 60s
+      start_interval: 5s
+
+  rest:
+    image: postgrest/postgrest:v14.18@sha256:c7cd7e265a85b05248abf53f4473fcec7e327c282d0bd0cf60f1551996d09fcf
+
+  realtime:
+    image: supabase/realtime:v2.148.3@sha256:25cf375b9b7cb71d90cdf6e04a1a30996e39a8df866ebd0525bba1d959edc8d6
+
+  storage:
+    image: supabase/storage-api:v1.89.12@sha256:8526956cb462e9f7d392e9848ec77133b2769982ed614e9753cc687e8e4339a6
+
+  imgproxy:
+    image: darthsim/imgproxy:v4.0.21@sha256:69ae09dbc3349944564cb2f66cf35f80a4a9a78fda73d06061a337849520ab1f
+
+  meta:
+    image: supabase/postgres-meta:v0.100.0@sha256:145325b7e39f8ef4931d6e8cfd3f6f4d655de09d72a2ccc96d9513542c2202bd
+
+  functions:
+    image: supabase/edge-runtime:v1.77.9@sha256:6b850a2ccf0bf50ecac9accff8098095cd191c389c2a53c59b857aa0f53a8343
+
+  db:
+    image: supabase/postgres:17.6.1.136@sha256:f371b5f3f2ac0a05703f33d6e6134515fb2498cab708fb948a0aeb7481467c00
+    # 첫 기동 초기화(init 스크립트)가 Docker Desktop 바인드 마운트에서 50초를 넘겨 의존 서비스가 실패하던 문제 대응
+    healthcheck:
+      start_period: 180s
+      start_interval: 5s
+
+  supavisor:
+    image: supabase/supavisor:2.9.13@sha256:07f1a6098ffc04b80263bca4eb5c3e7bd2e03dfd1fc465aa108d7329000a1a4e
+    ports: !override
+      - 127.0.0.1:${POSTGRES_PORT}:5432
+      - 127.0.0.1:${POOLER_PROXY_PORT_TRANSACTION}:6543
+
+  # 영상 워커 (ADR-0002). 지금은 헬스체크용 최소 진입점만 있다.
+  worker:
+    container_name: shorts-worker
+    image: shopping-shorts/worker:dev
+    build:
+      context: ../../apps/worker
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # 접속 정보만. 워커 전용 DB 역할·비밀번호는 마이그레이션 작업(ADR-0001)에서 만든다. service_role 미사용.
+      WORKER_DB_HOST: db
+      WORKER_DB_PORT: ${POSTGRES_PORT}
+      WORKER_DB_NAME: ${POSTGRES_DB}
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    cpus: ${WORKER_CPUS:-2}
+    mem_limit: ${WORKER_MEM_LIMIT:-2g}
+    pids_limit: 256
+    # TODO(task-012 렌더 도입): ADR-0002대로 ffmpeg/ffprobe 실행을 네트워크 없는(network_mode: none) 비root
+    # 샌드박스 컨테이너로 분리한다. 지금 이 컨테이너는 DB에 붙는 조정 프로세스 자리이며 ffmpeg를 실행하지 않는다.
+    healthcheck:
+      test: ["CMD", "python", "-m", "worker", "--check"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # 웹 (apps/web). `docker compose --profile web up -d`로만 뜬다.
+  web:
+    container_name: shorts-web
+    image: shopping-shorts/web:dev
+    profiles: ["web"]
+    build:
+      # pnpm 워크스페이스라 저장소 루트가 컨텍스트
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+      args:
+        # NEXT_PUBLIC_*는 빌드 때 번들에 들어간다. 공개해도 되는 값만 넣는다.
+        NEXT_PUBLIC_SUPABASE_URL: ${SUPABASE_PUBLIC_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${ANON_KEY}
+    restart: unless-stopped
+    depends_on:
+      api-gw:
+        condition: service_healthy
+    environment:
+      # 서버 코드가 내부망으로 게이트웨이에 붙을 때 쓰는 주소
+      SUPABASE_INTERNAL_URL: http://api-gw:8000
+    ports:
+      - 127.0.0.1:${WEB_PORT:-3001}:3000
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /app/apps/web/.next/cache:uid=1000,gid=1000
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/').then((r) => {if (r.status >= 500) process.exit(1)}).catch(() => process.exit(1))"
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s

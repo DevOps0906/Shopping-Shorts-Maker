@@ -1,0 +1,22 @@
+# 빌드 컨텍스트(저장소 루트)에서 제외: 비밀·의존성·산출물·무관 디렉터리
+.env
+.env.*
+**/.env
+**/.env.*
+.git
+**/node_modules
+**/.next
+**/dist
+**/build
+**/coverage
+**/__pycache__
+.nomad
+.claude
+.codex
+.gemini
+docker
+docs
+design
+landing
+poc
+tasks

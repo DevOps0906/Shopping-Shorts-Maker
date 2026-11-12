@@ -1,0 +1,19 @@
+# Shopping-Shorts-Maker 개발·운영 공통 Compose 진입점 (ADR-0004)
+#
+#   처음 한 번:  sh docker/gen-secrets.sh        # 무작위 비밀로 루트 .env 생성 (git 미추적)
+#   시작:        docker compose up -d
+#   웹 포함:     docker compose --profile web up -d
+#   종료:        docker compose down             # 볼륨(db-config 등)은 남는다
+#
+# 구성: docker/supabase = Supabase 공식 docker/ 원본(supabase/supabase master 53ffdf75, 2026-11-12)
+#       docker/docker-compose.override.yml = 우리 변경(digest 고정, 루프백 포트, 라우트 제거, worker·web)
+# 리버스 프록시·TLS는 task-031에서 추가한다.
+
+name: shopping-shorts
+
+include:
+  - path:
+      - docker/supabase/docker-compose.yml
+      - docker/docker-compose.override.yml
+    project_directory: docker/supabase
+    env_file: .env

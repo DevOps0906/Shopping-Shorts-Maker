@@ -21,7 +21,7 @@
 - 앱 코드·마이그레이션 작성(task-009~012)
 
 ## 완료 조건 (실행 가능한 확인)
-- [ ] `docker compose config -q` 통과, `docker compose up -d` 후 전 서비스 healthy
-- [ ] `psql`에서 `pgmq`·`supabase_vault` 확장 생성 성공
-- [ ] `docker compose ps`에서 5432·Studio 포트가 `127.0.0.1` 바인딩만
-- [ ] `secscan` 비밀 0건, `.env` git 미추적
+- [x] `docker compose config -q` 통과, `docker compose up -d` 후 전 서비스 healthy
+- [x] `psql`에서 `pgmq`·`supabase_vault` 확장 생성 성공
+- [x] `docker compose ps`에서 5432·Studio 포트가 `127.0.0.1` 바인딩만(개발용 8000·6543도 루프백, 운영 reset은 task-031)
+- [x] `secscan` 비밀 0건, `.env` git 미추적(.env.example은 권한 설정상 사용자 작성 대기)
