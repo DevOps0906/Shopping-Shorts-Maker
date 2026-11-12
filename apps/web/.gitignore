@@ -1,2 +1,5 @@
 *.tsbuildinfo
 next-env.d.ts
+
+# next dev가 자동 생성(agentRules) — 프로젝트 규칙은 루트 AGENTS.md가 정본
+AGENTS.md
