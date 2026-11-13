@@ -20,6 +20,15 @@ def quality(width: int, height: int) -> float:
     return round(0.5 * short / 720, 4)
 
 
+THUMB_QUALITY = 0.7  # 파일 없는 후보(720p 가정, 1차 거르기 통과분). 실제 화질은 다운로드 뒤 재확인(015c-2)
+
+
+def thumbnail_score(match: float) -> float:
+    """썸네일만 있는 후보: 같은 공식(일치도 40·화질 20)/60, 화질은 THUMB_QUALITY 고정."""
+    total = WEIGHTS["match"] * match + WEIGHTS["quality"] * THUMB_QUALITY
+    return round(total * 100 / sum(WEIGHTS.values()), 2)
+
+
 def score(match: float, width: int, height: int) -> float:
     total = WEIGHTS["match"] * match + WEIGHTS["quality"] * quality(width, height)
     return round(total * 100 / sum(WEIGHTS.values()), 2)
@@ -32,11 +41,15 @@ class Result:
     rank: int | None
     exclude_reason: str | None
     checked: bool = False  # D1: 저장 시 체크 기본값은 해제
+    quarantined: bool = False  # 거부 후보만 의미 있음. 저장 시 항상 명시
 
 
-def rank(scored: dict[str, float], rejected: dict[str, str], limit: int = LIST_LIMIT) -> list[Result]:
-    """점수 내림차순(같으면 id 순)으로 순위를 매기고 limit 밖과 거부 후보에 사유를 붙인다."""
+def rank(scored: dict[str, float], rejected: dict[str, str], limit: int = LIST_LIMIT,
+         soft: frozenset[str] = frozenset()) -> list[Result]:
+    """점수 내림차순(같으면 id 순)으로 순위를 매기고 limit 밖과 거부 후보에 사유를 붙인다.
+    soft: 격리하지 않는 거부(없음·시간 초과·512KiB 초과·후보 상한 밖). 그 밖의 거부는 격리(true)."""
     ordered = sorted(scored.items(), key=lambda kv: (-kv[1], kv[0]))
     results = [Result(sid, s, i, None if i <= limit else OUT_OF_LIST) for i, (sid, s) in enumerate(ordered, 1)]
-    results += [Result(sid, None, None, reason) for sid, reason in sorted(rejected.items())]
+    results += [Result(sid, None, None, reason, quarantined=sid not in soft)
+                for sid, reason in sorted(rejected.items())]
     return results

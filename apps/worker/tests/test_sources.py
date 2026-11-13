@@ -100,8 +100,8 @@ def test_same_product_ranks_above_other_products_and_limit_20(root: Path) -> Non
     assert len(listed) == LIST_LIMIT
     assert all(r.exclude_reason == OUT_OF_LIST for r in results if r.rank is not None and r.rank > LIST_LIMIT)
     assert all(r.checked is False for r in results)
-    # 파일 없는 목록 전용 행(D8)은 건드리지 않는다
-    assert "s094" not in by_id
+    # 파일도 썸네일도 없는 행: 점수 없이 사유만, 격리하지 않음
+    assert (by_id["s094"].score, by_id["s094"].exclude_reason, by_id["s094"].quarantined) == (None, "썸네일 없음", False)
 
 
 def test_malicious_inputs_rejected(root: Path) -> None:
@@ -226,3 +226,71 @@ def test_symlinks_rejected(root: Path) -> None:
     (root / USER / "alias").symlink_to(project, target_is_directory=True)
     with pytest.raises(media.MediaRejected):
         resolve(root, alias_prefix + "a_same.mp4", alias_prefix)
+
+
+# ── task-015c-1 썸네일만 있는 후보 ─────────────────────────────
+def _thumb(i: int, name: str | None) -> dict[str, Any]:
+    return {"id": f"t{i:03d}", "file_path": None, "thumbnail_path": None if name is None else PREFIX + name}
+
+
+@pytest.fixture(scope="module")
+def thumbs(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    base = tmp_path_factory.mktemp("thumbs")
+    d = base / USER / PROJECT
+    d.mkdir(parents=True)
+    _make(d / "same.jpg", "270x480", PRODUCT_A)
+    _make(d / "b.jpg", "270x480", PRODUCT_B)
+    _make(d / "c.webp", "270x480", PRODUCT_C, bg="black")
+    _make(d / "wide.jpg", "4400x300", PRODUCT_A)
+    (d / "fake.jpg").write_bytes(b"\x89PNG\r\n\x1a\n" + bytes(64))
+    (d / "playlist.jpg").write_text("#EXTM3U\n")
+    (d / "big.jpg").write_bytes((d / "same.jpg").read_bytes() + bytes(600 * 1024))
+    return base
+
+
+def test_thumbnail_only_candidates_scored_and_top20(root: Path, thumbs: Path) -> None:
+    sources = [_thumb(1, "same.jpg")] + [_thumb(10 + i, "b.jpg" if i % 2 else "c.webp") for i in range(24)]
+    repo = FakeRepo(sources)
+    results = analyze(_ctx(), repo, root, thumbs)
+    by_id = {r.source_id: r for r in results}
+    assert repo.saved == results and len(results) == 25
+    assert by_id["t001"].rank == 1 and by_id["t001"].score is not None and by_id["t001"].score > max(r.score for r in results if r.source_id != "t001")
+    assert all(r.score is not None and 0 <= r.score <= 100 for r in results)
+    assert sum(1 for r in results if r.exclude_reason is None) == LIST_LIMIT
+    assert all(r.exclude_reason == OUT_OF_LIST for r in results if r.rank and r.rank > LIST_LIMIT)
+    assert all(r.checked is False and r.quarantined is False for r in results)
+
+
+def test_thumbnail_rejections(root: Path, thumbs: Path) -> None:
+    sources = [_thumb(1, "fake.jpg"), _thumb(2, "playlist.jpg"), _thumb(3, "big.jpg"), _thumb(4, "wide.jpg"),
+               _thumb(5, "missing.jpg"), _thumb(6, None),
+               {"id": "t007", "file_path": None, "thumbnail_path": f"{USER}/other-project/same.jpg"},
+               {"id": "t008", "file_path": None, "thumbnail_path": "../../etc/passwd"}]
+    results = {r.source_id: r for r in analyze(_ctx(), FakeRepo(sources), root, thumbs)}
+    assert all(r.score is None and r.rank is None for r in results.values())
+    assert results["t001"].quarantined is True and results["t001"].exclude_reason == "확장자와 실제 형식이 다름"
+    assert results["t002"].quarantined is True and results["t002"].exclude_reason == "허용하지 않는 파일 형식"
+    for sid, reason in (("t003", "썸네일이 너무 큼"), ("t005", "썸네일 없음"), ("t006", "썸네일 없음")):
+        assert (results[sid].exclude_reason, results[sid].quarantined) == (reason, False), sid
+    assert (results["t004"].exclude_reason, results["t004"].quarantined) == ("썸네일 해상도 범위 밖", True)
+    for sid in ("t007", "t008"):  # 다른 프로젝트·경로 탈출 → 격리(DB 가 점수 없음 + 사유로 판정)
+        assert results[sid].exclude_reason == "파일 경로가 올바르지 않음" and results[sid].quarantined is True
+
+
+def test_thumbnail_save_payload_marks_quarantine() -> None:
+    from worker.sources.select import Result
+
+    soft = rank({}, {"a": "썸네일 없음", "b": "허용하지 않는 파일 형식"}, soft=frozenset({"a"}))
+    assert [(r.source_id, r.quarantined) for r in soft] == [("a", False), ("b", True)]
+    assert isinstance(Result("x", 1.0, 1, None), Result)
+
+
+def test_candidates_over_cap_get_reason_not_silent_drop(root: Path, thumbs: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from worker.sources import analyze as mod
+
+    monkeypatch.setattr(mod, "MAX_CANDIDATES", 2)
+    results = {r.source_id: r for r in analyze(_ctx(), FakeRepo([_thumb(i, "b.jpg") for i in range(1, 5)]), root, thumbs)}
+    assert len(results) == 4
+    assert [results[f"t00{i}"].score is not None for i in (1, 2)] == [True, True]
+    for sid in ("t003", "t004"):
+        assert (results[sid].exclude_reason, results[sid].quarantined) == ("후보 상한 밖", False)
