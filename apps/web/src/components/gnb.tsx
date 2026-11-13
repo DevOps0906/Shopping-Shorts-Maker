@@ -1,12 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "@/app/(auth)/actions";
 import { cn } from "@/lib/utils";
 import { SETTINGS_TABS, STUDIO_STEPS } from "@/lib/routes";
 import { createClient } from "@/lib/supabase/client";
+import { JOBS_PANEL_ID, JobsPanel } from "@/components/jobs/jobs-panel";
+import { useQueueStatus } from "@/components/jobs/use-queue-status";
+import { JOB_REJECTED_EVENT } from "@/lib/jobs/rejection";
+import { activeCount, badgeLabel, badgeText } from "@/lib/jobs/queue-status";
 
 /*
  * 좌측 GNB — 구조 정본: docs/design.md 4장, 시각 참고: design/prototype/Main.dc.html .gnb
@@ -21,6 +25,7 @@ const ICONS = {
   trends: "M3 17l6-6 4 4 8-8M15 7h6v6",
   studio: "M4 5h16v14H4zM4 9h16M9 5l-2 4M15 5l-2 4",
   analytics: "M4 20V10M10 20V4M16 20v-7M22 20H2",
+  jobs: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7v5l3 2",
   settings: "M4 7h10M18 7h2M4 17h2M10 17h10M16 5v4M8 15v4",
   logout: "M14 4h5v16h-5M10 8l-4 4 4 4M6 12h10",
 } as const;
@@ -145,6 +150,26 @@ function useUserEmail() {
 export function Gnb() {
   const pathname = usePathname();
   const email = useUserEmail();
+  // 작업 현황(S-17): 갱신은 화면 이동 때 한 번, 패널이 열려 있는 동안 15초 폴링
+  const [jobsOpen, setJobsOpen] = useState(false);
+  const jobsButtonRef = useRef<HTMLButtonElement>(null);
+  const queue = useQueueStatus({ active: true, poll: jobsOpen, refreshKey: pathname });
+  const jobsCount = activeCount(queue.status);
+  const [jobRejected, setJobRejected] = useState(false);
+  // JQ001 거절: 작업 현황 패널을 열고 상단에 경고를 보인다
+  useEffect(() => {
+    const onRejected = () => {
+      setJobRejected(true);
+      setJobsOpen(true);
+    };
+    window.addEventListener(JOB_REJECTED_EVENT, onRejected);
+    return () => window.removeEventListener(JOB_REJECTED_EVENT, onRejected);
+  }, []);
+  const closeJobs = useCallback((restoreFocus: boolean) => {
+    setJobsOpen(false);
+    setJobRejected(false);
+    if (restoreFocus) jobsButtonRef.current?.focus();
+  }, []);
   const segments = pathname.split("/").filter(Boolean);
   const startsWith = (prefix: string) => pathname === prefix || pathname.startsWith(`${prefix}/`);
 
@@ -170,6 +195,7 @@ export function Gnb() {
   }));
 
   return (
+    <>
     <nav
       aria-label="주 메뉴"
       className="fixed inset-y-0 left-0 z-40 flex w-(--gnb-w) flex-col gap-0.5 overflow-y-auto border-r border-line bg-gnb-bg px-1.5 py-3 tablet:px-3.5 tablet:py-5"
@@ -228,6 +254,26 @@ export function Gnb() {
         isCurrentPage={false}
       />
       {inSettings ? <SubMenu label="환경설정 하위 메뉴" items={settingsItems} /> : null}
+      <button
+        ref={jobsButtonRef}
+        type="button"
+        aria-expanded={jobsOpen}
+        aria-controls={JOBS_PANEL_ID}
+        aria-label={badgeLabel(jobsCount)}
+        onClick={() => setJobsOpen((value) => !value)}
+        className={cn("relative", navItemClass, jobsOpen && navItemOnClass)}
+      >
+        <Icon d={ICONS.jobs} />
+        <span className="tablet:flex-1">작업 현황</span>
+        {jobsCount > 0 ? (
+          <span
+            aria-hidden="true"
+            className="flex h-(--jp-badge) min-w-(--jp-badge) items-center justify-center rounded-pill bg-accent px-1.5 text-xs font-bold text-white tabular-nums max-tablet:absolute max-tablet:top-0.5 max-tablet:right-1.5"
+          >
+            {badgeText(jobsCount)}
+          </span>
+        ) : null}
+      </button>
 
       <div className="flex justify-center px-0 pt-3 pb-1 text-rail font-bold tracking-wider text-muted tablet:justify-between tablet:px-3 tablet:pt-4 tablet:text-xs">
         <span>내 채널</span>
@@ -266,5 +312,16 @@ export function Gnb() {
         </form>
       </div>
     </nav>
+    {jobsOpen ? (
+      <JobsPanel
+        status={queue.status}
+        loaded={queue.loaded}
+        failed={queue.failed}
+        rejected={jobRejected}
+        onRetry={() => void queue.reload()}
+        onClose={closeJobs}
+      />
+    ) : null}
+    </>
   );
 }

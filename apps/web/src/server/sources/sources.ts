@@ -1,5 +1,6 @@
 import "server-only";
 import { createJob } from "@/lib/jobs/create-job";
+import { TOO_MANY_JOBS_MESSAGE } from "@/lib/jobs/queue-status";
 import { isProjectId } from "@/lib/steps/project-id";
 import { type StepStatusMap, parseStepStatus } from "@/lib/steps/state";
 import {
@@ -175,6 +176,8 @@ export async function startSourceSelection(projectId: string, idempotencyKey: un
       return { ok: false, error: `크레딧이 부족합니다(필요 ${result.required} · 잔액 ${result.balance}).`, retryable: false };
     case "step_not_ready":
       return { ok: false, error: "01 소재를 먼저 승인해 주세요. 이미 승인된 소스는 변경 필요 후 다시 시작할 수 있습니다.", retryable: false };
+    case "too_many_jobs":
+      return { ok: false, error: TOO_MANY_JOBS_MESSAGE, retryable: false };
     case "forbidden":
       return { ok: false, error: "이 프로젝트를 바꿀 권한이 없습니다.", retryable: false };
     case "invalid":

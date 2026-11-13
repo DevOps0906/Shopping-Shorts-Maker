@@ -82,6 +82,13 @@
   --z-toast: 70;
   --motion-fast: 220ms; /* design.md 6장 0.22초 */
   --partner-w: 400px; /* 제작 파트너 팝업 폭 — design.md 3장 */
+
+  /* 작업 현황 패널(S-17) — design.md 작업 현황 패널, 프로토타입 --jp-* */
+  --jp-w: 380px;
+  --jp-top: 16px;
+  --jp-row-min: 44px;
+  --jp-badge: 20px;
+  --z-jobs: 62; /* 제작 파트너 팝업(--z-popover) 위 */
 }
 
 /* 태블릿 768~1199 */
@@ -95,6 +102,7 @@
     --content-pb: 104px;
     --fab-inset: 20px;
     --partner-w: 380px;
+    --jp-w: 360px;
   }
 }
 
@@ -113,6 +121,7 @@
     --content-pb: 96px;
     --fab-inset: 16px;
     --fab-size: 52px;
+    --jp-badge: 18px;
   }
 }
 
@@ -133,6 +142,7 @@
   /* 그림자 */
   --shadow-card: 0 6px 24px rgba(91, 60, 160, 0.06);
   --shadow-fab: 0 12px 28px rgba(91, 60, 160, 0.35);
+  --shadow-pop: 0 24px 64px rgba(31, 27, 46, 0.24);
 }
 
 /* Tailwind 유틸리티 매핑 (기본 팔레트·글자 크기는 쓰지 않는다) */

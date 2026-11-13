@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 import { STUDIO_STEPS } from "@/lib/routes";
 import { STEP_PILL, stepBanner } from "@/lib/steps/banner";
 import type { StepNumber, StepStatusMap } from "@/lib/steps/state";
+import { useQueueStatus } from "@/components/jobs/use-queue-status";
+import { queueBanner } from "@/lib/jobs/queue-status";
 import { StatusBanner } from "./status-banner";
 import { StepActions, btnClass } from "./step-actions";
 import { StepStepper } from "./step-stepper";
@@ -55,11 +57,21 @@ export function StudioStepView({ projectId, step, initialStatus, runningStartedA
   const copy = STEP_COPY[step];
   // 실시간으로 상태가 바뀌었으면 서버 렌더 시점의 시작 시각은 다른 작업의 것일 수 있다
   const startedAt = state === "running" && initialStatus[step] === "running" ? runningStartedAt : null;
+  // 진행 중인 단계에서만 대기 순번·예상 시간을 15초마다 확인한다(대기 중이면 배너가 대기 문구로 바뀐다)
+  const queue = useQueueStatus({ active: state === "running", poll: state === "running" });
+  // 조회에 실패했거나 아직 못 읽었으면 대기·실행을 단정하지 않고 안내만 보인다
+  const queueUnknown = state === "running" && (queue.failed || !queue.loaded);
+  const waiting = state === "running" && !queueUnknown ? queueBanner(queue.status.production, projectId, step) : null;
+  const banner = queue.failed && state === "running"
+    ? { tone: "ready" as const, title: "대기 순번을 확인하지 못했습니다", description: "작업 상태를 불러오지 못했습니다. 잠시 뒤 자동으로 다시 확인합니다." }
+    : waiting
+      ? { tone: "ready" as const, title: waiting.title, description: waiting.description }
+      : stepBanner(state, step, label);
 
   return (
     <>
       <StepStepper projectId={projectId} current={step} status={status} />
-      <StatusBanner key={state} content={stepBanner(state, step, label)} startedAt={startedAt} />
+      <StatusBanner key={`${state}:${waiting ? "wait" : queue.failed ? "fail" : "run"}`} content={banner} startedAt={startedAt} chip={waiting?.chip} />
       {live === "offline" ? (
         <div
           role="alert"

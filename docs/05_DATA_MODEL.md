@@ -136,6 +136,8 @@
 | started_at · finished_at | timestamptz | 배너 경과 시간 |
 | extension_id | uuid null → extension_connections | 원자적 claim(ADR-0003). WHERE에 extension_connections.user_id = jobs 소유자 조건 |
 
+`public.job_queue_status()`(authenticated, 본인 행만): 본인 제작 작업의 순번·예상 대기 초와 포스팅 대기(순번·예상 시작·예약 시각)를 돌려준다. 남의 작업은 앞선 수로만 반영(17-5-1).
+
 ### credit_ledger
 | 컬럼 | 타입 | 비고 |
 |---|---|---|

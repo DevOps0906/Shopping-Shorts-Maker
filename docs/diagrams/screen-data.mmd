@@ -16,6 +16,7 @@ flowchart LR
     n_S_14["S-14 다중 계정"]
     n_S_15["S-15 모델 API 키"]
     n_S_16["S-16 제작 파트너 팝업"]
+    n_S_17["S-17 작업 현황 패널"]
   end
   subgraph DB["데이터"]
     n_t_accounts[("accounts")]
@@ -86,3 +87,6 @@ flowchart LR
   n_S_15 -.-> n_t_api__keys
   n_S_16 -.-> n_t_chat__messages
   n_S_16 -.-> n_t_credit__ledger
+  n_S_17 -.-> n_t_jobs
+  n_S_17 -.-> n_t_publications
+  n_S_17 -.-> n_t_accounts

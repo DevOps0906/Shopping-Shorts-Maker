@@ -398,9 +398,33 @@ a{color:#6A3FD0}a:hover{color:#4E2BA8}
 .aact{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .khead{display:flex;align-items:center;gap:10px;flex:1 1 240px;min-width:0}
 .kin{flex:1 1 240px;min-width:0}
+.app{--ok-bg:#E3F5EB;--ok-fg:#1A6E46;--warn-bg:#FFF4D6;--warn-fg:#7A4E00;--danger-bg:#FDE8E8;--danger-fg:#B42318;--gnb-w:248px;--jp-w:380px;--jp-gap:8px;--jp-pad:16px;--jp-radius:12px;--jp-top:16px;--jp-row-min:44px;--jp-badge:20px;--on-accent:#fff;--surface:#fff;--jp-s1:2px;--jp-s2:4px;--jp-s3:6px;--jp-s4:10px;--jp-s5:12px;--jp-s6:14px;--jp-s7:32px;--jp-bw:1px;--jp-ring:2px;--jp-pill:999px;--shadow-pop:0 24px 64px rgba(31,27,46,.24)}
+.jobs-i{position:relative}
+.jbadge{min-width:var(--jp-badge);height:var(--jp-badge);padding:0 var(--jp-s3);box-sizing:border-box;border-radius:var(--jp-pill);background:var(--accent);color:var(--on-accent);font-size:var(--fs-xs);font-weight:700;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+.jp{position:fixed;z-index:62;left:calc(var(--gnb-w) + var(--jp-gap));top:var(--jp-top);width:var(--jp-w);max-height:calc(100vh - var(--jp-top) * 2);display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-pop);transform-origin:top left;animation:chatIn .22s ease-out}
+.jp-head{display:flex;align-items:center;justify-content:space-between;padding:var(--jp-pad) var(--jp-pad) 0}
+.jp-head b{font-size:var(--fs-base)}
+.jp-tabs{display:flex;gap:var(--jp-s2);padding:0 var(--jp-pad);border-bottom:var(--jp-bw) solid var(--line)}
+.jp-n{margin-left:var(--jp-s3);padding:var(--jp-s1) var(--jp-s3);border-radius:var(--jp-pill);background:var(--accent-weak);color:var(--ink);font-size:var(--fs-xs);font-weight:700;font-variant-numeric:tabular-nums}
+.jp-list{flex:1 1 auto;overflow-y:auto;padding:var(--jp-gap);display:flex;flex-direction:column;gap:var(--jp-s2)}
+.jp-row{font:inherit;text-align:left;width:100%;min-height:var(--jp-row-min);box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--jp-s1) var(--jp-gap);align-items:center;padding:var(--jp-s4) var(--jp-s5);border:var(--jp-bw) solid var(--line);border-radius:var(--jp-radius);background:var(--surface);color:var(--ink);cursor:pointer;transition:background-color .2s}
+.jp-row:hover{background:var(--accent-weak)}
+.jp-row:focus-visible,.jp-tabs .stab:focus-visible{outline:var(--jp-ring) solid var(--accent);outline-offset:var(--jp-ring)}
+.jp-title{font-size:var(--fs-sm);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jp-sub,.jp-when{grid-column:1 / -1;font-size:var(--fs-xs);color:var(--muted)}
+.jp-when{color:var(--ink);font-weight:600}
+.jp-chip{padding:var(--jp-s2) var(--jp-s4);border-radius:var(--jp-pill);background:var(--accent-weak);color:var(--ink);font-size:var(--fs-xs);font-weight:700;white-space:nowrap}
+.jp-chip.wait{background:var(--warn-bg);color:var(--warn-fg)}
+.jp-chip.ok{background:var(--ok-bg);color:var(--ok-fg)}
+.jp-chip.bad{background:var(--danger-bg);color:var(--danger-fg)}
+.jp-chip.none{background:var(--line);color:var(--muted)}
+.jp-alert{margin:var(--jp-gap) var(--jp-gap) 0;padding:var(--jp-s5) var(--jp-s6);border-radius:var(--jp-radius);background:var(--warn-bg);color:var(--warn-fg);font-size:var(--fs-sm);font-weight:600}
+.jp-empty{padding:var(--jp-s7) var(--jp-pad);text-align:center;color:var(--muted);font-size:var(--fs-sm)}
+.jp-foot{display:flex;flex-wrap:wrap;align-items:center;gap:var(--jp-gap);padding:var(--jp-s4) var(--jp-pad);border-top:var(--jp-bw) solid var(--line);font-size:var(--fs-xs);color:var(--muted)}
+.jp-foot .btn{margin-left:auto}
 @media (prefers-reduced-motion:reduce){.app *{animation:none !important;transition:none !important}}
 @media (max-width:1199px){
-.app{--fs-h:26px;--fs-app:24px}
+.app{--fs-h:26px;--fs-app:24px;--gnb-w:216px;--jp-w:360px}
 .gnb{width:216px}
 .content{margin-left:216px;padding:24px 24px 104px}
 .pubgrid{grid-template-columns:minmax(0,1fr)}
@@ -414,7 +438,11 @@ a{color:#6A3FD0}a:hover{color:#4E2BA8}
 .grid3{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:767px){
-.app{--fs-xs:11.5px;--fs-sm:12.5px;--fs-base:14px;--fs-h:22px;--fs-app:20px}
+.app{--fs-xs:11.5px;--fs-sm:12.5px;--fs-base:14px;--fs-h:22px;--fs-app:20px;--gnb-w:72px;--jp-badge:18px}
+.jobs-i .jbadge{position:absolute;top:var(--jp-s1);right:var(--jp-s3)}
+.jp{left:0;right:0;top:0;bottom:0;width:auto;max-height:none;border-radius:0;transform-origin:bottom center}
+.jp-head,.jp-tabs{padding-left:var(--jp-s5);padding-right:var(--jp-s5)}
+.jp-row,.jp-head .iconbtn{min-height:var(--jp-row-min)}
 .gnb{width:72px;padding:12px 6px;background:rgba(255,255,255,.96)}
 .brand{justify-content:center;padding:4px 0 12px}
 .brand > span:last-child,.cnt,.gtitle span:last-child,.ch-i .nlab,.gnb-foot > span:nth-child(2){display:none}
@@ -478,6 +506,7 @@ a{color:#6A3FD0}a:hover{color:#4E2BA8}
 </sc-for>
 </div>
 </sc-if>
+<button type="button" class="nav-i jobs-i {{jobsCls}}" onClick="{{toggleJobs}}" aria-expanded="{{jobsOpenAria}}" aria-controls="jobs-panel" aria-label="{{jobsLabel}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7v5l3 2"></path></svg><span class="nlab">작업 현황</span><sc-if value="{{hasJobs}}" hint-placeholder-val="{{ true }}"><span class="jbadge" aria-hidden="true">{{jobsBadge}}</span></sc-if></button>
 <div class="gtitle"><span>내 채널</span><span>{{acctCount}}</span></div>
 <sc-for list="{{gnbAccts}}" as="a" hint-placeholder-count="4">
 <button type="button" class="nav-i ch-i {{a.cls}}" onClick="{{a.go}}" aria-current="{{a.cur}}" aria-label="{{a.aria}}"><span class="chdot {{a.ptCls}}" aria-hidden="true">{{a.initial}}</span><span class="nlab">{{a.name}}</span></button>
@@ -843,6 +872,7 @@ a{color:#6A3FD0}a:hover{color:#4E2BA8}
 <div class="bd">{{banner.desc}}</div>
 </div>
 <sc-if value="{{banner.isRun}}" hint-placeholder-val="{{ false }}"><span class="elapsed">{{elapsed}}초 경과</span><span class="prog" aria-hidden="true"><span></span></span></sc-if>
+<sc-if value="{{banner.isWait}}" hint-placeholder-val="{{ false }}"><span class="spill">{{banner.chip}}</span></sc-if>
 </div>
 
 <div class="stephead">
@@ -1330,6 +1360,22 @@ a{color:#6A3FD0}a:hover{color:#4E2BA8}
 <div class="cfoot">요청할 때 AI 사용량에 따라 크레딧이 차감됩니다</div>
 </aside>
 </sc-if>
+<sc-if value="{{jobsOpen}}" hint-placeholder-val="{{ false }}">
+<aside class="card jp" id="jobs-panel" role="dialog" aria-modal="false" aria-label="작업 현황">
+<div class="jp-head"><b>작업 현황</b><button class="iconbtn" type="button" aria-label="작업 현황 닫기" onClick="{{closeJobs}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+<div class="jp-tabs" role="tablist" aria-label="작업 현황 구분" onKeyDown="{{tabsKey}}">
+<sc-for list="{{jobTabs}}" as="t" hint-placeholder-count="2"><button type="button" role="tab" id="{{t.id}}" aria-controls="jobs-tabpanel" tabindex="{{t.ti}}" class="stab {{t.cls}}" aria-selected="{{t.sel}}" onClick="{{t.go}}">{{t.name}}<span class="jp-n">{{t.n}}</span></button></sc-for>
+</div>
+<sc-if value="{{jobsReject}}" hint-placeholder-val="{{ false }}"><div class="jp-alert" role="alert">같은 종류의 작업이 이미 3개 대기·진행 중입니다. 앞 작업이 끝난 뒤 다시 시도해 주세요. (크레딧은 차감되지 않았어요)</div></sc-if>
+<div class="jp-list" id="jobs-tabpanel" role="tabpanel" aria-labelledby="{{jobsTabId}}" aria-live="polite">
+<sc-for list="{{jobRows}}" as="r" hint-placeholder-count="3">
+<button type="button" class="jp-row" onClick="{{r.go}}"><span class="jp-title">{{r.title}}</span><span class="jp-chip {{r.cls}}">{{r.state}}</span><span class="jp-sub">{{r.sub}}</span><span class="jp-when">{{r.when}}</span></button>
+</sc-for>
+<sc-if value="{{jobsEmpty}}" hint-placeholder-val="{{ false }}"><div class="jp-empty">{{jobsEmptyText}}</div></sc-if>
+</div>
+<div class="jp-foot"><span>시안 확인용</span><button class="btn sm" type="button" onClick="{{toggleJobsEmpty}}">{{jobsEmptyLabel}}</button><button class="btn sm" type="button" onClick="{{toggleJobsReject}}">{{jobsRejectLabel}}</button></div>
+</aside>
+</sc-if>
 <sc-if value="{{showPeek}}" hint-placeholder-val="{{ false }}">
 <div class="peek" role="status">
 <button class="peek-body" type="button" onClick="{{openChat}}"><span class="ml">제작 파트너 · 새 메시지 {{unread}}개</span>{{peekText}}</button>
@@ -1489,6 +1535,7 @@ class Component extends DCLogic {
       addOpen: false, na: { platform: 'YouTube', name: '', cat: '생활·수납', tone: '친근한 후기형' },
       keys: { anthropic: '7f2c', fish: 'a91d' }, keyIn: {}, keyTest: {}, keyMode: 'credit', llm: 'claude', tts: 'fish',
       profile: { name: '리치노마드', email: 'name@example.com', tone: '친근한 후기형', lang: '한국어', sub: '흰 글씨 + 검은 테두리', len: '20', notiDone: true, notiWeekly: true },
+      jobsOpen: false, jobsTab: 'make', jobsEmpty: false, jobsReject: false,
       credits: 120, toast: null, chatOpen: false, unread: 0, peekOff: false, selTrends: {}, chAcct: null, anaAcct: 'all', newAcctId: '',
       channelOpen: false, channelName: '', channelTone: '친근한 후기형', channelSet: false
     };
@@ -1663,6 +1710,16 @@ class Component extends DCLogic {
       if (el) el.scrollTop = el.scrollHeight;
     }
     if (opened) { var ta = document.getElementById('chat-in'); if (ta) ta.focus(); }
+    if (prevState && !prevState.jobsOpen && this.state.jobsOpen) {
+      var jself = this;
+      this.jobsEsc = function (e) { if (e.key === 'Escape') { e.preventDefault(); jself.jobsFocus = true; jself.setState({ jobsOpen: false }); } };
+      document.addEventListener('keydown', this.jobsEsc);
+      var jt = document.querySelector('#jobs-panel [role="tab"][aria-selected="true"]'); if (jt) jt.focus();
+    }
+    if (prevState && prevState.jobsOpen && !this.state.jobsOpen) {
+      if (this.jobsEsc) { document.removeEventListener('keydown', this.jobsEsc); this.jobsEsc = null; }
+      if (this.jobsFocus) { this.jobsFocus = false; var jb = document.querySelector('.jobs-i'); if (jb) jb.focus(); }
+    }
     if (prevState && prevState.chatOpen && !this.state.chatOpen && this.fabFocus) { this.fabFocus = false; var fb = document.querySelector('.chat-fab'); if (fb) fb.focus(); }
   }
 
@@ -1910,9 +1967,15 @@ class Component extends DCLogic {
     });
     var doneCount = s.st.filter(function (x) { return x === 'approved'; }).length;
 
-    var b = { cls: '', title: '', desc: '아래에서 결과물을 준비하면 승인할 수 있습니다.', isRun: false, isIdle: false, isDot: false, isOk: false };
+    var b = { cls: '', title: '', desc: '아래에서 결과물을 준비하면 승인할 수 있습니다.', isRun: false, isIdle: false, isDot: false, isOk: false, isWait: false, chip: '' };
     var pubAcctName = this.acct().name;
     if (s.done) { b.cls = 'ok'; b.isOk = true; b.title = s.published === 'now' ? '업로드 완료' : s.published === 'scheduled' ? '예약 완료' : '프로젝트 완료'; b.desc = s.published === 'now' ? pubAcctName + ' 채널에 올렸습니다. 성과 분석에서 조회·클릭을 확인하세요.' : s.published === 'scheduled' ? s.pubAt + '에 ' + pubAcctName + ' 채널로 올라갑니다. 발행 뒤 성과 분석에서 결과를 확인하세요.' : 'V' + s.version + '을 최종본으로 저장했습니다.'; }
+    else if (st === 'running' && s.elapsed < 3 && i < 5) {
+      var qd = i === 4 ? { t: '렌더링 대기 3번째 · 약 6분 뒤 시작', chip: '3번째', d: '앞선 작업 2개가 끝나면 시작합니다. 이 화면을 닫아도 작업은 이어지고 작업 현황에서 볼 수 있습니다.' }
+        : i === 3 ? { t: '앞 작업이 끝나면 시작', chip: '미룸', d: '같은 종류의 작업은 한 번에 하나씩 실행합니다. 앞 작업이 끝나면 자동으로 시작합니다.' }
+        : { t: '분석 대기 2번째 · 약 2분 뒤 시작', chip: '2번째', d: '앞선 작업 1개가 끝나면 시작합니다. 이 화면을 닫아도 작업은 이어집니다.' };
+      b.cls = 'ready'; b.isIdle = true; b.isWait = true; b.title = qd.t; b.desc = qd.d; b.chip = qd.chip;
+    }
     else if (st === 'running') { b.cls = 'run'; b.isRun = true; b.title = s.runLabel; b.desc = s.runDesc; }
     else if (st === 'suggested') { b.cls = 'ready'; b.isDot = true; b.title = 'AI 제안 도착 · 적용 필요'; b.desc = i === 0 ? '아래 추천 소재 버튼에서 제품을 골라 주세요.' : '채팅의 추천 대본을 작업칸에 적용해 주세요.'; }
     else if (st === 'ready') { b.cls = 'ready'; b.isDot = true; b.title = '결과 준비 완료 · 승인 필요'; b.desc = i === 1 ? '영상 ' + s.sources.length + '편이 준비되었습니다. 원본을 확인한 뒤 승인해 주세요.' : '현재 결과를 확인하고 그대로 진행 또는 변경 필요를 선택해 주세요.'; }
@@ -2217,8 +2280,47 @@ class Component extends DCLogic {
       { label: '추천 발행 시간', value: '19:00', sub: '최근 조회가 몰린 시간대 · 발행 단계의 추천 시간에 사용' }
     ];
 
+    var jobGo = function (pid, k) { return function () { var p = s.projects.filter(function (x) { return x.id === pid; })[0]; self.setState({ jobsOpen: false }); if (p) self.openProject(Object.assign({}, p, { step: k })); else self.goSub(k); }; };
+    var JOBS = {
+      make: [
+        { title: '무펌프 의류 압축팩 · 05 편집', sub: '렌더링 · 컷 12개를 합치는 중', state: '진행 중', cls: '', when: '2분 경과', cnt: true, go: jobGo('p1', 4) },
+        { title: '무선 미니 보풀제거기 · 05 편집', sub: '렌더링', state: '대기 2번째', cls: 'wait', when: '약 6분 뒤 시작', cnt: true, go: jobGo('p5', 4) },
+        { title: '접이식 실리콘 밀폐용기 · 04 목소리', sub: '음성 생성', state: '대기 1번째', cls: 'wait', when: '약 1분 뒤 시작', cnt: true, go: jobGo('p3', 3) },
+        { title: '물세척 점착 롤러 · 02 소스', sub: '원본 분석', state: '미룸', cls: 'none', when: '앞 작업이 끝나면 시작', cnt: true, go: jobGo('p2', 1) }
+      ],
+      post: [
+        { title: '무펌프 의류 압축팩', sub: 'YouTube Shorts · 업로드 대기', state: '순번 2번째', cls: 'wait', when: '예상 시작 약 4분 뒤', cnt: true, go: jobGo('p1', 5) },
+        { title: '무선 미니 보풀제거기', sub: 'TikTok · 업로드 중', state: '업로드 중', cls: '', when: '1분 경과', cnt: true, go: jobGo('p5', 5) },
+        { title: '실리콘 메이크업 브러시 클리너', sub: 'YouTube Shorts · 예약 발행', state: '예약됨', cls: 'ok', when: '오늘 19:00에 올라갑니다', cnt: false, go: jobGo('p6', 5) },
+        { title: '접이식 실리콘 밀폐용기', sub: 'Instagram Reels · 업로드 실패, 자동 재시도 2/3', state: '재시도 대기', cls: 'wait', when: '약 3분 뒤 다시 시도', cnt: true, go: jobGo('p3', 5) },
+        { title: '물세척 점착 롤러', sub: 'YouTube 연결이 만료됐어요 · 재연결 필요', state: '재연결 필요', cls: 'bad', when: '발행 화면에서 확인하기', cnt: false, go: jobGo('p2', 5) }
+      ]
+    };
+    var jobsAll = s.jobsEmpty ? { make: [], post: [] } : JOBS;
+    var jobsTab = s.jobsTab === 'post' ? 'post' : 'make';
+    var jobsActive = jobsAll.make.concat(jobsAll.post).filter(function (r) { return r.cnt; }).length;
+    var JOBKEYS = ['make', 'post'];
+    var jobTabs = [['make', '제작 중'], ['post', '포스팅 대기']].map(function (t) { var on = jobsTab === t[0]; return { id: 'jobs-tab-' + t[0], ti: on ? '0' : '-1', name: t[1], n: jobsAll[t[0]].length, cls: on ? 'on' : '', sel: on ? 'true' : 'false', go: function () { self.setState({ jobsTab: t[0] }); } }; });
+    var tabsKey = function (e) {
+      var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (!d) return;
+      e.preventDefault(); var nk = JOBKEYS[(JOBKEYS.indexOf(jobsTab) + d + JOBKEYS.length) % JOBKEYS.length];
+      self.setState({ jobsTab: nk }); setTimeout(function () { var el = document.getElementById('jobs-tab-' + nk); if (el) el.focus(); }, 0);
+    };
+    var jobRows = jobsAll[jobsTab];
+    var closeJobs = function () { self.setState({ jobsOpen: false }); };
+
     return {
       accent: this.props.accent ?? '#7B4FD6',
+      jobsOpen: !!s.jobsOpen, jobsOpenAria: s.jobsOpen ? 'true' : 'false', jobsCls: s.jobsOpen ? 'on' : '',
+      hasJobs: jobsActive > 0, jobsBadge: jobsActive > 9 ? '9+' : String(jobsActive),
+      jobsLabel: '작업 현황, 진행·대기 중 ' + jobsActive + '건',
+      toggleJobs: function () { if (s.jobsOpen) self.jobsFocus = true; self.setState({ jobsOpen: !s.jobsOpen }); }, closeJobs: function () { self.jobsFocus = true; closeJobs(); },
+      tabsKey: tabsKey, jobsTabId: 'jobs-tab-' + jobsTab,
+      jobTabs: jobTabs, jobRows: jobRows, jobsEmpty: jobRows.length === 0,
+      jobsEmptyText: jobsTab === 'make' ? '진행 중인 제작 작업이 없습니다.' : '포스팅을 기다리는 영상이 없습니다.',
+      jobsReject: !!s.jobsReject,
+      jobsEmptyLabel: s.jobsEmpty ? '목록 채우기' : '빈 상태 보기', toggleJobsEmpty: function () { self.setState({ jobsEmpty: !s.jobsEmpty }); },
+      jobsRejectLabel: s.jobsReject ? '거절 안내 닫기' : '거절 안내 보기', toggleJobsReject: function () { self.setState({ jobsReject: !s.jobsReject }); },
       vChannel: view === 'channel', vAnalytics: view === 'analytics',
       gnbAccts: gnbAccts, addFromGnb: function () { self.setState({ view: 'settings', setTab: 'accounts', addOpen: true }); },
       selCount: selList.length, hasSel: selList.length > 0, noSel: selList.length === 0, makeCls: selList.length ? 'glow' : '',

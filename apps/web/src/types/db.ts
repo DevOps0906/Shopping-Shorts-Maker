@@ -1489,6 +1489,7 @@ export type Database = {
           type: string
         }[]
       }
+      job_queue_status: { Args: Record<PropertyKey, never>; Returns: Json }
       mark_step_ready: {
         Args: { p_project_id: string; p_status: string; p_step: number }
         Returns: Json

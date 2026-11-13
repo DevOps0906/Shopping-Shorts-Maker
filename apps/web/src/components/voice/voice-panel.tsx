@@ -1,5 +1,6 @@
 "use client";
 
+import { announceJobRejected } from "@/lib/jobs/rejection";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { pollTtsAction, startTtsAction } from "@/app/(dashboard)/studio/[projectId]/[step]/voice/actions";
 import { InlineBanner, useFeedback } from "@/components/feedback";
@@ -103,6 +104,7 @@ export function VoicePanel({ lines, initialTake, initialJob }: VoicePanelProps) 
       const result = await startTtsAction(projectId, voiceId, key);
       if (!result.ok) {
         setError(result.error);
+        announceJobRejected(result.error);
         return;
       }
       setJob({ id: result.jobId, status: "queued", error: null, startedAt: null });

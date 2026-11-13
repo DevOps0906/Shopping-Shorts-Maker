@@ -1,5 +1,6 @@
 "use client";
 
+import { announceJobRejected } from "@/lib/jobs/rejection";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { pollRenderAction, startRenderAction } from "@/app/(dashboard)/studio/[projectId]/[step]/edit/actions";
 import { InlineBanner, useFeedback } from "@/components/feedback";
@@ -93,6 +94,7 @@ export function EditPanel({ targetSec, lines, take, candidates, renders: initial
       const result = await startRenderAction(projectId, cuts, key);
       if (!result.ok) {
         setError(result.error);
+        announceJobRejected(result.error);
         return;
       }
       setJob({ id: result.jobId, status: "queued", error: null, startedAt: null });
