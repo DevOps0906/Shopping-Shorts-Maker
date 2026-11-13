@@ -27,3 +27,12 @@
 - [ ] `pnpm typecheck` · `pnpm lint` · `pnpm test` 통과
 - [ ] 보안 테스트: 만료·폐기·회전 전 토큰 거부 · 갱신 토큰 재사용 → family 폐기 · 남의 job_id claim/업로드 403 · 쿠키만 있는 요청 401 · CORS 응답에 `Access-Control-Allow-Credentials` 없음 · 허용 외 필드·platform 입력 무시/거부 · 응답·로그에 토큰 원문 없음
 - [ ] 끊김 → waiting_extension → 재연결 claim → running 통합 테스트(015a 함수 사용)
+
+## 결정 (2026-11-14)
+- **화면(사용자 승인 2026-11-14)**: S-18 확장 연결 `/extension/connect`(로그인 필요, 연결하기 버튼·상태: 확장 미설치/연결됨, "플랫폼 비밀번호·쿠키는 받지 않음") · S-19 설정 탭 "브라우저 확장" `/settings/extensions`(연결된 확장: 이름·마지막 신호·연결일·해제, "+ 새 브라우저 연결"→S-18). 설정 tabs에 4번째 탭 추가
+- **분할**: 015b-1 DB(토큰 발급·회전·폐기 함수, 완료·중단 보고 함수, 속도 제한, 버킷 상한) → 015b-2 웹(API·S-18·S-19·S-07 배너·collect_download 생성) → 015b-3 문서(03_SCREENS_UX·design·spec·prototype)
+- 회전 유예: 직전 회전 후 **10초 이내** 같은 갱신 토큰 재사용은 family 폐기 대신 409(이미 갱신됨, 새 토큰 재발급 없음). 10초 뒤 재사용 = family 전체 폐기
+- 속도 제한(확장 단위, 가설): 하트비트 분당 4 · 수집·업로드 URL·보고 분당 60 · 갱신 family당 분당 10 · 연결 발급 사용자당 10분에 5. 초과 429 + Retry-After
+- 업로드 상한: 영상 200MB로 통일(서명 URL 발급 시 신고 크기 검사 + sources 버킷 상한을 새 마이그레이션으로 200MiB), 썸네일 512KiB 유지
+- 완료 보고: collect → succeeded(이후 select_sources 생성은 기존 흐름 따름). collect_download → 지금은 succeeded, **015c-2에서 워커 재검사로 교체**(그 전엔 개발 환경만). 중단 보고: 캡차·위험 제어·로그인 만료 → failed + 사유 코드(배너 문구 매핑)
+- 토큰 보관(015d 참고): 액세스 chrome.storage.session, 갱신 chrome.storage.local
