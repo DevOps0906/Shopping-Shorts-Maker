@@ -36,3 +36,15 @@
 - 업로드 상한: 영상 200MB로 통일(서명 URL 발급 시 신고 크기 검사 + sources 버킷 상한을 새 마이그레이션으로 200MiB), 썸네일 512KiB 유지
 - 완료 보고: collect → succeeded(이후 select_sources 생성은 기존 흐름 따름). collect_download → 지금은 succeeded, **015c-2에서 워커 재검사로 교체**(그 전엔 개발 환경만). 중단 보고: 캡차·위험 제어·로그인 만료 → failed + 사유 코드(배너 문구 매핑)
 - 토큰 보관(015d 참고): 액세스 chrome.storage.session, 갱신 chrome.storage.local
+
+## 결정 보강 (2026-11-14, challenger REVISE 반영 — 위 "결정"과 다르면 이쪽이 우선)
+- **신원 단위 = 행**: extension_connections 행 id가 확장 신원(job·하트비트·S-19 목록·폐기 단위). 회전은 **같은 행 제자리 갱신**, 새 열 `prev_refresh_token_hash`·`rotated_at`·`activated_at`(새 마이그레이션). 갱신은 `where refresh_token_hash = $old and revoked_at is null` 원자적 CAS로 1건만 성공
+- **유예 없음**(10초 유예 철회): 직전 해시(prev) 재사용 = 그 행 즉시 폐기. 동시 갱신은 확장(015d)이 서비스 워커 단일 실행(mutex)으로 막는다
+- 토큰 원문은 앱에서 SHA-256 → DB에는 해시만 전달(Postgres 로그에 원문 없음). 연결 대상 확장 ID는 고정 env `EXTENSION_ID`(+manifest key), 쿼리 값 금지. 발급 후 첫 하트비트 전(`activated_at` null) 10분 지난 행은 스위퍼가 폐기, 전달 실패 시 웹이 즉시 폐기
+- **프록시**: `apps/web/src/proxy.ts` matcher에서 `api/extension/` 제외(쓰기 허용 추가). 테스트: 쿠키만 있는 요청 401(리다이렉트 아님)·응답에 Set-Cookie·Access-Control-Allow-* 헤더 없음
+- **속도 제한 = DB**: `private.rate_hit(key, limit, window)`(고정 창 카운터 테이블, RLS·함수 전용, 오래된 창은 스위퍼 정리). 키: `ext:<id>:<종류>` · `user:<id>:connect` · 인증 실패 경로는 `ip:<해시>:auth`(CLIENT_IP_HEADER, 025와 같은 규칙) — 리버스 프록시 제한은 운영 문서에 추가 권고
+- **정산·전이**: 완료·중단 보고 함수는 `running`이고 이 확장이 claim한 job만 조건부 전이(아니면 409), 같은 트랜잭션에서 settle/release(service_role에서 쓸 수 있는 전용 래퍼). 스위퍼가 waiting으로 돌린 job의 늦은 보고는 거부
+- **collect_download 완료 = 워커 재검사로 바로 연결**(임시 succeeded 없음): 완료 보고 → job은 running 유지·`files_reported_at` 기록 후 워커 큐(sources)에 재검사 메시지 → 워커(015c-2)가 succeeded/failed. 순서: 015b-1 DB → 015c-2 워커 → 015b-2 웹
+- **체크 경쟁**: 프로젝트당 활성(queued·running·waiting_extension) 확장 job 1개. 그동안 `set_source_checks`·select_sources 생성 거부(새 오류 코드). collect_download 멱등 키 = 체크한 source id 정렬 해시
+- **업로드**: 서버가 Storage 서명 업로드 URL 발급 → 서비스 도메인의 `/storage/v1/object/upload/sign/` 경로만 리버스 프록시로 공개(Storage API 전체 노출 금지). Next.js는 본문을 받지 않음. 버킷 200MiB는 이미 적용(240000:249) → 항목 삭제
+- 015b-3 문서는 2026-11-14 먼저 완료(spec S-18·S-19)

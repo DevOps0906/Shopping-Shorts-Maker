@@ -7,6 +7,7 @@ flowchart LR
     n_S_12["S-12 성과 분석<br/>/analytics"]
     n_S_16["S-16 제작 파트너 팝업<br/>(전역)"]
     n_S_17["S-17 작업 현황 패널<br/>(전역, GNB)"]
+    n_S_18["S-18 확장 연결<br/>/extension/connect"]
   end
   subgraph g1["로그인(채널 소유자)"]
     n_S_05["S-05 내 채널<br/>/channels/[id]"]
@@ -23,6 +24,7 @@ flowchart LR
     n_S_13["S-13 프로필 설정<br/>/settings/profile"]
     n_S_14["S-14 다중 계정<br/>/settings/accounts"]
     n_S_15["S-15 모델 API 키<br/>/settings/api-keys"]
+    n_S_19["S-19 브라우저 확장<br/>/settings/extensions"]
   end
   n_S_01 --> n_S_02
   n_S_01 --> n_S_03
@@ -58,3 +60,5 @@ flowchart LR
   n_S_17 --> n_S_09
   n_S_17 --> n_S_10
   n_S_17 --> n_S_11
+  n_S_18 --> n_S_19
+  n_S_19 --> n_S_18

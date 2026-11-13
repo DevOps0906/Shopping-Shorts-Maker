@@ -1321,6 +1321,25 @@ a{color:#6A3FD0}a:hover{color:#4E2BA8}
 </sc-for>
 </section>
 </sc-if>
+<sc-if value="{{tabExt}}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{extList}}" hint-placeholder-val="{{ true }}">
+<section class="card sect">
+<div class="sh-row"><h3>연결된 확장</h3><button class="btn sm pri" type="button" onClick="{{extOpen}}">+ 새 브라우저 연결</button></div>
+<p class="note" style="margin: 0 0 6px">확장은 로그인한 브라우저에서 원본을 모으고, 플랫폼 비밀번호와 쿠키는 서버로 보내지 않습니다.</p>
+<div class="krow">
+<div class="khead"><span style="min-width: 0"><b class="lt">Chrome · 사무실 PC</b><span class="note">마지막 신호 1분 전 · 연결일 11월 14일</span></span><span class="sbadge s-ok">연결됨</span></div>
+<div class="row"><button class="btn sm" type="button" aria-label="Chrome 사무실 PC 확장 해제">해제</button></div>
+</div>
+</section>
+</sc-if>
+<sc-if value="{{extConnect}}" hint-placeholder-val="{{ false }}">
+<section class="card sect">
+<h3>확장 연결</h3>
+<p class="note" style="margin: 0 0 10px">연결하면 이 브라우저의 확장이 내 계정으로 수집 작업을 받습니다. 플랫폼 비밀번호와 쿠키는 받지 않습니다.</p>
+<div class="row"><button class="btn sm pri" type="button">연결하기</button><button class="btn sm" type="button" onClick="{{extBack}}">설정에서 연결 관리</button></div>
+</section>
+</sc-if>
+</sc-if>
 </sc-if>
 
 </div>
@@ -1501,7 +1520,7 @@ class Component extends DCLogic {
     ];
     this.DAILY = [8200, 9100, 8700, 10400, 12800, 11900, 13500, 15200, 14100, 16800, 18300, 17600, 19900, 21400];
     this.DAYS = ['10. 29.', '10. 30.', '10. 31.', '11. 1.', '11. 2.', '11. 3.', '11. 4.', '11. 5.', '11. 6.', '11. 7.', '11. 8.', '11. 9.', '11. 10.', '11. 11.'];
-    this.SET_TABS = [['profile', '프로필 설정'], ['accounts', '다중 계정'], ['api', '모델 API 키']];
+    this.SET_TABS = [['profile', '프로필 설정'], ['accounts', '다중 계정'], ['api', '모델 API 키'], ['ext', '브라우저 확장']];
     this.state = this.fresh();
   }
 
@@ -1527,7 +1546,7 @@ class Component extends DCLogic {
 
   appFresh() {
     return {
-      view: 'home', setTab: 'profile', projectName: '새 쇼핑 숏폼', curProjId: null, curCat: '생활·수납',
+      view: 'home', setTab: 'profile', extConnect: false, projectName: '새 쇼핑 숏폼', curProjId: null, curCat: '생활·수납',
       accounts: this.ACCTS.map(function (a) { return Object.assign({}, a); }), curAcct: 'a1',
       projects: this.PROJS.map(function (p) { return Object.assign({}, p); }), projFilter: 'all', projQuery: '',
       trendCat: '전체', trendPeriod: '7일', trendSrc: '전체',
@@ -2378,7 +2397,7 @@ class Component extends DCLogic {
       anaRows: anaRows, noAnaRows: anaRows.length === 0, anaInsights: anaInsights,
       vHome: view === 'home', vNew: view === 'new', vProjects: view === 'projects', vTrend: view === 'trend', vProd: view === 'prod', vSettings: view === 'settings', inSettings: view === 'settings',
       nv: nv, subSteps: subSteps, subSet: subSet, setTabs: setTabs,
-      tabProfile: s.setTab === 'profile', tabAccounts: s.setTab === 'accounts', tabApi: s.setTab === 'api',
+      tabProfile: s.setTab === 'profile', tabAccounts: s.setTab === 'accounts', tabApi: s.setTab === 'api', tabExt: s.setTab === 'ext', extConnect: s.extConnect, extList: !s.extConnect, extOpen: function () { self.setState({ extConnect: true }); }, extBack: function () { self.setState({ extConnect: false }); },
       pageTitle: view === 'channel' ? chA.name : this.PAGES[view][1], pageEyebrow: this.PAGES[view][0],
       profileName: s.profile.name, profileInitial: (s.profile.name || '?').slice(0, 1), profileEmail: s.profile.email,
       profileTone: s.profile.tone, profileLang: s.profile.lang, profileSub: s.profile.sub, profileLen: s.profile.len,
