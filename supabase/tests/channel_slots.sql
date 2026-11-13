@@ -282,6 +282,97 @@ begin
   raise notice 'PASS 6 초과 채널 새 프로젝트·채널 변경 CS004, 이름 변경·미연결 채널 프로젝트 허용, 첫 발행 뒤 변경 23503 유지';
 end $$;
 
+-- ── 6b) 034b: 초과 채널 새 발행 CS005 · 기존 예약 유지 · 한도 초과 중 is_default 변경 CS006 ──
+-- (한도 1, f1 순위 1·f2 초과) 초과 전에 만든 프로젝트·예약을 준비하려고 한도를 잠시 2로 올린다
+update private.channel_quotas set channel_limit = 2 where user_id = '00000000-0000-4000-f034-00000000000f';
+insert into public.projects (id, user_id, account_id, name, step_status, sources_notice_ack_at, sources_notice_ack_by) values
+  ('00000000-0000-4000-f034-0000000002f2', '00000000-0000-4000-f034-00000000000f', '00000000-0000-4000-f034-0000000001f2', 'f-pending',
+   '{"1":"approved","2":"approved","3":"ready","4":"idle","5":"idle","6":"idle"}', now(), '00000000-0000-4000-f034-00000000000f');
+insert into public.projects (user_id, account_id, name) values ('00000000-0000-4000-f034-00000000000f', '00000000-0000-4000-f034-0000000001f2', 'f-new');
+insert into public.scripts (project_id, version, lines, approved_at) values ('00000000-0000-4000-f034-0000000002f2', 1, '["좁은 틈에도 쏙 들어가요."]', now());
+insert into public.renders (project_id, version, mp4_path, duration_sec, cut_map) values
+  ('00000000-0000-4000-f034-0000000002f2', 1, '00000000-0000-4000-f034-00000000000f/00000000-0000-4000-f034-0000000002f2/v1.mp4', 15,
+   jsonb_build_object('cuts', jsonb_build_array(
+     jsonb_build_object('no', 1, 'source_id', '00000000-0000-4000-f034-0000000003f1', 'author', 'maker_a',
+                        'platform', 'tiktok', 'source_url', 'https://www.tiktok.com/@maker_a/video/1',
+                        'collected_at', '2026-11-12T01:00:00Z'))));
+update public.projects
+set step_status = '{"1":"approved","2":"approved","3":"approved","4":"approved","5":"approved","6":"idle"}'
+where id = '00000000-0000-4000-f034-0000000002f2';
+-- 초과 전에 실제 prepare_publication 으로 첫 예약을 만든다(사용자 권한)
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-f034-00000000000f","role":"authenticated"}', true);
+select public.confirm_policy_check('00000000-0000-4000-f034-0000000002f2', 'attribution_notice', true);
+select public.prepare_publication('00000000-0000-4000-f034-0000000002f2', 'now', null, '압축팩 정리 꿀팁', '본문', '{}', true, false);
+reset role;
+update private.channel_quotas set channel_limit = 1 where user_id = '00000000-0000-4000-f034-00000000000f';
+do $$
+begin
+  perform pg_temp.expect_fail($q$insert into public.publications (project_id, account_id, mode)
+    select id, account_id, 'now' from public.projects where name = 'f-new'$q$, 'CS005', '초과 채널 새 발행');
+  -- 기존 pending: 재준비(prepared_at)·claim 전이는 막지 않는다
+  if not exists (select 1 from public.publications where project_id = '00000000-0000-4000-f034-0000000002f2' and status = 'pending') then
+    raise exception 'FAIL: 초과 전 첫 예약 없음';
+  end if;
+  -- 한도 안 채널(f1)의 새 발행은 정상
+  insert into public.projects (user_id, account_id, name) values ('00000000-0000-4000-f034-00000000000f', '00000000-0000-4000-f034-0000000001f1', 'f-ok2');
+  insert into public.publications (project_id, account_id, mode)
+  select id, account_id, 'now' from public.projects where name = 'f-ok2';
+  raise notice 'PASS 6b-1 초과 채널 새 발행 CS005, 기존 예약 재준비·pending→uploading 전이 유지, 한도 안 채널 발행 정상';
+end $$;
+
+-- 초과 채널의 기존 행 재준비(실제 RPC, 사용자 권한): pending·invalidated 모두 성공해야 한다
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-f034-00000000000f","role":"authenticated"}', true);
+do $$
+declare p jsonb;
+begin
+  p := public.prepare_publication('00000000-0000-4000-f034-0000000002f2', 'now', null, '압축팩 정리 꿀팁 2', '본문', '{}', true, false);
+  if p ->> 'status' <> 'pending' then raise exception 'FAIL: 초과 채널 pending 재준비 %', p; end if;
+end $$;
+reset role;
+update public.publications set status = 'invalidated' where project_id = '00000000-0000-4000-f034-0000000002f2';
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-f034-00000000000f","role":"authenticated"}', true);
+do $$
+declare p jsonb;
+begin
+  p := public.prepare_publication('00000000-0000-4000-f034-0000000002f2', 'now', null, '압축팩 정리 꿀팁 3', '본문', '{}', true, false);
+  if p ->> 'status' <> 'pending' or p ->> 'title' <> '압축팩 정리 꿀팁 3' then
+    raise exception 'FAIL: 초과 채널 invalidated 재준비 %', p;
+  end if;
+  raise notice 'PASS 6b-1b 초과 채널의 pending·invalidated 행을 prepare_publication RPC 로 재준비 성공';
+end $$;
+reset role;
+
+-- 슬롯 2 > 한도 1: authenticated 의 is_default 변경 거부(설정·해제), 슬롯 없는 행은 허용
+update public.accounts set is_default = true where id = '00000000-0000-4000-f034-0000000001f1';
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-f034-00000000000f","role":"authenticated"}', true);
+select pg_temp.expect_fail($q$update public.accounts set is_default = false where id = '00000000-0000-4000-f034-0000000001f1'$q$,
+  'CS006', '한도 초과 중 기본 채널 해제');
+select pg_temp.expect_fail($q$update public.accounts set is_default = true where id = '00000000-0000-4000-f034-0000000001f2'$q$,
+  'CS006', '한도 초과 중 기본 채널 설정');
+update public.accounts set is_default = false where id = '00000000-0000-4000-f034-0000000001f3';
+update public.accounts set channel_name = 'f1-renamed' where id = '00000000-0000-4000-f034-0000000001f1';
+reset role;
+-- 슬롯 ≤ 한도(한도 2): 허용
+update private.channel_quotas set channel_limit = 2 where user_id = '00000000-0000-4000-f034-00000000000f';
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-f034-00000000000f","role":"authenticated"}', true);
+update public.accounts set is_default = false where id = '00000000-0000-4000-f034-0000000001f1';
+update public.accounts set is_default = true where id = '00000000-0000-4000-f034-0000000001f2';
+-- 다른 사용자(C)는 한도 1·슬롯 1 이하라 영향 없음, F 의 헬퍼 답은 본인에게만
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-f034-00000000000c","role":"authenticated"}', true);
+do $$
+begin
+  if private.channel_over_limit_self('00000000-0000-4000-f034-00000000000f') then raise exception 'FAIL: 타인 한도 초과 여부 노출'; end if;
+end $$;
+reset role;
+update private.channel_quotas set channel_limit = 1 where user_id = '00000000-0000-4000-f034-00000000000f';
+update public.accounts set is_default = false where id = '00000000-0000-4000-f034-0000000001f2';
+do $$ begin raise notice 'PASS 6b-2 한도 초과 중 is_default 변경 CS006(설정·해제), 슬롯 없는 행·슬롯≤한도·postgres 는 허용, 헬퍼는 본인만'; end $$;
+
 -- ── 7) authenticated: 이벤트 쓰기·한도 읽기 불가, 본인 이벤트만 읽기 ──
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-f034-00000000000c","role":"authenticated"}', true);

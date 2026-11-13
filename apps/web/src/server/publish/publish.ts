@@ -106,6 +106,8 @@ function toMessage(code: string | undefined) {
       return "설명란이 YouTube 한도(5000바이트)를 넘습니다. 본문을 줄여 다시 발행 준비해 주세요.";
     case "PC003":
       return "해시태그가 YouTube 태그 한도(500자)를 넘습니다. 해시태그를 줄여 주세요.";
+    case "CS005":
+      return "이 채널은 요금제 채널 수를 넘어 새로 발행할 수 없습니다. 연결한 채널 수를 확인해 주세요.";
     case "RT001":
       return "보관 정리 중인 파일이 있어 잠시 후 다시 시도해 주세요.";
     default:

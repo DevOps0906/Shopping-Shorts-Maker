@@ -13,6 +13,7 @@
 ## 분리 메모 (2026-11-13 팀장 확정)
 - **034a(이번)**: `20261113110000_channel_slots.sql` — 기본 한도 1(`private.channel_quotas`, 기존 계정은 현재 연결 수), 30일 새 채널 3회, 초과 채널 새 프로젝트·채널 변경 거부(CS004), 감사 이벤트 `channel_slot_events`, 웹 사전 검사·오류 문구(CS001~CS003). plans·subscriptions·connected_at 대신 단순 설계(아래 "할 것"의 요금제 부분은 P1 결제로).
 - **034b(024 병합 뒤)**: 초과 채널의 새 발행 예약 거부(prepare_publication·024 scheduled 전이), is_default 변경으로 초과 순위를 바꾸는 우회 차단.
+  - 034b 확정: CS005 는 publications INSERT(첫 발행 준비)만 거부, 재준비·claim·retry 는 기존 예약 유지를 위해 막지 않음. 024 scheduled 전이는 업로드 완료 뒤 상태라 범위 제외. is_default 우회는 CS006(한도 초과 중 변경 거부). 남길 채널 고르기는 사람 결정 보류(지금은 연결 해제뿐).
 
 ## 할 것
 - plans(읽기 전용, 시드: starter 1 · pro 3 — 가설)·subscriptions(서버만 씀)·accounts.connected_at·channel_slot_events(감사, 서버만 씀·본인 읽기) 신설. 새 테이블 RLS + 정책 + 인덱스 + 코멘트
