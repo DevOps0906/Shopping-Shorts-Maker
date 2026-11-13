@@ -167,6 +167,26 @@
 | is_default | bool | 기본 채널(12장) |
 | oauth_token_ref | uuid null | Vault secret id. 해제 시 Vault에서 삭제 |
 | status | text | 연결됨·재연결 필요 |
+| first_connected_at | timestamptz null | 처음 채널을 저장한 시각(이후 불변). 30일 새 채널 3회 제한·초과 채널 순위. 서버 전용(task-034a) |
+| disconnected_at | timestamptz null | 사용자 해제 시각(슬롯 반환), 재연결 시 null. 토큰 만료는 슬롯 유지. 서버 전용 |
+
+- 슬롯 = 업로드용 행 중 external_channel_id 있음 · disconnected_at 없음. 순위 is_default desc → first_connected_at → id 가 한도를 넘으면 초과 채널(새 프로젝트·채널 변경 거부, CS004)
+
+### channel_quotas (private, 함수 전용)
+| 컬럼 | 타입 | 비고 |
+|---|---|---|
+| user_id | uuid PK → auth.users | |
+| channel_limit | int | 1~50. 행 없음 = 1. 기존 계정은 마이그레이션 시점 연결 수(2 이상) |
+| updated_at | timestamptz | |
+
+### channel_slot_events (감사, 함수만 씀 · 본인 읽기)
+| 컬럼 | 타입 | 비고 |
+|---|---|---|
+| id · user_id | uuid | |
+| account_id | uuid null → accounts | 행 삭제 시 null |
+| kind | text | connect·reconnect·disconnect·expire·reject_limit·reject_rotation·reject_duplicate |
+| slots · channel_limit | int | 기록 시점 슬롯 수·한도 |
+| created_at | timestamptz | 토큰·이메일·code·state 원문 저장 금지 |
 
 ### categories (읽기 전용)
 | 컬럼 | 타입 | 비고 |

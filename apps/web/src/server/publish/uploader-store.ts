@@ -3,7 +3,7 @@ import { createAdminClient } from "@/server/supabase-admin";
 import type { Claim, ClaimResult, UploaderStore } from "./uploader";
 
 /*
- * 업로더 저장소 — DB public 래퍼(service_role 전용, 20261112280000)만 부른다.
+ * 업로더 저장소 — DB public 래퍼(service_role 전용, 20261113120000)만 부른다.
  * 세션 URI 는 publication_upload_sessions 에만 있고, 이 모듈 밖으로는 업로더에게만 넘긴다(브라우저 반환 금지).
  */
 
@@ -83,6 +83,16 @@ export function createUploaderStore(): UploaderStore {
       });
       check(error);
       return str((data as { status?: unknown } | null)?.status) ?? "unknown";
+    },
+    async resumeCheck(publicationId, attemptToken) {
+      const { data, error } = await db.rpc("publication_resume_check", {
+        p_publication_id: publicationId,
+        p_attempt_token: attemptToken,
+      });
+      check(error);
+      const d = (data ?? {}) as { ok?: unknown; status?: unknown; reason?: unknown };
+      if (d.ok === true) return { ok: true } as const;
+      return { ok: false, status: str(d.status) ?? "unknown", reason: str(d.reason) ?? "unknown" } as const;
     },
     async rejectCopy(publicationId, attemptToken, code) {
       const { data, error } = await db.rpc("publication_reject_copy", {

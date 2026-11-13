@@ -1,9 +1,10 @@
 "use client";
 
-import { useId, useMemo, useState, useTransition } from "react";
+import { useEffect, useId, useMemo, useState, useTransition } from "react";
 import {
   chooseBioServiceAction,
   confirmUploadAbsentAction,
+  loadPublicationAction,
   preparePublicationAction,
   retryUploadAction,
   saveAffiliateAction,
@@ -46,6 +47,20 @@ import { DESCRIPTION_MAX_BYTES, utf8Bytes } from "./upload-status-copy";
  */
 
 const copyKey = (c: CopyInput) => JSON.stringify([c.title, c.body, c.hashtags]);
+
+/** naver.me 단축 주소는 저장은 되지만 /l/ 단축 링크가 그쪽으로 보내지 않는다(task-025) */
+function isNaverMe(url: string) {
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    return host === "naver.me" || host.endsWith(".naver.me");
+  } catch {
+    return false;
+  }
+}
+
+/** 업로더가 처리 중이라 곧 바뀔 수 있는 발행 상태 */
+const POLL_STATUSES = new Set(["pending", "uploading", "retry_wait"]);
+const PUBLICATION_POLL_MS = 15_000;
 
 export function PublishPanel({
   productName,
@@ -105,6 +120,24 @@ export function PublishPanel({
   const canSubmit =
     allPassed && ready && !locked && !busy && !descriptionTooLong && title.trim() !== "" && (mode === "now" || scheduledAt !== null);
 
+  // 업로더가 바꾸는 상태(uploaded·scheduled·reconnect_wait·needs_check·failed)를 새로고침 없이 보여 준다.
+  // 업로드가 끝나지 않은 상태에서만 주기적으로 다시 읽는다(RLS 본인 프로젝트 읽기, 화면이 숨겨져 있으면 쉰다).
+  const publicationStatus = publication?.status ?? null;
+  useEffect(() => {
+    if (publicationStatus === null || !POLL_STATUSES.has(publicationStatus)) return;
+    let active = true;
+    const timer = setInterval(async () => {
+      if (document.hidden) return;
+      const result = await loadPublicationAction(projectId).catch(() => null);
+      // 그사이 사용자가 상태를 바꿨으면(정리됨) 버린다. 일시 오류는 다음 주기에 다시 읽는다
+      if (active && result?.ok) setPublication(result.publication);
+    }, PUBLICATION_POLL_MS);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, [projectId, publicationStatus]);
+
   function run(action: () => Promise<PolicyActionResult>, done?: string) {
     setError(null);
     const key = copyKey(copy);
@@ -120,6 +153,15 @@ export function PublishPanel({
       setPublication(result.publication);
       if (done) feedback.toast({ message: done, tone: "success" });
     });
+  }
+
+  async function copyShortUrl(value: string) {
+    try {
+      await navigator.clipboard.writeText(value);
+      feedback.toast({ message: "단축 링크를 복사했습니다", tone: "success" });
+    } catch {
+      feedback.snackbar({ message: "복사하지 못했습니다. 주소를 직접 선택해 복사해 주세요.", tone: "error" });
+    }
   }
 
   const saveLink = (next: { program: ProgramId; url: string | null; disclosed: boolean }, done?: string) =>
@@ -200,6 +242,23 @@ export function PublishPanel({
             onDisclosed={(on) => program && saveLink({ program, url: link?.url ?? null, disclosed: on })}
             onPinComment={setPinComment}
           />
+          {link?.url && isNaverMe(link.url) ? (
+            <InlineBanner tone="warning">naver.me 단축 주소는 단축 링크로 연결되지 않습니다. 원래 상품 주소를 붙여 넣어 주세요.</InlineBanner>
+          ) : null}
+          {link?.url && link.shortUrl ? (
+            <section aria-label="단축 링크" className="flex flex-col gap-2 rounded-card border border-line bg-white p-4 shadow-card tablet:p-6">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm font-semibold">단축 링크</p>
+                <button type="button" onClick={() => void copyShortUrl(link.shortUrl as string)} className={btnClass}>
+                  복사
+                </button>
+              </div>
+              <p className="rounded-btn-sm border border-accent-line bg-accent-weak px-3 py-2 text-sm break-all text-nav-on-ink">{link.shortUrl}</p>
+              <p className="text-xs text-muted">
+                링크인바이오·설명란에 이 단축 링크를 쓰면 클릭이 성과 분석에 집계됩니다. 제휴 링크를 바꿔도 단축 링크는 그대로입니다.
+              </p>
+            </section>
+          ) : null}
           <LinkPlacement platform={channel.platform} />
           <LinkInBioCard
             enabled={isLinkProgram(program) && Boolean(link?.url)}
@@ -207,7 +266,7 @@ export function PublishPanel({
             bioNo={link?.bioNo ?? null}
             registered={link?.bioRegistered ?? false}
             productName={productName}
-            url={link?.url ?? null}
+            url={link?.shortUrl ?? link?.url ?? null}
             disclosure={policy.disclosure}
             purchaseGuide={purchaseGuide}
             disabled={busy || locked}

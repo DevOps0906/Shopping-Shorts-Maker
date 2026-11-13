@@ -22,7 +22,7 @@ export default async function SettingsTabPage({ params, searchParams }: Settings
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("accounts")
-    .select("id, channel_name, status")
+    .select("id, channel_name, status, first_connected_at, disconnected_at")
     .eq("platform", "youtube")
     .order("created_at", { ascending: true });
 

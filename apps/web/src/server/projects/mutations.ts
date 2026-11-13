@@ -45,6 +45,8 @@ export async function createProjectFromForm(form: FormData): Promise<CreateResul
     })
     .select("id")
     .single();
+  // task-034a: 요금제 채널 수를 넘는 채널(DB 트리거 CS004)
+  if (error?.code === "CS004") return { kind: "invalid", state: { error: "이 채널은 요금제 채널 수를 넘어 새 프로젝트를 만들 수 없습니다." } };
   if (error || !data) return { kind: "invalid", state: { error: "프로젝트를 만들지 못했습니다. 잠시 뒤 다시 시도해 주세요." } };
   return { kind: "redirect", href: topicHref((data as { id: string }).id, parsed.product, parsed.url) };
 }
@@ -65,6 +67,7 @@ export async function duplicateProject(projectId: string): Promise<MutationResul
   const { error: insertError } = await supabase
     .from("projects")
     .insert({ account_id: s.account_id, category_id: s.category_id, name, target_sec: s.target_sec });
+  if (insertError?.code === "CS004") return { ok: false, error: "이 채널은 요금제 채널 수를 넘어 새 프로젝트를 만들 수 없습니다." };
   if (insertError) return { ok: false, error: "복제하지 못했습니다. 잠시 뒤 다시 시도해 주세요." };
   return { ok: true, name: s.name };
 }

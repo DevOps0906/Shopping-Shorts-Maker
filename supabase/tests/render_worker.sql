@@ -274,7 +274,7 @@ begin
   raise notice 'PASS 8 컷 원본 스냅샷·설명란 문구는 DB 값';
 end $$;
 
--- 보관 기간 삭제(task-024b, 20261112290100): 지워진 음성은 건너뛰고, 쓸 음성·원본이 모두 지워졌으면 RD001
+-- 보관 기간 삭제(task-024b, 20261113130100): 지워진 음성은 건너뛰고, 쓸 음성·원본이 모두 지워졌으면 RD001
 insert into public.jobs (id, project_id, step, type, status, idempotency_key) values
   ('00000000-0000-4000-d020-0000000004a6', '00000000-0000-4000-d020-0000000002a1', 5, 'render', 'running', 'render-test-6');
 update public.voice_takes set file_deleted_at = now() where id = '00000000-0000-4000-d020-0000000005a1';

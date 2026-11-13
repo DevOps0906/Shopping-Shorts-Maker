@@ -14,7 +14,9 @@ export type Database = {
           category_id: string | null
           channel_name: string
           created_at: string
+          disconnected_at: string | null
           external_channel_id: string | null
+          first_connected_at: string | null
           id: string
           is_default: boolean
           last_bio_no: number
@@ -31,7 +33,9 @@ export type Database = {
           category_id?: string | null
           channel_name: string
           created_at?: string
+          disconnected_at?: string | null
           external_channel_id?: string | null
+          first_connected_at?: string | null
           id?: string
           is_default?: boolean
           last_bio_no?: number
@@ -47,7 +51,9 @@ export type Database = {
           category_id?: string | null
           channel_name?: string
           created_at?: string
+          disconnected_at?: string | null
           external_channel_id?: string | null
+          first_connected_at?: string | null
           id?: string
           is_default?: boolean
           last_bio_no?: number
@@ -270,6 +276,44 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      channel_slot_events: {
+        Row: {
+          account_id: string | null
+          channel_limit: number
+          created_at: string
+          id: string
+          kind: string
+          slots: number
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          account_id?: string | null
+          channel_limit: number
+          created_at?: string
+          id?: string
+          kind: string
+          slots: number
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          channel_limit?: number
+          created_at?: string
+          id?: string
+          kind?: string
+          slots?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_slot_events_account_id_fkey"
+            columns: ["account_id"]
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       chat_messages: {
         Row: {
@@ -518,27 +562,33 @@ export type Database = {
         Row: {
           affiliate_link_id: string
           clicked_at: string
+          counted: boolean
           id: string
           platform: string | null
           referrer: string | null
           short_url: string | null
+          visitor_hash: string | null
         }
         ComputedFields: never
         Insert: {
           affiliate_link_id: string
           clicked_at?: string
+          counted?: boolean
           id?: string
           platform?: string | null
           referrer?: string | null
           short_url?: string | null
+          visitor_hash?: string | null
         }
         Update: {
           affiliate_link_id?: string
           clicked_at?: string
+          counted?: boolean
           id?: string
           platform?: string | null
           referrer?: string | null
           short_url?: string | null
+          visitor_hash?: string | null
         }
         Relationships: [
           {
@@ -725,6 +775,41 @@ export type Database = {
           },
         ]
       }
+      publication_upload_sessions: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          publication_id: string
+          restart_allowed: boolean
+          session_uri: string
+          total_bytes: number
+        }
+        ComputedFields: never
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          publication_id: string
+          restart_allowed?: boolean
+          session_uri: string
+          total_bytes: number
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          publication_id?: string
+          restart_allowed?: boolean
+          session_uri?: string
+          total_bytes?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "publication_upload_sessions_publication_id_fkey"
+            columns: ["publication_id"]
+            referencedRelation: "publications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       publications: {
         Row: {
           account_id: string
@@ -814,6 +899,7 @@ export type Database = {
           mp4_path: string | null
           project_id: string
           purge_after: string
+          retention_deleting_at: string | null
           retention_reserved_at: string | null
           retention_token: string | null
           upscale_status: string
@@ -831,6 +917,7 @@ export type Database = {
           mp4_path?: string | null
           project_id: string
           purge_after?: string
+          retention_deleting_at?: string | null
           retention_reserved_at?: string | null
           retention_token?: string | null
           upscale_status?: string
@@ -847,6 +934,7 @@ export type Database = {
           mp4_path?: string | null
           project_id?: string
           purge_after?: string
+          retention_deleting_at?: string | null
           retention_reserved_at?: string | null
           retention_token?: string | null
           upscale_status?: string
@@ -921,6 +1009,7 @@ export type Database = {
           project_id: string
           purge_after: string
           quarantined: boolean
+          retention_deleting_at: string | null
           retention_reserved_at: string | null
           retention_token: string | null
           rights_basis: string | null
@@ -929,6 +1018,7 @@ export type Database = {
           score: number | null
           thumbnail_deleted_at: string | null
           thumbnail_path: string | null
+          thumbnail_retention_deleting_at: string | null
           thumbnail_retention_reserved_at: string | null
           thumbnail_retention_token: string | null
           title: string | null
@@ -952,6 +1042,7 @@ export type Database = {
           project_id: string
           purge_after: string
           quarantined?: boolean
+          retention_deleting_at?: string | null
           retention_reserved_at?: string | null
           retention_token?: string | null
           rights_basis?: string | null
@@ -960,6 +1051,7 @@ export type Database = {
           score?: number | null
           thumbnail_deleted_at?: string | null
           thumbnail_path?: string | null
+          thumbnail_retention_deleting_at?: string | null
           thumbnail_retention_reserved_at?: string | null
           thumbnail_retention_token?: string | null
           title?: string | null
@@ -982,6 +1074,7 @@ export type Database = {
           project_id?: string
           purge_after?: string
           quarantined?: boolean
+          retention_deleting_at?: string | null
           retention_reserved_at?: string | null
           retention_token?: string | null
           rights_basis?: string | null
@@ -990,6 +1083,7 @@ export type Database = {
           score?: number | null
           thumbnail_deleted_at?: string | null
           thumbnail_path?: string | null
+          thumbnail_retention_deleting_at?: string | null
           thumbnail_retention_reserved_at?: string | null
           thumbnail_retention_token?: string | null
           title?: string | null
@@ -1137,6 +1231,7 @@ export type Database = {
       video_metrics: {
         Row: {
           avg_view_pct: number | null
+          collected_at: string
           date: string
           est_revenue: number | null
           id: string
@@ -1147,6 +1242,7 @@ export type Database = {
         ComputedFields: never
         Insert: {
           avg_view_pct?: number | null
+          collected_at?: string
           date: string
           est_revenue?: number | null
           id?: string
@@ -1156,6 +1252,7 @@ export type Database = {
         }
         Update: {
           avg_view_pct?: number | null
+          collected_at?: string
           date?: string
           est_revenue?: number | null
           id?: string
@@ -1183,6 +1280,7 @@ export type Database = {
           pauses: Json | null
           project_id: string
           purge_after: string
+          retention_deleting_at: string | null
           retention_reserved_at: string | null
           retention_token: string | null
           sentences: Json | null
@@ -1201,6 +1299,7 @@ export type Database = {
           pauses?: Json | null
           project_id: string
           purge_after?: string
+          retention_deleting_at?: string | null
           retention_reserved_at?: string | null
           retention_token?: string | null
           sentences?: Json | null
@@ -1218,6 +1317,7 @@ export type Database = {
           pauses?: Json | null
           project_id?: string
           purge_after?: string
+          retention_deleting_at?: string | null
           retention_reserved_at?: string | null
           retention_token?: string | null
           sentences?: Json | null
@@ -1240,6 +1340,25 @@ export type Database = {
           },
         ]
       }
+      youtube_upload_quota: {
+        Row: {
+          day: string
+          updated_at: string
+          used: number
+        }
+        ComputedFields: never
+        Insert: {
+          day: string
+          updated_at?: string
+          used?: number
+        }
+        Update: {
+          day?: string
+          updated_at?: string
+          used?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -1261,6 +1380,17 @@ export type Database = {
       assign_bio_number: {
         Args: { p_project_id: string; p_service: string }
         Returns: number
+      }
+      channel_slot_status: {
+        Args: { p_account_id?: string; p_user_id: string }
+        Returns: {
+          allowed: boolean
+          channel_limit: number
+          code: string
+          next_at: string
+          recent_new: number
+          slots: number
+        }[]
       }
       chat_consume_proposal: { Args: { p_proposal_id: string }; Returns: Json }
       chat_create_proposal: {
@@ -1311,6 +1441,7 @@ export type Database = {
           project_id: string
           purge_after: string
           quarantined: boolean
+          retention_deleting_at: string | null
           retention_reserved_at: string | null
           retention_token: string | null
           rights_basis: string | null
@@ -1319,6 +1450,7 @@ export type Database = {
           score: number | null
           thumbnail_deleted_at: string | null
           thumbnail_path: string | null
+          thumbnail_retention_deleting_at: string | null
           thumbnail_retention_reserved_at: string | null
           thumbnail_retention_token: string | null
           title: string | null
@@ -1360,6 +1492,21 @@ export type Database = {
       mark_step_ready: {
         Args: { p_project_id: string; p_status: string; p_step: number }
         Returns: Json
+      }
+      metrics_run_finish: {
+        Args: { p_error: string; p_id: number; p_ok: number; p_skipped: number }
+        Returns: undefined
+      }
+      metrics_run_start: { Args: Record<PropertyKey, never>; Returns: number }
+      metrics_targets: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          account_id: string
+          platform_video_id: string
+          publication_id: string
+          published_at: string
+          user_id: string
+        }[]
       }
       oauth_state_consume: {
         Args: { p_state_hash: string; p_user_id: string }
@@ -1414,6 +1561,10 @@ export type Database = {
         Args: { p_attempt_token: string; p_code: string; p_publication_id: string }
         Returns: Json
       }
+      publication_resume_check: {
+        Args: { p_attempt_token: string; p_publication_id: string }
+        Returns: Json
+      }
       publication_retry: { Args: { p_project_id: string }; Returns: Json }
       publication_session_begin: {
         Args: { p_attempt_token: string; p_publication_id: string }
@@ -1438,9 +1589,25 @@ export type Database = {
         Returns: Json
       }
       publish_recheck: { Args: { p_project_id: string }; Returns: Json }
+      record_link_click: {
+        Args: {
+          p_code: string
+          p_ip: string
+          p_platform: string
+          p_ref_host: string
+        }
+        Returns: {
+          program: string
+          url: string
+        }[]
+      }
       request_step_change: {
         Args: { p_project_id: string; p_step: number }
         Returns: Json
+      }
+      retention_confirm: {
+        Args: { p_ids: string[]; p_kind: string; p_token: string }
+        Returns: string[]
       }
       retention_due: {
         Args: {
@@ -1481,6 +1648,15 @@ export type Database = {
           p_uses: Json
         }
         Returns: Json
+      }
+      save_video_metrics: {
+        Args: {
+          p_end: string
+          p_publication_id: string
+          p_rows: Json
+          p_start: string
+        }
+        Returns: number
       }
       set_source_checks: {
         Args: { p_project_id: string; p_source_ids: string[] }

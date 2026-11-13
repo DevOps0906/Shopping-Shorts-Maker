@@ -65,13 +65,18 @@ export function copyLimitError(c: { title: string; description: string; hashtags
 const isRetentionBusy = (e: unknown) =>
   typeof e === "object" && e !== null && (e as { code?: unknown }).code === "RT001";
 
-/** DB 함수(20261112280000) 래퍼. 시도 토큰이 맞지 않으면(선점이 끝남) 예외 */
+/** DB 함수(20261113120000) 래퍼. 시도 토큰이 맞지 않으면(선점이 끝남) 예외 */
 export type UploaderStore = {
   claim(): Promise<ClaimResult>;
   /** 전역 일일 카운터 확인·증가. false = 쿼터 소진(DB가 이미 PT 자정 이후로 미룸) */
   sessionBegin(publicationId: string, attemptToken: string): Promise<boolean>;
   sessionSave(publicationId: string, attemptToken: string, uri: string, totalBytes: number): Promise<void>;
   finish(publicationId: string, attemptToken: string, videoId: string, testPrivate: boolean): Promise<string>;
+  /**
+   * 세션이 덜 올라갔을 때 이어 올리기 직전 예약 시각·정책 재판정(20261113120300). 세션 있는 선점은 이 판정을 건너뛰고
+   * 상태 조회부터 하므로(완료면 바로 기록) 남은 바이트를 보내기 전에 꼭 부른다. 미통과면 DB가 needs_check 로 두고 ok=false
+   */
+  resumeCheck(publicationId: string, attemptToken: string): Promise<{ ok: true } | { ok: false; status: string; reason: string }>;
   /** 문구가 YouTube 한도를 넘음(세션 전) → 자동 재시도 없이 발행 준비 해제(invalidated, confirm:<코드>) */
   rejectCopy(publicationId: string, attemptToken: string, code: CopyLimitCode): Promise<string>;
   fail(publicationId: string, attemptToken: string, kind: FailKind, code: string): Promise<string>;
@@ -166,6 +171,8 @@ async function attempt(deps: UploaderDeps, c: Claim): Promise<RunResult> {
     const st = await queryStatus(deps.fetch, accessToken, session.uri, session.totalBytes);
     if (st.kind === "complete") return finish(st.videoId);
     if (st.kind === "incomplete") {
+      const gate = await store.resumeCheck(id, tok);
+      if (!gate.ok) return { kind: "done", status: gate.status, code: gate.reason };
       const loaded = await loadVideo();
       if ("error" in loaded) return fail("transient", "storage_error");
       if (!loaded.video) return fail("permanent", "video_missing");

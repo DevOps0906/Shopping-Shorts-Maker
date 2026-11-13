@@ -7,6 +7,7 @@ const { OAuthStoreError } = await import("./store");
 const { startConnect, finishConnect, disconnect, getAccessTokenWith, ReconnectRequiredError, sha256Hex, pkceChallenge } =
   await import("./youtube");
 type OAuthStore = import("./store").OAuthStore;
+type SlotStatus = import("./store").SlotStatus;
 
 const USER_A = "00000000-0000-4000-8000-00000000000a";
 const USER_B = "00000000-0000-4000-8000-00000000000b";
@@ -30,6 +31,11 @@ function fakeStore() {
   const versions: Record<string, string> = {};
   let seq = 0;
   const ver = (id: string) => (versions[id] ??= `ref-${++seq}`);
+  // 채널 슬롯(20261113110000): 사전 검사 결과와 DB 최종 검사 거부를 테스트가 정한다
+  const slot: { status: SlotStatus; reject: "CS001" | "CS002" | "CS003" | null } = {
+    status: { allowed: true, code: null, limit: 1, nextAt: null },
+    reject: null,
+  };
   const store: OAuthStore = {
     async createState(userId, accountId, stateHash, verifier) {
       if (owners[accountId] !== userId) throw new OAuthStoreError("42501");
@@ -50,6 +56,7 @@ function fakeStore() {
       if (Object.entries(accounts).some(([id, a]) => id !== accountId && a.channel === channelId)) {
         throw new OAuthStoreError("23505");
       }
+      if (slot.reject) throw new OAuthStoreError(slot.reject);
       if (refreshToken && refreshToken.trim()) {
         acc.token = refreshToken;
         versions[accountId] = `ref-${++seq}`;
@@ -61,6 +68,10 @@ function fakeStore() {
     async getRefreshToken(accountId, userId) {
       if (userId && owners[accountId] !== userId) throw new OAuthStoreError("42501");
       return accounts[accountId].token;
+    },
+    async slotStatus(userId, accountId) {
+      if (owners[accountId] !== userId) throw new OAuthStoreError("42501");
+      return slot.status;
     },
     async clearToken(accountId, userId) {
       if (userId && owners[accountId] !== userId) throw new OAuthStoreError("42501");
@@ -79,7 +90,7 @@ function fakeStore() {
       return true;
     },
   };
-  return { store, states, accounts, versions };
+  return { store, states, accounts, versions, slot };
 }
 
 type GoogleMock = {
@@ -153,6 +164,40 @@ describe("시작", () => {
   it("설정이 없으면 config_missing", async () => {
     const { store } = fakeStore();
     expect(await startConnect(store, null, USER_A, ACC_A)).toEqual({ ok: false, result: "config_missing" });
+  });
+});
+
+describe("채널 한도(task-034a)", () => {
+  it("사전 검사에서 한도·30일 회전에 걸리면 Google 로 보내지 않고 값이 붙은 코드로 돌려보낸다", async () => {
+    const { store, states, slot } = fakeStore();
+    slot.status = { allowed: false, code: "CS001", limit: 2, nextAt: null };
+    expect(await startConnect(store, CFG, USER_A, ACC_A)).toEqual({ ok: false, result: "CS001:2" });
+    // 2026-12-02T16:00Z = KST 12월 3일 01시
+    slot.status = { allowed: false, code: "CS002", limit: 5, nextAt: "2026-12-02T16:00:00+00:00" };
+    expect(await startConnect(store, CFG, USER_A, ACC_A)).toEqual({ ok: false, result: "CS002:2026-12-03" });
+    slot.status = { allowed: false, code: "CS002", limit: 5, nextAt: null };
+    expect(await startConnect(store, CFG, USER_A, ACC_A)).toEqual({ ok: false, result: "CS002" });
+    expect(states.size).toBe(0);
+  });
+
+  it("남의 계정 사전 검사는 not_allowed", async () => {
+    const { store } = fakeStore();
+    expect(await startConnect(store, CFG, USER_A, ACC_B)).toEqual({ ok: false, result: "not_allowed" });
+  });
+
+  it("콜백의 DB 최종 검사가 거부하면 토큰을 저장하지 않고 CS 코드로 돌려보낸다", async () => {
+    const { store, accounts, slot } = fakeStore();
+    mockGoogle({});
+    const s1 = await start(store);
+    slot.reject = "CS001";
+    slot.status = { allowed: false, code: "CS001", limit: 1, nextAt: null };
+    expect(await finishConnect(store, CFG, USER_A, { code: "c", state: s1.state, error: null })).toBe("CS001:1");
+    slot.reject = null;
+    slot.status = { allowed: true, code: null, limit: 1, nextAt: null };
+    const s2 = await start(store);
+    slot.reject = "CS003";
+    expect(await finishConnect(store, CFG, USER_A, { code: "c", state: s2.state, error: null })).toBe("CS003");
+    expect(accounts[ACC_A]).toEqual({ channel: null, token: null, status: "reconnect_required" });
   });
 });
 

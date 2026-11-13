@@ -1,4 +1,4 @@
--- YouTube 업로더 상태 함수(20261112280000) 테스트. 실행:
+-- YouTube 업로더 상태 함수(20261113120000) 테스트. 실행:
 --   docker compose exec -T db psql -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/tests/youtube_uploader.sql
 -- 한 트랜잭션으로 돌리고 ROLLBACK 한다. 선점은 전역 큐라서 시작할 때 기존 대기 행을 먼 미래로 미뤄 둔다(롤백으로 복구).
 -- A = 소유자(YouTube 연결 채널 Y, Instagram 채널 I), B = 남. 프로젝트 1~9 는 A 의 1~5단계 승인 프로젝트.
@@ -580,6 +580,120 @@ begin
     raise exception 'FAIL: deferred % % %', p.status, p.retry_count, p.next_attempt_at;
   end if;
   raise notice 'PASS 19 RT001(보관 정리 경합) → deferred: 재시도 횟수 미차감·5분 뒤, 세션 유지';
+end $$;
+reset role;
+
+-- 20) 세션이 있는 발행은 예약 시각·정책 판정보다 상태 조회가 먼저(20261113120300): 이미 올라간 영상이 needs_check → 재업로드되지 않게
+update public.publications set next_attempt_at = now() + interval '100 years'
+where project_id in (select id from public.projects where user_id = '00000000-0000-4000-e000-0000000000a1')
+  and status in ('pending', 'retry_wait');
+select pg_temp.mk_project(('00000000-0000-4000-e200-0000000000' || n)::uuid, '00000000-0000-4000-e100-0000000000a1', true)
+from generate_series(11, 14) n;
+-- 세션이 저장된 채 미뤄진(RT001·멈춘 시도) 행을 직접 만든다: 11·12 = 예약 시각이 이미 지남, 13 = 정책 미통과, 14 = 멈춘 시도
+create function pg_temp.mk_session_pub(p_project uuid, p_mode text, p_at timestamptz, p_status text) returns uuid
+language plpgsql as $$
+declare v_id uuid := pg_temp.mk_pub(p_project, '00000000-0000-4000-e100-0000000000a1', p_mode, p_at);
+begin
+  insert into public.publication_upload_sessions (publication_id, session_uri, total_bytes)
+  values (v_id, 'https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&upload_id=S' || v_id, 1000);
+  update public.publications
+  set status = p_status, error = 'deferred:RT001', next_attempt_at = now() + interval '50 years',
+      attempt_token = case when p_status = 'uploading' then gen_random_uuid() end,
+      attempt_started_at = case when p_status = 'uploading' then now() - interval '31 minutes' end
+  where id = v_id;
+  return v_id;
+end $$;
+grant execute on all functions in schema pg_temp to service_role, authenticated;
+select pg_temp.mk_session_pub('00000000-0000-4000-e200-000000000011', 'scheduled', now() - interval '1 minute', 'retry_wait');
+select pg_temp.mk_session_pub('00000000-0000-4000-e200-000000000012', 'scheduled', now() + interval '2 minutes', 'retry_wait');
+select pg_temp.mk_session_pub('00000000-0000-4000-e200-000000000013', 'now', null, 'retry_wait');
+delete from public.policy_checks where project_id = '00000000-0000-4000-e200-000000000013';
+select pg_temp.mk_session_pub('00000000-0000-4000-e200-000000000014', 'now', null, 'retry_wait');
+
+set local role service_role;
+do $$
+declare c jsonb; v jsonb; p public.publications;
+begin
+  -- 20a) 예약 시각이 지났어도 세션이 있으면 선점해 세션을 넘긴다 → 상태 조회 완료 → finish 로 기록(예약 시각 제한 없음)
+  reset role;
+  update public.publications set next_attempt_at = now() - interval '1 second'
+  where project_id = '00000000-0000-4000-e200-000000000011';
+  set local role service_role;
+  c := public.publication_claim();
+  if c ->> 'project_id' <> '00000000-0000-4000-e200-000000000011' or c -> 'session' is null or c ->> 'claimed' <> 'true' then
+    raise exception 'FAIL: 지난 예약 + 세션인데 선점 안 됨 %', c;
+  end if;
+  v := public.publication_finish((c ->> 'publication_id')::uuid, (c ->> 'attempt_token')::uuid, 'doneVid0011', false);
+  p := pg_temp.pub('00000000-0000-4000-e200-000000000011');
+  if p.status <> 'scheduled' or p.platform_video_id <> 'doneVid0011' then
+    raise exception 'FAIL: 지난 예약의 완료 기록 % %', p.status, p.platform_video_id;
+  end if;
+  raise notice 'PASS 20a 세션 있는 지난 예약: needs_check 대신 선점 → 상태 조회 완료를 그대로 기록';
+
+  -- 20b) 덜 올라갔으면 이어 올리기 직전 판정: 예약 시각 < 지금+5분 → needs_check(세션 유지), 남은 바이트 전송 안 함
+  reset role;
+  update public.publications set next_attempt_at = now() - interval '1 second'
+  where project_id = '00000000-0000-4000-e200-000000000012';
+  set local role service_role;
+  c := public.publication_claim();
+  if c ->> 'project_id' <> '00000000-0000-4000-e200-000000000012' or c -> 'session' is null then
+    raise exception 'FAIL: 20b 선점 %', c;
+  end if;
+  begin
+    perform public.publication_resume_check((c ->> 'publication_id')::uuid, gen_random_uuid());
+    raise exception 'FAIL: 다른 시도 토큰으로 이어 올리기 판정';
+  exception when sqlstate '55000' then null;
+  end;
+  v := public.publication_resume_check((c ->> 'publication_id')::uuid, (c ->> 'attempt_token')::uuid);
+  p := pg_temp.pub('00000000-0000-4000-e200-000000000012');
+  reset role;
+  if not exists (select 1 from public.publication_upload_sessions where publication_id = p.id) then
+    raise exception 'FAIL: 20b 세션이 지워짐';
+  end if;
+  set local role service_role;
+  if (v ->> 'ok')::boolean or p.status <> 'needs_check' or p.error <> 'confirm:schedule_passed' then
+    raise exception 'FAIL: 20b 이어 올리기 판정 % % %', v, p.status, p.error;
+  end if;
+  raise notice 'PASS 20b 덜 올라간 세션 + 지난 예약 → 이어 올리기 전 needs_check(세션 유지)';
+
+  -- 20c) 정책 미통과도 선점은 하고(상태 조회 먼저), 이어 올리기 직전에 needs_check
+  reset role;
+  update public.publications set next_attempt_at = now() - interval '1 second'
+  where project_id = '00000000-0000-4000-e200-000000000013';
+  set local role service_role;
+  c := public.publication_claim();
+  if c ->> 'project_id' <> '00000000-0000-4000-e200-000000000013' or c -> 'session' is null then
+    raise exception 'FAIL: 20c 선점 %', c;
+  end if;
+  v := public.publication_resume_check((c ->> 'publication_id')::uuid, (c ->> 'attempt_token')::uuid);
+  p := pg_temp.pub('00000000-0000-4000-e200-000000000013');
+  if (v ->> 'ok')::boolean or p.status <> 'needs_check' or p.error <> 'confirm:policy_failed' then
+    raise exception 'FAIL: 20c 정책 판정 % % %', v, p.status, p.error;
+  end if;
+  raise notice 'PASS 20c 세션 있는 정책 미통과: 선점(상태 조회) → 덜 올라갔으면 needs_check';
+
+  -- 20d) 멈춘 시도 + 세션: 바로 needs_check 가 아니라 retry_wait 로 상태 조회를 거친다(횟수 차감, 3회째면 needs_check)
+  reset role;
+  -- 앞 선점들의 멈춘 시도 정리에 걸렸을 수 있으니 여기서 다시 멈춘 시도로 만든다
+  update public.publications set status = 'uploading', retry_count = 0, attempt_token = gen_random_uuid(),
+    attempt_started_at = now() - interval '31 minutes', next_attempt_at = null
+  where project_id = '00000000-0000-4000-e200-000000000014';
+  set local role service_role;
+  c := public.publication_claim();
+  p := pg_temp.pub('00000000-0000-4000-e200-000000000014');
+  if p.retry_count <> 1 or p.status not in ('retry_wait', 'uploading') then
+    raise exception 'FAIL: 20d 멈춘 시도 + 세션 % %', p.status, p.retry_count;
+  end if;
+  if p.status = 'uploading' and c -> 'session' is null then raise exception 'FAIL: 20d 재선점에 세션 없음 %', c; end if;
+  reset role;
+  update public.publications set status = 'uploading', retry_count = 2, attempt_token = gen_random_uuid(),
+    attempt_started_at = now() - interval '31 minutes'
+  where project_id = '00000000-0000-4000-e200-000000000014';
+  set local role service_role;
+  perform public.publication_claim();
+  p := pg_temp.pub('00000000-0000-4000-e200-000000000014');
+  if p.status <> 'needs_check' or p.retry_count <> 3 then raise exception 'FAIL: 20d 3회째 % %', p.status, p.retry_count; end if;
+  raise notice 'PASS 20d 멈춘 시도 + 세션: retry_wait 로 상태 조회 먼저(1회 차감), 3회째 needs_check';
 end $$;
 reset role;
 

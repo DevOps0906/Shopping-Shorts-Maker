@@ -11,7 +11,7 @@ type UploaderStore = import("./uploader").UploaderStore;
 type FailKind = import("./uploader").FailKind;
 
 /*
- * 업로더 목 테스트(실제 YouTube·DB 호출 없음). 가짜 저장소는 DB 함수(20261112280000)와 같은 상태 규칙,
+ * 업로더 목 테스트(실제 YouTube·DB 호출 없음). 가짜 저장소는 DB 함수(20261113120000)와 같은 상태 규칙,
  * 가짜 fetch 는 YouTube resumable 업로드 응답을 흉내 낸다.
  */
 
@@ -37,11 +37,14 @@ function fakeStore(
     description?: string;
     /** finish 가 RT001(보관 정리 경합)로 취소되는 횟수 */
     finishBusy?: number;
+    /** 이어 올리기 직전 판정(publication_resume_check) 미통과 사유 */
+    resumeBlock?: "schedule_passed" | "policy_failed" | null;
   } = {},
 ) {
   const pub: Pub = { status: "pending", retryCount: 0, error: null, videoId: null, session: null, token: null, claimable: true, ...init };
   let seq = 0;
-  const calls = { claim: 0, begin: 0, finish: [] as { testPrivate: boolean }[], rejected: [] as string[] };
+  const calls = { claim: 0, begin: 0, resumeChecks: 0, finish: [] as { testPrivate: boolean }[], rejected: [] as string[] };
+  const ctl = { resumeBlock: init.resumeBlock ?? null };
   let busy = init.finishBusy ?? 0;
   const own = (token: string) => {
     if (pub.status !== "uploading" || pub.token !== token) throw new Error("55000");
@@ -98,6 +101,18 @@ function fakeStore(
       pub.token = null;
       return pub.status;
     },
+    async resumeCheck(_id, token) {
+      own(token);
+      if (!pub.session) throw new Error("55000");
+      calls.resumeChecks++;
+      if (ctl.resumeBlock) {
+        pub.status = "needs_check";
+        pub.error = `confirm:${ctl.resumeBlock}`;
+        pub.token = null;
+        return { ok: false, status: pub.status, reason: ctl.resumeBlock };
+      }
+      return { ok: true };
+    },
     async rejectCopy(_id, token, code) {
       own(token);
       if (pub.session) throw new Error("55000");
@@ -121,7 +136,7 @@ function fakeStore(
       return pub.status;
     },
   };
-  return { store, pub, calls };
+  return { store, pub, calls, ctl };
 }
 
 type Step = (url: string, init: RequestInit) => Response | Promise<Response>;
@@ -317,6 +332,41 @@ describe("업로더(목)", () => {
     await runOnce(deps(store, yt.fetchFn).deps);
     expect(pub).toMatchObject({ status: "uploaded", videoId: "alreadyUp01" });
     expect(yt.puts()).toBe(0);
+  });
+
+  it("RT001로 기록이 미뤄진 뒤 예약 시각이 지나도: 상태 조회 완료면 바로 기록(이어 올리기 판정·재업로드·needs_check 없음)", async () => {
+    const past = new Date(Date.now() - 60_000).toISOString();
+    const { store, pub, calls, ctl } = fakeStore({ mode: "scheduled", scheduledAt: past, finishBusy: 1 });
+    const yt = fakeYouTube([initOk, done("upOnce00001"), done("upOnce00001")]);
+    const d = deps(store, yt.fetchFn);
+    await runOnce(d.deps);
+    expect(pub).toMatchObject({ status: "retry_wait", error: "deferred:RT001", videoId: null });
+    // 그사이 예약 시각이 지나 DB 판정이라면 막혔을 상황
+    ctl.resumeBlock = "schedule_passed";
+    await runOnce(d.deps);
+    expect(pub).toMatchObject({ status: "scheduled", videoId: "upOnce00001" });
+    expect(calls.resumeChecks).toBe(0);
+    expect(yt.inserts()).toBe(1);
+    expect(yt.statusQueries()).toBe(1);
+  });
+
+  it("세션이 덜 올라갔는데 예약 시각 지남·정책 미통과: 이어 올리기 전 needs_check, 남은 바이트 전송 없음", async () => {
+    for (const reason of ["schedule_passed", "policy_failed"] as const) {
+      const { store, pub, calls } = fakeStore({
+        status: "retry_wait",
+        mode: "scheduled",
+        scheduledAt: new Date(Date.now() - 60_000).toISOString(),
+        session: { uri: SESSION_URI, totalBytes: 1000, completed: false },
+        resumeBlock: reason,
+      });
+      const yt = fakeYouTube([partial(500)]);
+      const r = await runOnce(deps(store, yt.fetchFn).deps);
+      expect(r).toEqual({ kind: "done", status: "needs_check", code: reason });
+      expect(pub).toMatchObject({ status: "needs_check", error: `confirm:${reason}` });
+      expect(calls.resumeChecks).toBe(1);
+      expect(yt.puts()).toBe(0);
+      expect(yt.inserts()).toBe(0);
+    }
   });
 
   it("선점 거부(정책 미통과·예약 시각 지남·다른 채널)면 토큰도 YouTube 도 부르지 않음", async () => {

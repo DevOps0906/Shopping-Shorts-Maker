@@ -224,3 +224,5 @@ services:
       - ALL
     security_opt:
       - no-new-privileges:true
+    mem_limit: ${RETENTION_MEM_LIMIT:-1g}
+    pids_limit: 128

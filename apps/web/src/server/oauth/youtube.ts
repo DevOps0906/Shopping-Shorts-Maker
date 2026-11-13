@@ -10,7 +10,7 @@ import {
   revokeToken,
   YOUTUBE_SCOPES,
 } from "./google";
-import { type OAuthStore, OAuthStoreError } from "./store";
+import { type OAuthStore, OAuthStoreError, type SlotStatus } from "./store";
 
 /*
  * YouTube 연결·재연결·해제 흐름(task-022a). 근거: docs/04_API.md YouTube 2절, docs/w4/threat-022a.md.
@@ -34,7 +34,39 @@ export type OAuthResult =
   | "no_refresh_token"
   | "too_many"
   | "revoke_failed"
-  | "failed";
+  | "failed"
+  | SlotResult;
+
+/**
+ * 채널 슬롯 거부(task-034a). 화면 문구에 쓸 값만 붙인다: CS001:<한도> · CS002:<다시 가능한 날짜 YYYY-MM-DD, KST>.
+ * 값을 못 구하면 코드만. CS003 = 본인 다른 계정에 있는 채널.
+ */
+export type SlotResult = "CS001" | `CS001:${number}` | "CS002" | `CS002:${string}` | "CS003";
+
+const kstDate = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Seoul",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+export function slotResult(status: SlotStatus): SlotResult {
+  if (status.code === "CS002") {
+    const at = status.nextAt ? new Date(status.nextAt) : null;
+    return at && !Number.isNaN(at.getTime()) ? `CS002:${kstDate.format(at)}` : "CS002";
+  }
+  return Number.isInteger(status.limit) && status.limit > 0 ? `CS001:${status.limit}` : "CS001";
+}
+
+/** DB 최종 검사에서 거부된 뒤 화면 값(한도·날짜)을 다시 읽는다. 읽지 못하면 코드만 */
+async function slotRejection(store: OAuthStore, userId: string, accountId: string, code: "CS001" | "CS002") {
+  try {
+    const status = await store.slotStatus(userId, accountId);
+    return status.code === code ? slotResult(status) : code;
+  } catch {
+    return code;
+  }
+}
 
 export function base64url(buf: Buffer) {
   return buf.toString("base64url");
@@ -62,6 +94,14 @@ export async function startConnect(
   accountId: string,
 ): Promise<{ ok: true; url: string } | { ok: false; result: OAuthResult }> {
   if (!cfg) return { ok: false, result: "config_missing" };
+  // 한도·30일 회전에 걸리면 Google 로 보내지 않는다(최종 판정은 콜백의 DB 함수가 잠금 뒤 다시 한다)
+  let slot: SlotStatus;
+  try {
+    slot = await store.slotStatus(userId, accountId);
+  } catch (e) {
+    return { ok: false, result: storeCode(e) === "42501" ? "not_allowed" : "failed" };
+  }
+  if (!slot.allowed) return { ok: false, result: slotResult(slot) };
   const state = base64url(randomBytes(32));
   const verifier = base64url(randomBytes(48)); // 64자(43~128)
   try {
@@ -113,7 +153,13 @@ export async function finishConnect(
     });
     return status === "connected" ? "connected" : "no_refresh_token";
   } catch (e) {
-    switch (storeCode(e)) {
+    const code = storeCode(e);
+    switch (code) {
+      case "CS001":
+      case "CS002":
+        return slotRejection(store, userId, pending.accountId, code);
+      case "CS003":
+        return "CS003";
       case "OA001":
         return "channel_mismatch";
       case "OA002":

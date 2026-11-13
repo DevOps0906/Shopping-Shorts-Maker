@@ -1,4 +1,4 @@
--- task-024b 보관 기간 지난 파일 삭제(20261112290000) 테스트. 실행:
+-- task-024b 보관 기간 지난 파일 삭제(20261113130000) 테스트. 실행:
 --   docker compose exec -T db psql -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/tests/retention.sql
 -- 한 트랜잭션으로 돌리고 ROLLBACK 한다. 서버 경로 그대로 service_role 로 public 래퍼를 부른다.
 -- A1 = A 의 미발행·오래 손대지 않은 프로젝트, A2 = A 의 미발행·진행 중(최근 수정), B = B 의 프로젝트(발행 흐름)

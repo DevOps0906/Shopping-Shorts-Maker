@@ -7,7 +7,7 @@ update public.publication_upload_sessions set restart_allowed = false where rest
 alter table public.publication_upload_sessions
   add constraint publication_upload_sessions_no_restart check (not restart_allowed);
 comment on column public.publication_upload_sessions.restart_allowed is
-  '사용 안 함(20261112280200). 새 업로드는 publication_confirm_absent 가 세션을 지운 뒤에만';
+  '사용 안 함(20261113120200). 새 업로드는 publication_confirm_absent 가 세션을 지운 뒤에만';
 
 drop function public.publication_session_discard(uuid, uuid);
 drop function private.publication_session_discard(uuid, uuid);

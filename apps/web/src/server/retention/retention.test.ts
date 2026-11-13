@@ -17,12 +17,17 @@ const cmp = (a: DueItem, b: DueItem) =>
 
 /**
  * DB(rpc)·Storage 목. retention_due 는 아직 표시되지 않은 항목을 (due_on, kind, id) 커서로,
- * retention_reserve 는 extended 에 없는 항목에 토큰을, retention_mark_deleted 는 같은 토큰 항목만 표시한다(실제 DB와 같은 동작).
+ * retention_reserve 는 extended 에 없는 항목에 토큰을, retention_confirm 은 같은 토큰이고 revoked(예약 만료·발행 연장)에
+ * 없는 항목만 "삭제 중"으로, retention_mark_deleted 는 같은 토큰이고 삭제 중인 항목만 표시한다(실제 DB와 같은 동작).
  */
 function mockClient(due: DueItem[], removeImpl?: (bucket: string, paths: string[]) => Promise<{ error: unknown }>) {
   const marked = new Set<string>();
   const tokens = new Map<string, string>();
   const extended = new Set<string>();
+  const revoked = new Set<string>();
+  const deleting = new Set<string>();
+  const confirmCalls: { p_kind: string; p_ids: string[]; p_token: string }[] = [];
+  let confirmError: { message: string } | null = null;
   const removeCalls: { bucket: string; paths: string[] }[] = [];
   const markCalls: { p_kind: string; p_ids: string[]; p_token: string }[] = [];
   const dueCalls: Record<string, unknown>[] = [];
@@ -52,6 +57,17 @@ function mockClient(due: DueItem[], removeImpl?: (bucket: string, paths: string[
           });
         return { data: rows, error: null };
       }
+      if (fn === "retention_confirm") {
+        const a = args as { p_kind: string; p_ids: string[]; p_token: string };
+        confirmCalls.push(a);
+        if (confirmError) return { data: null, error: confirmError };
+        const ok = a.p_ids.filter((id) => {
+          const k = `${a.p_kind}:${id}`;
+          return tokens.get(k) === a.p_token && !marked.has(k) && !revoked.has(k);
+        });
+        for (const id of ok) deleting.add(`${a.p_kind}:${id}`);
+        return { data: ok, error: null };
+      }
       if (fn === "retention_mark_deleted") {
         const a = args as { p_kind: string; p_ids: string[]; p_token: string };
         markCalls.push(a);
@@ -59,7 +75,7 @@ function mockClient(due: DueItem[], removeImpl?: (bucket: string, paths: string[
         let n = 0;
         for (const id of a.p_ids) {
           const k = `${a.p_kind}:${id}`;
-          if (tokens.get(k) === a.p_token && !marked.has(k)) {
+          if (tokens.get(k) === a.p_token && deleting.has(k) && !marked.has(k)) {
             marked.add(k);
             n += 1;
           }
@@ -81,10 +97,15 @@ function mockClient(due: DueItem[], removeImpl?: (bucket: string, paths: string[
     client: client as unknown as SupabaseClient<Database>,
     removeCalls,
     markCalls,
+    confirmCalls,
     dueCalls,
     marked,
     tokens,
     extended,
+    revoked,
+    failConfirm: () => {
+      confirmError = { message: "db down" };
+    },
     failMark: () => {
       markError = { message: "db down" };
     },
@@ -196,6 +217,40 @@ describe("runRetentionOnce", () => {
     expect([...m.marked]).toEqual(["render:r1"]);
   });
 
+  it("삭제 직전 확인에서 빠지면(예약 만료·발행 연장) Storage 삭제·표시를 하지 않는다", async () => {
+    const m = mockClient([
+      item("render", "r1", "renders", `${U}/${P}/r1.mp4`),
+      item("render", "r2", "renders", `${U}/${P}/r2.mp4`),
+    ]);
+    m.revoked.add("render:r1");
+    const result = await runRetentionOnce(m.client, quiet);
+    expect(result).toEqual({ deleted: 1, failed: 0, skipped: 1, markFailed: 0 });
+    expect(m.removeCalls).toEqual([{ bucket: "renders", paths: [`${U}/${P}/r2.mp4`] }]);
+    expect([...m.marked]).toEqual(["render:r2"]);
+  });
+
+  it("재시도마다 삭제 직전 확인을 다시 하고, 그사이 빠지면 더 시도하지 않는다", async () => {
+    let calls = 0;
+    const m = mockClient([item("source", "s1", "sources", `${U}/${P}/s1.mp4`)], async () => {
+      calls += 1;
+      m.revoked.add("source:s1"); // 첫 시도 실패 뒤 발행으로 연장
+      return { error: { message: "503" } };
+    });
+    const result = await runRetentionOnce(m.client, quiet);
+    expect(calls).toBe(1);
+    expect(m.confirmCalls).toHaveLength(2);
+    expect(result).toEqual({ deleted: 0, failed: 0, skipped: 1, markFailed: 0 });
+    expect(m.markCalls).toHaveLength(0);
+  });
+
+  it("삭제 직전 확인 오류면 지우지 않고 실패로 센다", async () => {
+    const m = mockClient([item("voice", "v1", "voices", `${U}/${P}/v1.wav`)]);
+    m.failConfirm();
+    const result = await runRetentionOnce(m.client, quiet);
+    expect(result).toEqual({ deleted: 0, failed: 1, skipped: 0, markFailed: 0 });
+    expect(m.removeCalls).toHaveLength(0);
+  });
+
   it("표시 실패는 따로 센다(객체는 지워졌고 다음 회차가 다시 예약·표시)", async () => {
     const m = mockClient([item("voice", "v1", "voices", `${U}/${P}/v1.wav`)]);
     m.failMark();
@@ -211,8 +266,8 @@ describe("runRetentionOnce", () => {
       paths.includes(`${U}/${P}/s0.mp4`) ? { error: { message: "500" } } : { error: null },
     );
     const result = await runRetentionOnce(m.client, { ...quiet, pageSize: 2, maxAttempts: 1 });
-    // 첫 페이지(s0·s1)는 한 묶음이라 함께 실패, 이후 페이지는 커서로 이어서 처리
-    expect(result).toEqual({ deleted: 3, failed: 2, skipped: 0, markFailed: 0 });
+    // 객체마다 처리하므로 s0 만 실패, 이후 페이지는 커서로 이어서 처리
+    expect(result).toEqual({ deleted: 4, failed: 1, skipped: 0, markFailed: 0 });
     expect(m.marked.has("source:s0")).toBe(false);
     expect(m.dueCalls[1]).toMatchObject({ p_after_due: "2026-10-02", p_after_kind: "source", p_after_id: "s1" });
   });

@@ -453,6 +453,7 @@ declare v_found text[]; v_expected text[] := array[
   'service_role private.publication_claim()',
   'service_role private.publication_finish(uuid,uuid,text,boolean)',
   'service_role private.publication_reject_copy(uuid,uuid,text)',
+  'service_role private.publication_resume_check(uuid,uuid)',
   'service_role private.publication_session_begin(uuid,uuid)',
   'service_role private.publication_session_save(uuid,uuid,text,bigint)',
   -- 보관 기간 지난 파일 삭제(서버 retention, service_role, task-024b) → public.retention_*

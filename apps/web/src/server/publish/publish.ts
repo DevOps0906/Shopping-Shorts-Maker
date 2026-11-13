@@ -17,6 +17,7 @@ import {
   parsePolicy,
   recommendedSlots,
 } from "@/lib/publish/rules";
+import { ensureShortCode, shortLinkUrl } from "@/server/analytics/short-link";
 import { loadOwnedProject } from "@/server/llm/project-access";
 import { createAdminClient } from "@/server/supabase-admin";
 
@@ -27,6 +28,7 @@ import { createAdminClient } from "@/server/supabase-admin";
  *   (제작 파트너 AI 도구 목록에는 없다, 17-7).
  * - affiliate_links.url 은 서버(SR)만 쓴다: 사용자 세션으로 소유를 확인하고 프로그램별 허용 도메인을 검사한 뒤 service_role 로 쓴다.
  * - 정책이 바뀌면 DB가 pending 발행 행을 invalidated 로 돌린다. 업로드 직전 재판정은 public.publish_recheck(서버 service_role, task-024).
+ * - 단축 링크(task-025): 링크를 저장하면 코드가 없을 때 한 번만 만든다(server/analytics/short-link.ts).
  * - 발행 버튼은 "발행 준비 완료"(publications 행 + projects.status = awaiting_publish)까지. 실제 업로드는 Compose 서비스
  *   uploader(src/server/publish/uploader.ts, task-024a)가 publications 상태로 한다. 화면은 상태 표시와 다시 시도만.
  */
@@ -38,6 +40,8 @@ export type LinkView = {
   bioService: BioService | null;
   bioNo: number | null;
   bioRegistered: boolean;
+  /** 단축 링크 전체 주소(PUBLIC_APP_URL/l/코드). 코드가 없거나 PUBLIC_APP_URL 이 없으면 null */
+  shortUrl: string | null;
 };
 
 export type PublicationView = {
@@ -81,7 +85,7 @@ export type PrepareResult = { ok: true; publication: PublicationView; policy: Po
 
 const NOT_FOUND = { ok: false, error: "프로젝트를 찾을 수 없거나 권한이 없습니다." } as const;
 const INVALID = { ok: false, error: "잘못된 요청입니다." } as const;
-const LINK_COLUMNS = "program, url, disclosed, bio_service, bio_no, bio_registered_at";
+const LINK_COLUMNS = "program, url, short_url, disclosed, bio_service, bio_no, bio_registered_at";
 const PUBLICATION_COLUMNS =
   "mode, scheduled_at, title, body, description, hashtags, pin_comment, prepared_at, status, error, next_attempt_at, retry_count, platform_video_id";
 
@@ -118,6 +122,7 @@ function toLinkView(row: Record<string, unknown> | null): LinkView | null {
     bioService: isBioService(row.bio_service) ? row.bio_service : null,
     bioNo: typeof row.bio_no === "number" ? row.bio_no : null,
     bioRegistered: typeof row.bio_registered_at === "string",
+    shortUrl: shortLinkUrl(row.short_url),
   };
 }
 
@@ -277,6 +282,8 @@ export async function saveAffiliate(projectId: string, input: unknown, rawCopy: 
     const { error } = await createAdminClient().from("affiliate_links").update({ url }).eq("project_id", project.id);
     if (error) return { ok: false, error: "제휴 링크를 저장하지 못했습니다. 잠시 뒤 다시 시도해 주세요." };
   }
+  // 단축 코드는 처음 한 번만(URL 이 바뀌어도 유지). 실패하면 다음 저장 때 다시 만든다
+  if (url) await ensureShortCode(createAdminClient(), project.id);
 
   const changed = !before || before.program !== program || (before.url ?? null) !== url;
   if (changed && before?.bioRegistered) {
@@ -358,6 +365,19 @@ export async function retryUpload(projectId: string): Promise<RetryResult> {
   const publication = await readPublication(supabase, project.id);
   if (!publication) return { ok: false, error: toMessage(undefined) };
   return { ok: true, publication };
+}
+
+/** 발행 행 다시 읽기(업로더가 바꾼 상태를 화면에 반영). 사용자 세션 + RLS(본인 프로젝트)로 읽는다 */
+export async function loadPublication(projectId: string): Promise<RetryResult> {
+  const { supabase, project } = await loadOwnedProject(projectId);
+  if (!project || !supabase) return NOT_FOUND;
+  try {
+    const publication = await readPublication(supabase, project.id);
+    if (!publication) return { ok: false, error: toMessage(undefined) };
+    return { ok: true, publication };
+  } catch {
+    return { ok: false, error: toMessage(undefined) };
+  }
 }
 
 /** 결과 불명(needs_check)에서 사용자가 Studio 에 영상이 없음을 확인 → 세션 폐기·새 업로드. 소유자·상태는 DB가 검사, 감사 이벤트 기록 */

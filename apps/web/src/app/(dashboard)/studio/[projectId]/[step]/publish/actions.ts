@@ -3,6 +3,7 @@
 import {
   chooseBioService,
   confirmUploadAbsent,
+  loadPublication,
   preparePublication,
   refreshPolicy,
   retryUpload,
@@ -40,6 +41,11 @@ export async function preparePublicationAction(projectId: string, input: unknown
 export async function retryUploadAction(projectId: string) {
   if (typeof projectId !== "string") return { ok: false as const, error: "잘못된 요청입니다." };
   return retryUpload(projectId);
+}
+
+export async function loadPublicationAction(projectId: string) {
+  if (typeof projectId !== "string") return { ok: false as const, error: "잘못된 요청입니다." };
+  return loadPublication(projectId);
 }
 
 export async function confirmUploadAbsentAction(projectId: string) {

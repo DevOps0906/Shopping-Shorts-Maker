@@ -270,6 +270,45 @@ erDiagram
     timestamptz used_at
     timestamptz created_at
   }
+  click_salts {
+    date day PK
+    bytea salt
+  }
+  metrics_runs {
+    bigint id PK
+    timestamptz started_at
+    timestamptz finished_at
+    integer ok
+    integer skipped
+    text error
+  }
+  channel_quotas {
+    uuid user_id PK,FK
+    integer channel_limit
+    timestamptz updated_at
+  }
+  channel_slot_events {
+    uuid id PK
+    uuid user_id FK
+    uuid account_id FK
+    text kind
+    integer slots
+    integer channel_limit
+    timestamptz created_at
+  }
+  publication_upload_sessions {
+    uuid publication_id PK,FK
+    text session_uri
+    bigint total_bytes
+    boolean restart_allowed
+    timestamptz completed_at
+    timestamptz created_at
+  }
+  youtube_upload_quota {
+    date day PK
+    integer used
+    timestamptz updated_at
+  }
   categories ||--o{ trend_items : "category_id"
   categories ||--o{ accounts : "category_id"
   categories ||--o{ projects : "category_id"
@@ -296,5 +335,7 @@ erDiagram
   affiliate_links ||--o{ link_clicks : "affiliate_link_id"
   projects ||--o{ chat_proposals : "project_id"
   accounts ||--o{ oauth_states : "account_id"
+  accounts ||--o{ channel_slot_events : "account_id"
+  publications ||--o{ publication_upload_sessions : "publication_id"
   jobs ||--o{ voice_takes : "job_id"
   jobs ||--o{ renders : "job_id"

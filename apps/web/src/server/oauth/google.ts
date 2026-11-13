@@ -10,6 +10,7 @@ export const AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 export const TOKEN_URL = "https://oauth2.googleapis.com/token";
 export const REVOKE_URL = "https://oauth2.googleapis.com/revoke";
 export const CHANNELS_URL = "https://www.googleapis.com/youtube/v3/channels?part=id&mine=true";
+export const ANALYTICS_REPORTS_URL = "https://youtubeanalytics.googleapis.com/v2/reports";
 
 export const YOUTUBE_SCOPES = [
   "https://www.googleapis.com/auth/youtube.upload",
@@ -122,4 +123,58 @@ export async function fetchMyChannelId(accessToken: string): Promise<string | nu
   const items = Array.isArray(body?.items) ? body.items : [];
   if (items.length !== 1 || typeof items[0].id !== "string" || items[0].id === "") return null;
   return items[0].id;
+}
+
+export type DailyMetric = { date: string; views: number; avgViewPct: number | null };
+
+/**
+ * YouTube Analytics reports.query — 영상 하루별 views·averageViewPercentage(task-025, docs/04_API.md YouTube).
+ * 날짜는 Analytics day(America/Los_Angeles) YYYY-MM-DD. 데이터가 없는 날은 행이 없을 수 있다.
+ */
+export async function fetchVideoDailyMetrics(
+  accessToken: string,
+  videoId: string,
+  startDate: string,
+  endDate: string,
+): Promise<DailyMetric[]> {
+  const url = new URL(ANALYTICS_REPORTS_URL);
+  url.search = new URLSearchParams({
+    ids: "channel==MINE",
+    startDate,
+    endDate,
+    metrics: "views,averageViewPercentage",
+    dimensions: "day",
+    filters: `video==${videoId}`,
+    sort: "day",
+  }).toString();
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+      cache: "no-store",
+    });
+  } catch {
+    throw new GoogleOAuthError("network");
+  }
+  if (!res.ok) throw new GoogleOAuthError(`http_${res.status}`);
+  const body = (await res.json().catch(() => null)) as { columnHeaders?: { name?: unknown }[]; rows?: unknown[] } | null;
+  const headers = Array.isArray(body?.columnHeaders) ? body.columnHeaders.map((h) => h?.name) : [];
+  const at = { day: headers.indexOf("day"), views: headers.indexOf("views"), pct: headers.indexOf("averageViewPercentage") };
+  if (at.day < 0 || at.views < 0) return [];
+  const rows = Array.isArray(body?.rows) ? body.rows : [];
+  const out: DailyMetric[] = [];
+  for (const row of rows) {
+    if (!Array.isArray(row)) continue;
+    const date = row[at.day];
+    const views = row[at.views];
+    const pct = at.pct >= 0 ? row[at.pct] : null;
+    if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date) || typeof views !== "number" || !Number.isFinite(views)) continue;
+    out.push({
+      date,
+      views: Math.max(0, Math.round(views)),
+      avgViewPct: typeof pct === "number" && Number.isFinite(pct) ? pct : null,
+    });
+  }
+  return out;
 }

@@ -1,5 +1,5 @@
 /*
- * 06 발행 업로드 상태 → 화면 문구(task-024a). 상태 정본은 DB publications.status(20261112280000).
+ * 06 발행 업로드 상태 → 화면 문구(task-024a). 상태 정본은 DB publications.status(20261113120000).
  * 결과 불명(needs_check)은 자동 재업로드를 하지 않으므로 YouTube Studio 확인을 먼저 안내한다.
  * 업로드 뒤 예약 취소·변경은 앱에서 할 수 없다(youtube.force-ssl 미요청, docs/04_API.md 2절) → Studio 안내.
  */
