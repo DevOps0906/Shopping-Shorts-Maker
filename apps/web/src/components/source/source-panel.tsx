@@ -1,5 +1,6 @@
 "use client";
 
+import { announceJobRejected } from "@/lib/jobs/rejection";
 import { useMemo, useRef, useState, useTransition } from "react";
 import {
   addDirectSourceAction,
@@ -131,6 +132,7 @@ export function SourcePanel({ initialSources, initialNoticeAck, initialReason }:
       const result = await startSourceSelectionAction(projectId, key);
       if (!result.ok) {
         setError(result.error);
+        announceJobRejected(result.error);
         if (!result.retryable) selectKey.current = null;
         return;
       }

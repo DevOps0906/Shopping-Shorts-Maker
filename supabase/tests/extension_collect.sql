@@ -431,6 +431,7 @@ declare v_found text[]; v_expected text[] := array[
   'authenticated private.chat_start_collect(uuid,text,text,text)',
   'authenticated private.confirm_policy_check(uuid,text,boolean)',
   'authenticated private.create_job(uuid,text,text,jsonb)',
+  'authenticated private.job_queue_status()',
   'authenticated private.mark_step_ready(uuid,integer,text)',
   'authenticated private.prepare_publication(uuid,text,timestamp with time zone,text,text,text[],boolean,boolean)',
   'authenticated private.publication_confirm_absent(uuid)',

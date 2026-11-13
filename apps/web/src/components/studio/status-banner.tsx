@@ -51,9 +51,11 @@ type StatusBannerProps = {
   content: BannerContent;
   /** 진행 중일 때 경과 초의 기준(jobs.started_at). 없으면 배너가 진행 중으로 바뀐 시각부터 센다. */
   startedAt?: string | null;
+  /** 큐에서 기다리는 중일 때 오른쪽에 보이는 순번 칩(예: "3번째"·"미룸") */
+  chip?: string;
 };
 
-export function StatusBanner({ content, startedAt }: StatusBannerProps) {
+export function StatusBanner({ content, startedAt, chip }: StatusBannerProps) {
   const isRun = content.tone === "run";
   const [elapsed, setElapsed] = useState<number | null>(null);
 
@@ -85,6 +87,9 @@ export function StatusBanner({ content, startedAt }: StatusBannerProps) {
         </p>
         <p className="mt-0.5 text-sm text-muted">{content.description}</p>
       </div>
+      {chip ? (
+        <span className="shrink-0 rounded-pill bg-white px-2.5 py-1 text-xs font-bold whitespace-nowrap text-warning-fg">{chip}</span>
+      ) : null}
       {isRun ? (
         <>
           <span className="text-xs whitespace-nowrap text-muted">{elapsed === null ? "" : `${elapsed}초 경과`}</span>

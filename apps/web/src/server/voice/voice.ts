@@ -1,5 +1,6 @@
 import "server-only";
 import { createJob } from "@/lib/jobs/create-job";
+import { TOO_MANY_JOBS_MESSAGE } from "@/lib/jobs/queue-status";
 import { isProjectId } from "@/lib/steps/project-id";
 import type { StepStatusMap } from "@/lib/steps/state";
 import { RECORDING_ERRORS, RECORDING_MAX_BYTES, checkRecording } from "@/lib/voice/recording";
@@ -124,6 +125,8 @@ export async function startTts(projectId: string, voiceId: unknown, idempotencyK
       return { ok: false, error: `크레딧이 부족합니다(필요 ${result.required} · 잔액 ${result.balance}).` };
     case "step_not_ready":
       return { ok: false, error: "03 대본을 먼저 승인해 주세요. 이미 승인된 음성은 변경 필요 후 다시 만들 수 있습니다." };
+    case "too_many_jobs":
+      return { ok: false, error: TOO_MANY_JOBS_MESSAGE };
     case "forbidden":
       return { ok: false, error: "이 프로젝트를 바꿀 권한이 없습니다." };
     case "invalid":
