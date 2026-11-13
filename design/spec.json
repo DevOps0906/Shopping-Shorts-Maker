@@ -1,15 +1,30 @@
 {
  "version": "1",
- "generated": "2026-11-11T17:43:36+00:00",
+ "generated": "2026-11-12T19:02:17+00:00",
  "docs": "docs",
- "tokens": "기본 시작 토큰(프로젝트 토큰 없음)",
+ "tokens": ".\\apps\\web\\src\\styles\\tokens.css",
  "sources": {
   "docs/03_SCREENS_UX.md": "13196ee2f9bf",
-  "docs/planning.md": "5883e9a975a0"
+  "docs/05_DATA_MODEL.md": "3e934cd1fe60",
+  "docs/planning.md": "d7e95b1bf55b"
  },
  "changed": [
+  "S-01",
   "S-02",
-  "S-04"
+  "S-03",
+  "S-04",
+  "S-05",
+  "S-06",
+  "S-07",
+  "S-08",
+  "S-09",
+  "S-10",
+  "S-11",
+  "S-12",
+  "S-13",
+  "S-14",
+  "S-15",
+  "S-16"
  ],
  "removed": [],
  "screens": {
@@ -120,7 +135,7 @@
     "할 일·알림(지표가 행동으로 이어지게)"
    ],
    "states_missing": [],
-   "hash": "93b7493a5da0",
+   "hash": "3b39c6c0f771",
    "wireframe": "design/wireframes/S-01.html"
   },
   "S-02": {
@@ -205,7 +220,7 @@
     "임시 저장(긴 폼)"
    ],
    "states_missing": [],
-   "hash": "06846e085f75",
+   "hash": "6bfbcb31fbfe",
    "wireframe": "design/wireframes/S-02.html"
   },
   "S-03": {
@@ -290,7 +305,7 @@
     "저장된 보기·열 설정"
    ],
    "states_missing": [],
-   "hash": "5a51bd8c03fa",
+   "hash": "77f0cc5fecf2",
    "wireframe": "design/wireframes/S-03.html"
   },
   "S-04": {
@@ -409,7 +424,7 @@
     "할 일·알림(지표가 행동으로 이어지게)"
    ],
    "states_missing": [],
-   "hash": "8c9a948e8a83",
+   "hash": "144d52c7e521",
    "wireframe": "design/wireframes/S-04.html"
   },
   "S-05": {
@@ -507,7 +522,7 @@
     "활동·변경 이력"
    ],
    "states_missing": [],
-   "hash": "504b6f5b7cb6",
+   "hash": "a6726a262365",
    "wireframe": "design/wireframes/S-05.html"
   },
   "S-06": {
@@ -638,7 +653,7 @@
    "must_missing": [],
    "should_missing": [],
    "states_missing": [],
-   "hash": "1729cef98d71",
+   "hash": "1f17bdec3771",
    "wireframe": "design/wireframes/S-06.html"
   },
   "S-07": {
@@ -836,7 +851,7 @@
     "중간 저장·이어하기"
    ],
    "states_missing": [],
-   "hash": "fe27b8293c63",
+   "hash": "afb4a796b8fc",
    "wireframe": "design/wireframes/S-07.html"
   },
   "S-08": {
@@ -954,7 +969,7 @@
    "must_missing": [],
    "should_missing": [],
    "states_missing": [],
-   "hash": "3215843bf25f",
+   "hash": "ed113b86d4f8",
    "wireframe": "design/wireframes/S-08.html"
   },
   "S-09": {
@@ -1092,7 +1107,7 @@
     "중간 저장·이어하기"
    ],
    "states_missing": [],
-   "hash": "6b85e73370f2",
+   "hash": "6a074c84f88e",
    "wireframe": "design/wireframes/S-09.html"
   },
   "S-10": {
@@ -1219,7 +1234,7 @@
     "활동·변경 이력"
    ],
    "states_missing": [],
-   "hash": "2668efa0371b",
+   "hash": "9dd84b3c376a",
    "wireframe": "design/wireframes/S-10.html"
   },
   "S-11": {
@@ -1374,7 +1389,7 @@
     "중간 저장·이어하기"
    ],
    "states_missing": [],
-   "hash": "d18c09b617f3",
+   "hash": "5e1963ed468f",
    "wireframe": "design/wireframes/S-11.html"
   },
   "S-12": {
@@ -1482,7 +1497,7 @@
     "할 일·알림(지표가 행동으로 이어지게)"
    ],
    "states_missing": [],
-   "hash": "e7784618732f",
+   "hash": "e651eb8578d4",
    "wireframe": "design/wireframes/S-12.html"
   },
   "S-13": {
@@ -1544,7 +1559,7 @@
     "위험 작업 구역(삭제·탈퇴) 분리·확인"
    ],
    "states_missing": [],
-   "hash": "12a2920ac2e5",
+   "hash": "01d9fac912be",
    "wireframe": "design/wireframes/S-13.html"
   },
   "S-14": {
@@ -1638,7 +1653,7 @@
     "위험 작업 구역(삭제·탈퇴) 분리·확인"
    ],
    "states_missing": [],
-   "hash": "4da1757d4a08",
+   "hash": "a6f64f8cee23",
    "wireframe": "design/wireframes/S-14.html"
   },
   "S-15": {
@@ -1716,7 +1731,7 @@
     "위험 작업 구역(삭제·탈퇴) 분리·확인"
    ],
    "states_missing": [],
-   "hash": "1c97b26cd7a5",
+   "hash": "34e3e9c42a16",
    "wireframe": "design/wireframes/S-15.html"
   },
   "S-16": {
@@ -1806,7 +1821,7 @@
    "must_missing": [],
    "should_missing": [],
    "states_missing": [],
-   "hash": "1ff95ceb0138",
+   "hash": "83f83fe06bbe",
    "wireframe": "design/wireframes/S-16.html"
   }
  },
@@ -1982,14 +1997,16 @@
    },
    "source": "docs/planning.md"
   },
-  "voice\\_takes": {
-   "name": "voice\\_takes",
+  "voice_takes": {
+   "name": "voice_takes",
    "row": {
-    "테이블": "voice\\_takes",
-    "주요 컬럼": "id, project\\_id, voice\\_id, source(tts/녹음), audio\\_path, words(jsonb), pauses(jsonb), duration\\_sec",
-    "비고": "단어 타이밍과 쉼"
+    "테이블": "voice_takes",
+    "소유자 경로": "project_id",
+    "읽기": "본인",
+    "쓰기": "서버(SR, 녹음 업로드)",
+    "워커 역할": "쓰기(TTS 결과, 확인 필요)"
    },
-   "source": "docs/planning.md"
+   "source": "docs/05_DATA_MODEL.md"
   },
   "renders": {
    "name": "renders",
@@ -1997,6 +2014,198 @@
     "테이블": "renders",
     "주요 컬럼": "id, project\\_id, version, cut\\_map(jsonb), upscale\\_status, clean\\_status, mp4\\_path, created\\_at",
     "비고": "V1, V2… 검토본"
+   },
+   "source": "docs/planning.md"
+  },
+  "chat_messages": {
+   "name": "chat_messages",
+   "row": {
+    "테이블": "chat_messages",
+    "소유자 경로": "project_id",
+    "읽기": "본인",
+    "쓰기": "본인(WITH CHECK role='user') · 서버(SR, AI 응답)",
+    "워커 역할": "—"
+   },
+   "source": "docs/05_DATA_MODEL.md"
+  },
+  "jobs": {
+   "name": "jobs",
+   "row": {
+    "테이블": "jobs",
+    "변경": "idempotency\\_key, attempts, max\\_attempts, payload(jsonb) 추가, status를 17-5로 고정",
+    "이유": "재시도와 중복 실행 방지"
+   },
+   "source": "docs/planning.md"
+  },
+  "credit_ledger": {
+   "name": "credit_ledger",
+   "row": {
+    "테이블": "credit_ledger",
+    "소유자 경로": "user_id",
+    "읽기": "본인",
+    "쓰기": "서버(SR)만 INSERT, 추가 전용(UPDATE·DELETE 없음)",
+    "워커 역할": "INSERT만(settle·release, ADR-0001)"
+   },
+   "source": "docs/05_DATA_MODEL.md"
+  },
+  "project_events": {
+   "name": "project_events",
+   "row": {
+    "테이블": "project_events",
+    "소유자 경로": "project_id",
+    "읽기": "본인",
+    "쓰기": "서버(SR)만(추가)",
+    "워커 역할": "쓰기(render_succeeded, 확인 필요)"
+   },
+   "source": "docs/05_DATA_MODEL.md"
+  },
+  "accounts": {
+   "name": "accounts",
+   "row": {
+    "테이블": "accounts",
+    "변경": "target 추가, channel\\_cards 대체",
+    "이유": "말투·타깃을 채널별로 한 곳에서 관리"
+   },
+   "source": "docs/planning.md"
+  },
+  "categories": {
+   "name": "categories",
+   "row": {
+    "테이블": "categories",
+    "소유자 경로": "— (공용)",
+    "읽기": "로그인",
+    "쓰기": "서버(SR)만(읽기 전용 테이블)",
+    "워커 역할": "—"
+   },
+   "source": "docs/05_DATA_MODEL.md"
+  },
+  "trend_items": {
+   "name": "trend_items",
+   "row": {
+    "테이블": "trend_items",
+    "소유자 경로": "category_id (공용)",
+    "읽기": "로그인",
+    "쓰기": "서버(SR)만(읽기 전용 테이블)",
+    "워커 역할": "—"
+   },
+   "source": "docs/05_DATA_MODEL.md"
+  },
+  "affiliate_links": {
+   "name": "affiliate_links",
+   "row": {
+    "테이블": "affiliate_links",
+    "소유자 경로": "project_id",
+    "읽기": "본인",
+    "쓰기": "본인(program·disclosed·bio 열) · url·short_url은 서버(SR)만",
+    "워커 역할": "—"
+   },
+   "source": "docs/05_DATA_MODEL.md"
+  },
+  "publications": {
+   "name": "publications",
+   "row": {
+    "테이블": "publications",
+    "소유자 경로": "project_id",
+    "읽기": "본인",
+    "쓰기": "발행 예약·실행은 함수 전용(정책 점검 6/6 확인) · 업로드 결과·재시도는 서버(SR)",
+    "워커 역할": "—"
+   },
+   "source": "docs/05_DATA_MODEL.md"
+  },
+  "video_metrics": {
+   "name": "video_metrics",
+   "row": {
+    "테이블": "video_metrics",
+    "소유자 경로": "publication_id → project",
+    "읽기": "본인",
+    "쓰기": "서버(SR)만(분석 API 수집)",
+    "워커 역할": "—"
+   },
+   "source": "docs/05_DATA_MODEL.md"
+  },
+  "policy_checks": {
+   "name": "policy_checks",
+   "row": {
+    "테이블": "policy_checks",
+    "소유자 경로": "project_id",
+    "읽기": "본인",
+    "쓰기": "서버(SR, 자동 항목) · 사용자 체크 항목은 함수 전용",
+    "워커 역할": "—"
+   },
+   "source": "docs/05_DATA_MODEL.md"
+  },
+  "bio_pages": {
+   "name": "bio_pages",
+   "row": {
+    "테이블": "bio_pages",
+    "소유자 경로": "account_id",
+    "읽기": "본인",
+    "쓰기": "본인",
+    "워커 역할": "—"
+   },
+   "source": "docs/05_DATA_MODEL.md"
+  },
+  "bio_items": {
+   "name": "bio_items",
+   "row": {
+    "테이블": "bio_items",
+    "소유자 경로": "bio_page_id → account",
+    "읽기": "본인",
+    "쓰기": "본인",
+    "워커 역할": "—"
+   },
+   "source": "docs/05_DATA_MODEL.md"
+  },
+  "link_clicks": {
+   "name": "link_clicks",
+   "row": {
+    "테이블": "link_clicks",
+    "소유자 경로": "affiliate_link_id → affiliate_links → projects.user_id",
+    "읽기": "본인(affiliate_links 경유)",
+    "쓰기": "서버(SR)만(익명 클릭을 서버가 기록)",
+    "워커 역할": "—"
+   },
+   "source": "docs/05_DATA_MODEL.md"
+  },
+  "api_keys": {
+   "name": "api_keys",
+   "row": {
+    "테이블": "api_keys",
+    "소유자 경로": "user_id",
+    "읽기": "본인(last4·status·tested_at만)",
+    "쓰기": "서버(SR)만(원문은 Vault로)",
+    "워커 역할": "—"
+   },
+   "source": "docs/05_DATA_MODEL.md"
+  },
+  "user_profiles": {
+   "name": "user_profiles",
+   "row": {
+    "테이블": "user_profiles",
+    "소유자 경로": "user_id",
+    "읽기": "본인",
+    "쓰기": "본인",
+    "워커 역할": "—"
+   },
+   "source": "docs/05_DATA_MODEL.md"
+  },
+  "extension_connections": {
+   "name": "extension_connections",
+   "row": {
+    "테이블": "extension_connections",
+    "소유자 경로": "user_id",
+    "읽기": "본인(해시 열 제외, 목록·폐기용)",
+    "쓰기": "서버(SR)만(발급·회전·폐기·하트비트)",
+    "워커 역할": "—"
+   },
+   "source": "docs/05_DATA_MODEL.md"
+  },
+  "voice\\_takes": {
+   "name": "voice\\_takes",
+   "row": {
+    "테이블": "voice\\_takes",
+    "주요 컬럼": "id, project\\_id, voice\\_id, source(tts/녹음), audio\\_path, words(jsonb), pauses(jsonb), duration\\_sec",
+    "비고": "단어 타이밍과 쉼"
    },
    "source": "docs/planning.md"
   },
@@ -2018,30 +2227,12 @@
    },
    "source": "docs/planning.md"
   },
-  "jobs": {
-   "name": "jobs",
-   "row": {
-    "테이블": "jobs",
-    "변경": "idempotency\\_key, attempts, max\\_attempts, payload(jsonb) 추가, status를 17-5로 고정",
-    "이유": "재시도와 중복 실행 방지"
-   },
-   "source": "docs/planning.md"
-  },
   "credit\\_ledger": {
    "name": "credit\\_ledger",
    "row": {
     "테이블": "credit\\_ledger",
     "변경": "job\\_id, kind(reserve·settle·release·charge), idempotency\\_key 추가",
     "이유": "실패 시 환불 추적"
-   },
-   "source": "docs/planning.md"
-  },
-  "accounts": {
-   "name": "accounts",
-   "row": {
-    "테이블": "accounts",
-    "변경": "target 추가, channel\\_cards 대체",
-    "이유": "말투·타깃을 채널별로 한 곳에서 관리"
    },
    "source": "docs/planning.md"
   },
@@ -2072,18 +2263,8 @@
   ],
   [
    "🟡",
-   "S-01",
-   "데이터 'publications' — 05_DATA_MODEL 표에 없음"
-  ],
-  [
-   "🟡",
    "S-02",
    "새로운 프로젝트 권장: 필수 표시·도움말, 임시 저장(긴 폼)"
-  ],
-  [
-   "🟡",
-   "S-02",
-   "데이터 'categories' — 05_DATA_MODEL 표에 없음"
   ],
   [
    "ℹ️",
@@ -2104,11 +2285,6 @@
    "🟡",
    "S-05",
    "내 채널 권장: 관련 항목 탭, 활동·변경 이력"
-  ],
-  [
-   "🟡",
-   "S-05",
-   "데이터 'publications' — 05_DATA_MODEL 표에 없음"
   ],
   [
    "🟡",
@@ -2143,11 +2319,6 @@
   [
    "🟡",
    "S-11",
-   "데이터 'publications' — 05_DATA_MODEL 표에 없음"
-  ],
-  [
-   "🟡",
-   "S-11",
    "데이터 'policy\\_checks' — 05_DATA_MODEL 표에 없음"
   ],
   [
@@ -2159,11 +2330,6 @@
    "🟡",
    "S-12",
    "데이터 'video\\_metrics' — 05_DATA_MODEL 표에 없음"
-  ],
-  [
-   "🟡",
-   "S-12",
-   "데이터 'publications' — 05_DATA_MODEL 표에 없음"
   ],
   [
    "🟡",
@@ -2179,11 +2345,6 @@
    "🟡",
    "S-14",
    "다중 계정 권장: 위험 작업 구역(삭제·탈퇴) 분리·확인"
-  ],
-  [
-   "🟡",
-   "S-14",
-   "데이터 'categories' — 05_DATA_MODEL 표에 없음"
   ],
   [
    "🟡",
