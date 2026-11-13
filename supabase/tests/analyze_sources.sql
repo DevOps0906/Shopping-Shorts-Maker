@@ -17,10 +17,11 @@ insert into public.projects (id, user_id, account_id, name, step_status) values
   ('00000000-0000-4000-d016-0000000002a2', '00000000-0000-4000-d016-00000000000a',
    '00000000-0000-4000-d016-00000000010a', 'analyze P2',
    '{"1":"approved","2":"approved","3":"ready","4":"idle","5":"idle","6":"idle"}');
-insert into public.sources (id, project_id, platform, url, author, file_path, checked) values
-  ('00000000-0000-4000-d016-0000000003a1', '00000000-0000-4000-d016-0000000002a1', 'tiktok', 'https://e.x/1', 'a1', 'p/1.mp4', true),
-  ('00000000-0000-4000-d016-0000000003a2', '00000000-0000-4000-d016-0000000002a2', 'tiktok', 'https://e.x/2', 'a2', 'p/2.mp4', true),
-  ('00000000-0000-4000-d016-0000000003a3', '00000000-0000-4000-d016-0000000002a2', 'tiktok', 'https://e.x/3', 'a3', null, false);
+insert into public.sources (id, project_id, platform, url, author, file_path, checked, thumbnail_path, thumbnail_deleted_at) values
+  ('00000000-0000-4000-d016-0000000003a1', '00000000-0000-4000-d016-0000000002a1', 'tiktok', 'https://e.x/1', 'a1', 'p/1.mp4', true, null, null),
+  ('00000000-0000-4000-d016-0000000003a2', '00000000-0000-4000-d016-0000000002a2', 'tiktok', 'https://e.x/2', 'a2', 'p/2.mp4', true, null, null),
+  ('00000000-0000-4000-d016-0000000003a3', '00000000-0000-4000-d016-0000000002a2', 'tiktok', 'https://e.x/3', 'a3', null, false, 'u/p/3.jpg', null),
+  ('00000000-0000-4000-d016-0000000003a4', '00000000-0000-4000-d016-0000000002a2', 'tiktok', 'https://e.x/4', 'a4', null, false, 'u/p/4.jpg', now());
 -- 작업: J1(P1 select_sources running) · J2(P2 select_sources running) · J3(P2 select_sources queued) · J4(P2 analyze running)
 insert into public.jobs (id, project_id, step, type, status, idempotency_key) values
   ('00000000-0000-4000-d016-0000000004a1', '00000000-0000-4000-d016-0000000002a1', 2, 'select_sources', 'running', 'analyze-test-1'),
@@ -43,9 +44,27 @@ begin
   v := private.analyze_sources_context('00000000-0000-4000-d016-0000000004a2');
   if v->>'project_id' <> '00000000-0000-4000-d016-0000000002a2'
      or v->>'user_id' <> '00000000-0000-4000-d016-00000000000a'
-     or jsonb_array_length(v->'sources') <> 2 then
+     or jsonb_array_length(v->'sources') <> 3 then
     raise exception 'FAIL: context %', v;
   end if;
+  -- 썸네일 경로는 내려주고, 삭제된 썸네일은 null
+  if (select e->>'thumbnail_path' from jsonb_array_elements(v->'sources') e
+      where e->>'id' = '00000000-0000-4000-d016-0000000003a3') is distinct from 'u/p/3.jpg'
+     or (select e->'thumbnail_path' from jsonb_array_elements(v->'sources') e
+         where e->>'id' = '00000000-0000-4000-d016-0000000003a4') is distinct from 'null'::jsonb
+     or (select e->'thumbnail_path' from jsonb_array_elements(v->'sources') e
+         where e->>'id' = '00000000-0000-4000-d016-0000000003a2') is distinct from 'null'::jsonb then
+    raise exception 'FAIL: thumbnail_path %', v;
+  end if;
+  -- 썸네일 점수 저장: 격리 없는 거부(quarantined false 명시)와 위장(true) 구분
+  n := private.save_source_scores('00000000-0000-4000-d016-0000000004a2',
+    '[{"id":"00000000-0000-4000-d016-0000000003a3","score":null,"exclude_reason":"썸네일이 너무 큼","quarantined":false},
+      {"id":"00000000-0000-4000-d016-0000000003a4","score":null,"exclude_reason":"허용하지 않는 파일 형식","quarantined":true}]');
+  if n <> 2 then raise exception 'FAIL: 썸네일 거부 저장 %', n; end if;
+  -- 격리 유지(sticky): 이미 격리된 원본에 false 를 저장해도 true 유지
+  n := private.save_source_scores('00000000-0000-4000-d016-0000000004a2',
+    '[{"id":"00000000-0000-4000-d016-0000000003a4","score":null,"exclude_reason":"썸네일 없음","quarantined":false}]');
+  if n <> 1 then raise exception 'FAIL: 격리 행 false 저장 %', n; end if;
 
   -- 실행 중이 아닌 작업·select_sources 가 아닌 작업(03 analyze 포함)은 거부
   foreach v in array array['"00000000-0000-4000-d016-0000000004a3"', '"00000000-0000-4000-d016-0000000004a4"']::jsonb[] loop
@@ -91,6 +110,12 @@ begin
   if not exists (select 1 from public.sources where id = '00000000-0000-4000-d016-0000000003a2'
                  and score = 40 and checked = true and exclude_reason = '일치도 순위 20위 밖') then
     raise exception 'FAIL: P2 점수·체크 유지';
+  end if;
+  if not exists (select 1 from public.sources where id = '00000000-0000-4000-d016-0000000003a3'
+                 and score is null and not quarantined and exclude_reason = '썸네일이 너무 큼')
+     or not exists (select 1 from public.sources where id = '00000000-0000-4000-d016-0000000003a4'
+                    and score is null and quarantined) then
+    raise exception 'FAIL: 썸네일 거부 격리 구분';
   end if;
 end $$;
 
