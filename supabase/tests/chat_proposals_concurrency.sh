@@ -1,5 +1,5 @@
 #!/bin/sh
-# task-021 동시성 테스트: 병렬 확인으로 소스 검색(chat_start_collect)을 6번 동시에 불러도 collect 작업은 3건(회차 상한)만.
+# task-021 동시성 테스트: 병렬 확인으로 소스 검색(chat_start_collect)을 6번 동시에 불러도 collect 작업은 1건만(프로젝트당 활성 확장 job 1개, 나머지 EX001).
 # 실행: sh supabase/tests/chat_proposals_concurrency.sh
 # - 세션은 커밋된 데이터만 서로 보므로 픽스처를 커밋하고, 끝나면(실패해도) 테스트 사용자를 지운다(cascade).
 # - 세션 1이 프로젝트 행 잠금을 쥔 채 잠들어 있는 동안 나머지 5개를 동시에 보낸다 → 모두 잠금에서 기다린 뒤 차례로 검사.
@@ -49,7 +49,7 @@ done
 wait
 
 jobs=$(psql_db -c "select count(*) from public.jobs where project_id = '$P' and type = 'collect'")
-denied=$(cat "$TMP"/s* | grep -c "CR003\|탐색 회차를 모두 썼습니다" || true)
-[ "$jobs" = "3" ] || fail "collect 작업 ${jobs}건(3건이어야 함)"
-[ "$denied" = "3" ] || fail "회차 초과 거부 ${denied}건(3건이어야 함)"
-echo "PASS C1 병렬 6회 요청 → collect 작업 3건 · 회차 초과 거부 3건(3회 초과 작업 0)"
+denied=$(cat "$TMP"/s* | grep -c "EX001\|확장 수집 작업이 진행 중" || true)
+[ "$jobs" = "1" ] || fail "collect 작업 ${jobs}건(1건이어야 함)"
+[ "$denied" = "5" ] || fail "활성 job 거부 ${denied}건(5건이어야 함)"
+echo "PASS C1 병렬 6회 요청 → collect 작업 1건 · 활성 job 거부(EX001) 5건"

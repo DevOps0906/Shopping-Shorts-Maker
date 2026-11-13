@@ -309,6 +309,11 @@ erDiagram
     integer used
     timestamptz updated_at
   }
+  rate_counters {
+    text key PK
+    timestamptz window_start PK
+    integer hits
+  }
   categories ||--o{ trend_items : "category_id"
   categories ||--o{ accounts : "category_id"
   categories ||--o{ projects : "category_id"

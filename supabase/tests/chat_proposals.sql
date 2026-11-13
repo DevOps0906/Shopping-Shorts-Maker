@@ -106,13 +106,24 @@ exception when insufficient_privilege then raise notice 'PASS 11 남의 프로�
 
 -- A: 탐색 회차 3회까지, 4번째 CR003, 같은 키 재요청은 기존 작업, 허용 밖 플랫폼 거부
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-c121-00000000000a","role":"authenticated"}', true);
-do $$
-declare n int;
-begin
-  for n in 1..3 loop
-    perform public.chat_start_collect('00000000-0000-4000-c121-0000000002a1', 'tiktok', '압축팩', 'proposal-test-a-' || n);
-  end loop;
-end $$;
+select public.chat_start_collect('00000000-0000-4000-c121-0000000002a1', 'tiktok', '압축팩', 'proposal-test-a-1');
+reset role;
+update public.jobs set status = 'succeeded', finished_at = now()
+  where project_id = '00000000-0000-4000-c121-0000000002a1' and type = 'collect' and status = 'waiting_extension';
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-c121-00000000000a","role":"authenticated"}', true);
+select public.chat_start_collect('00000000-0000-4000-c121-0000000002a1', 'tiktok', '압축팩', 'proposal-test-a-2');
+reset role;
+update public.jobs set status = 'succeeded', finished_at = now()
+  where project_id = '00000000-0000-4000-c121-0000000002a1' and type = 'collect' and status = 'waiting_extension';
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-c121-00000000000a","role":"authenticated"}', true);
+select public.chat_start_collect('00000000-0000-4000-c121-0000000002a1', 'tiktok', '압축팩', 'proposal-test-a-3');
+reset role;
+update public.jobs set status = 'succeeded', finished_at = now()
+  where project_id = '00000000-0000-4000-c121-0000000002a1' and type = 'collect' and status = 'waiting_extension';
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-c121-00000000000a","role":"authenticated"}', true);
 do $$ begin
   perform public.chat_start_collect('00000000-0000-4000-c121-0000000002a1', 'xiaohongshu', '압축팩', 'proposal-test-a-4');
   raise exception 'FAIL: 4번째 회차 생성';

@@ -297,6 +297,10 @@
 | family_id | uuid | 재사용 감지 시 같은 계열 전체 폐기 |
 | last_heartbeat_at | timestamptz | 30초 주기, 2분 끊김 판정 |
 | revoked_at · created_at | timestamptz | |
+| prev_refresh_token_hash · rotated_at | text · timestamptz | 제자리 회전(015b-1). 직전 해시 재사용 = 그 행 즉시 폐기(유예 없음). 갱신은 `refresh_token_hash = old and revoked_at is null` CAS 1건만 성공 |
+| activated_at | timestamptz | 첫 하트비트 시각. null 로 10분 지나면 스위퍼가 폐기 |
+
+행 id = 확장 신원. 함수(서버 service_role 전용, public 래퍼): `extension_issue`(해시만 받아 발급) · `extension_authenticate`(액세스 검사) · `extension_rotate`(ok·reused·invalid) · `extension_revoke`(사용자 행만) · `extension_report_complete`·`extension_report_abort`(running 이고 이 확장이 claim 한 job 만, 아니면 EX409. collect 완료 = 정산, collect_download 완료 = running 유지 + `jobs.files_reported_at` + 큐 sources 재검사 메시지) · `extension_rate_hit`(`private.rate_counters` 고정 창, 초과 false). 활성 확장 job 이 있으면 `set_source_checks`·`select_sources` 생성은 EX001, 프로젝트당 활성 collect_download 는 1개.
 
 ## 4. 확인 필요
 1. 서버 쓰기 주체 = service_role: 1절에 잠정 반영. 사용자 확인 필요.

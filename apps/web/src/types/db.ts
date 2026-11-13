@@ -453,39 +453,48 @@ export type Database = {
       extension_connections: {
         Row: {
           access_expires_at: string
+          activated_at: string | null
           access_token_hash: string
           created_at: string
           family_id: string
           id: string
           last_heartbeat_at: string | null
+          prev_refresh_token_hash: string | null
           refresh_expires_at: string
           refresh_token_hash: string
           revoked_at: string | null
+          rotated_at: string | null
           user_id: string
         }
         ComputedFields: never
         Insert: {
           access_expires_at: string
+          activated_at?: string | null
           access_token_hash: string
           created_at?: string
           family_id: string
           id?: string
           last_heartbeat_at?: string | null
+          prev_refresh_token_hash?: string | null
           refresh_expires_at: string
           refresh_token_hash: string
           revoked_at?: string | null
+          rotated_at?: string | null
           user_id: string
         }
         Update: {
           access_expires_at?: string
+          activated_at?: string | null
           access_token_hash?: string
           created_at?: string
           family_id?: string
           id?: string
           last_heartbeat_at?: string | null
+          prev_refresh_token_hash?: string | null
           refresh_expires_at?: string
           refresh_token_hash?: string
           revoked_at?: string | null
+          rotated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -496,6 +505,7 @@ export type Database = {
           created_at: string
           error: string | null
           extension_id: string | null
+          files_reported_at: string | null
           finished_at: string | null
           id: string
           idempotency_key: string
@@ -514,6 +524,7 @@ export type Database = {
           created_at?: string
           error?: string | null
           extension_id?: string | null
+          files_reported_at?: string | null
           finished_at?: string | null
           id?: string
           idempotency_key: string
@@ -531,6 +542,7 @@ export type Database = {
           created_at?: string
           error?: string | null
           extension_id?: string | null
+          files_reported_at?: string | null
           finished_at?: string | null
           id?: string
           idempotency_key?: string
@@ -1465,6 +1477,13 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      extension_authenticate: {
+        Args: { p_access_hash: string }
+        Returns: {
+          extension_id: string
+          user_id: string
+        }[]
+      }
       extension_claim_job: {
         Args: { p_extension_id: string; p_job_id: string }
         Returns: {
@@ -1487,6 +1506,43 @@ export type Database = {
           id: string
           payload: Json
           type: string
+        }[]
+      }
+      extension_issue: {
+        Args: { p_access_hash: string; p_refresh_hash: string; p_user_id: string }
+        Returns: {
+          access_expires_at: string
+          extension_id: string
+          refresh_expires_at: string
+        }[]
+      }
+      extension_rate_hit: {
+        Args: { p_key: string; p_limit: number; p_window_seconds: number }
+        Returns: boolean
+      }
+      extension_report_abort: {
+        Args: { p_extension_id: string; p_job_id: string; p_reason: string }
+        Returns: undefined
+      }
+      extension_report_complete: {
+        Args: { p_extension_id: string; p_job_id: string }
+        Returns: string
+      }
+      extension_revoke: {
+        Args: { p_extension_id: string; p_user_id: string }
+        Returns: boolean
+      }
+      extension_rotate: {
+        Args: {
+          p_new_access_hash: string
+          p_new_refresh_hash: string
+          p_old_refresh_hash: string
+        }
+        Returns: {
+          access_expires_at: string | null
+          extension_id: string | null
+          refresh_expires_at: string | null
+          result: string
         }[]
       }
       job_queue_status: { Args: Record<PropertyKey, never>; Returns: Json }

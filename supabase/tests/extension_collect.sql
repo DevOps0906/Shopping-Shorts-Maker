@@ -108,6 +108,18 @@ end $$;
 set local role authenticated;
 select set_config('request.jwt.claims',
   '{"sub":"00000000-0000-4000-f015-00000000000a","role":"authenticated"}', true);
+-- 활성 확장 job(J1 대기 중)이 있으면 생성 거부(EX001). 테스트 진행을 위해 J1 을 잠시 취소로 두고 J2 를 만든 뒤 대기로 되돌린다
+do $$
+begin
+  perform public.create_job('00000000-0000-4000-f015-00000000020a', 'collect_download', 'ext-test-download-0');
+  raise exception 'FAIL: 활성 확장 job 중 collect_download 생성';
+exception when sqlstate 'EX001' then null;
+end $$;
+reset role;
+update public.jobs set status = 'canceled' where id = '00000000-0000-4000-f015-0000000004a1';
+set local role authenticated;
+select set_config('request.jwt.claims',
+  '{"sub":"00000000-0000-4000-f015-00000000000a","role":"authenticated"}', true);
 do $$
 declare r jsonb;
 begin
@@ -118,6 +130,8 @@ begin
   raise notice 'PASS 2 collect_download 작업은 02 단계 waiting_extension 으로 생성';
 end $$;
 reset role;
+update public.jobs set status = 'waiting_extension', waiting_since = now() - interval '2 hours'
+  where id = '00000000-0000-4000-f015-0000000004a1';
 
 -- J2 = 방금 만든 collect_download. 하트비트 순서를 정하려고 생성 시각을 J1 뒤로
 create temp table t_ids as
@@ -445,10 +459,17 @@ declare v_found text[]; v_expected text[] := array[
   -- 제작 파트너 Route Handler(서버, service_role) → 제안 저장
   'service_role private.chat_create_proposal(uuid,uuid,text,jsonb)',
   -- 확장 Route Handler(서버, service_role) → public.extension_* 래퍼
+  'service_role private.ext_authenticate(text)',
   'service_role private.ext_claim_job(uuid,uuid)',
   'service_role private.ext_collect_download(uuid,uuid,jsonb)',
   'service_role private.ext_collect_list(uuid,uuid,jsonb)',
   'service_role private.ext_heartbeat(uuid)',
+  'service_role private.ext_issue(uuid,text,text)',
+  'service_role private.ext_report_abort(uuid,uuid,text)',
+  'service_role private.ext_report_complete(uuid,uuid)',
+  'service_role private.ext_revoke(uuid,uuid)',
+  'service_role private.ext_rotate(text,text,text)',
+  'service_role private.rate_hit(text,integer,integer)',
   -- 06 발행 업로드 직전 재판정(서버, service_role, task-024) → public.publish_recheck
   'service_role private.publish_recheck(uuid)',
   -- YouTube 업로더(Compose uploader, service_role, task-024a) → public.publication_*
