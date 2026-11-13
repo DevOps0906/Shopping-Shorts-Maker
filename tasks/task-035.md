@@ -15,8 +15,12 @@
 - DB `job_start`: 같은 사용자의 같은 큐 running 수가 1 이상이면 시작하지 않고 vt를 짧게(가설 20초) 미뤄 `deferred` 반환 → 워커는 메시지를 놓고 다음 메시지를 읽음. 시도 횟수(attempts)·read_ct 기반 실패 판정에 미룸이 섞이지 않게 함
 - 서버 전용 조회 함수 `public.queue_health()`(service_role만): 큐별 대기 수·가장 오래 기다린 초(pgmq.metrics)
 
+## 후속 035b (사용자 승인 2026-11-13, 035 병합 뒤)
+- 본인 작업 대기 순번·예상 대기 시간 함수(authenticated, 본인 job만) + 상태 배너 표시(S-06~S-10), 03_SCREENS_UX·design·프로토타입·spec 반영. 계산 규칙은 `docs/planning.md#17-5-1` 화면 행
+- GNB 작업 현황 패널(탭: 제작 중 · 포스팅 대기, `docs/planning.md#17-5-1` 작업 현황 패널 행). 포스팅 대기 순번은 publication_claim 정렬(next_attempt_at·prepared_at)과 같은 기준. GNB 구조 변경은 사용자 승인 완료(2026-11-13) → docs/design.md·prototype·03_SCREENS_UX 반영
+
 ## 하지 않을 것
-- 화면(대기 순번·예상 대기 배너) — 사용자 승인 필요
+- 화면(대기 순번·예상 대기 배너) — 035b에서
 - 운영 알림 발송 연결(17-10 감시 작업에서)
 - 우선순위 요금제(유료 사용자 먼저) — P1
 - 적용된 마이그레이션 수정

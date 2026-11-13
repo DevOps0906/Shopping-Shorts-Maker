@@ -9,7 +9,7 @@ from typing import Any
 import pytest
 
 from worker import jobs
-from worker.jobs import Message, PermanentError, TransientError, backoff_seconds, poll_once, process_message
+from worker.jobs import JobContext, Message, PermanentError, TransientError, backoff_seconds, concurrency_from_env, consume, poll_queue, process_message
 
 
 class FakeRepo:
@@ -224,7 +224,110 @@ def test_backoff_is_exponential_and_capped() -> None:
     assert backoff_seconds(20) == jobs.BACKOFF_MAX_SECONDS
 
 
-def test_poll_once_reads_each_queue() -> None:
+def test_poll_queue_reads_one_message() -> None:
     repo = FakeRepo()
-    assert poll_once(repo, repo, {"render": lambda ctx: None}, queues=("render", "tts"), log=lambda _: None) == 1
-    assert poll_once(repo, repo, {"render": lambda ctx: None}, queues=("render",), log=lambda _: None) == 0
+    assert poll_queue(repo, repo, "render", {"render": lambda ctx: None}, log=lambda _: None) == 1
+    assert poll_queue(repo, repo, "render", {"render": lambda ctx: None}, log=lambda _: None) == 0
+
+
+class QueueRepo:
+    """큐 여러 건 + deferred 를 흉내 내는 가짜 저장소. 스레드 공유."""
+
+    def __init__(self, messages: dict[str, list[str]], deferred: set[str] = frozenset()) -> None:  # type: ignore[assignment]
+        self.messages = {q: list(ids) for q, ids in messages.items()}
+        self.deferred = set(deferred)
+        self.started: list[str] = []
+        self.succeeded: list[str] = []
+        self.lock = threading.Lock()
+
+    def read(self, queue: str, vt: int) -> Message | None:
+        with self.lock:
+            if not self.messages.get(queue):
+                return None
+            job_id = self.messages[queue].pop(0)
+            return Message(msg_id=hash(job_id) % 1000, read_ct=1, job_id=job_id)
+
+    def start(self, queue: str, msg: Message) -> dict[str, Any]:
+        if msg.job_id in self.deferred:
+            return {"action": "deferred", "delay": 20}
+        with self.lock:
+            self.started.append(msg.job_id)
+        return {"action": "run", "type": queue, "step": 5, "attempts": 1, "payload": {}}
+
+    def succeed(self, queue: str, msg: Message) -> bool:
+        with self.lock:
+            self.succeeded.append(msg.job_id)
+        return True
+
+    def heartbeat(self, queue: str, msg: Message, vt: int) -> str | None:
+        return "running"
+
+    def fail(self, *a: Any) -> bool:
+        raise AssertionError("fail 호출 안 됨")
+
+    retry = stop = fail
+
+
+def test_deferred_message_is_skipped_and_next_is_read() -> None:
+    repo = QueueRepo({"render": ["busy-user-job", "other-user-job"]}, deferred={"busy-user-job"})
+    ran: list[str] = []
+    assert poll_queue(repo, repo, "render", {"render": lambda ctx: ran.append(ctx.job_id)}, log=lambda _: None) == 1
+    assert ran == ["other-user-job"]
+    assert repo.succeeded == ["other-user-job"]
+
+
+def test_stop_after_deferred_reads_no_more() -> None:
+    repo = QueueRepo({"render": ["busy-user-job", "other-user-job"]}, deferred={"busy-user-job"})
+    stop = threading.Event()
+    read = repo.read
+
+    def read_then_stop(*a: Any) -> Any:
+        msg = read(*a)
+        stop.set()  # 첫 메시지(deferred)를 읽은 직후 종료 신호
+        return msg
+
+    repo.read = read_then_stop  # type: ignore[method-assign]
+    ran: list[str] = []
+    assert poll_queue(repo, repo, "render", {"render": lambda ctx: ran.append(ctx.job_id)}, stop, log=lambda _: None) == 0
+    assert ran == []
+
+
+def test_only_deferred_messages_count_as_idle() -> None:
+    repo = QueueRepo({"render": ["j1", "j2"]}, deferred={"j1", "j2"})
+    assert poll_queue(repo, repo, "render", {"render": lambda ctx: None}, log=lambda _: None) == 0
+    assert repo.started == []
+
+
+def test_tts_is_processed_while_render_is_running() -> None:
+    repo = QueueRepo({"render": ["r1"], "tts": ["t1"]})
+    render_started, tts_done = threading.Event(), threading.Event()
+    stop = threading.Event()
+
+    def render(ctx: JobContext) -> None:
+        render_started.set()
+        assert tts_done.wait(5), "렌더가 끝나기 전에 tts 가 처리되지 않음(큐별 스레드가 아님)"
+
+    def tts(ctx: JobContext) -> None:
+        assert render_started.wait(5)
+        tts_done.set()
+
+    handlers = {"render": render, "tts": tts}
+    make = lambda: (repo, repo, lambda: None)  # noqa: E731
+    threads = [threading.Thread(target=consume, args=(make, q, handlers, stop),
+                                kwargs={"idle": 0.01, "log": lambda _: None}) for q in ("render", "tts")]
+    for t in threads:
+        t.start()
+    assert tts_done.wait(5)
+    deadline = time.monotonic() + 5
+    while len(repo.succeeded) < 2 and time.monotonic() < deadline:
+        time.sleep(0.01)
+    stop.set()
+    for t in threads:
+        t.join(5)
+    assert sorted(repo.succeeded) == ["r1", "t1"]
+
+
+def test_concurrency_from_env_defaults_and_overrides() -> None:
+    assert concurrency_from_env({}) == {"render": 1, "tts": 2, "analyze": 2}
+    assert concurrency_from_env({"WORKER_CONCURRENCY_RENDER": "2", "WORKER_CONCURRENCY_TTS": "x",
+                                 "WORKER_CONCURRENCY_ANALYZE": "0"}) == {"render": 2, "tts": 2, "analyze": 1}

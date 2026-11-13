@@ -88,6 +88,10 @@ services:
       GEMINI_TTS_MODEL: ${GEMINI_TTS_MODEL:-}
       # 음성 업로드: 웹 서버가 payload 에 넣은 서명 업로드 URL의 경로만 쓰고, 접속지는 내부망 게이트웨이로 고정
       WORKER_STORAGE_URL: http://api-gw:8000
+      # task-035 큐별 동시 처리 수(기본 render 1·tts 2·analyze 2)
+      WORKER_CONCURRENCY_RENDER: ${WORKER_CONCURRENCY_RENDER:-1}
+      WORKER_CONCURRENCY_TTS: ${WORKER_CONCURRENCY_TTS:-2}
+      WORKER_CONCURRENCY_ANALYZE: ${WORKER_CONCURRENCY_ANALYZE:-2}
     read_only: true
     tmpfs:
       - /tmp

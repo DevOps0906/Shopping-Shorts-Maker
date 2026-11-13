@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Protocol
 
 QUEUES = ("render", "tts", "analyze")
+DEFAULT_CONCURRENCY = {"render": 1, "tts": 2, "analyze": 2}
 VT_SECONDS = 12 * 60  # 렌더 상한 10분보다 길게
 HEARTBEAT_SECONDS = 60  # 1분마다 vt 연장 + 상태 확인
 BACKOFF_BASE_SECONDS = 10
@@ -138,9 +139,13 @@ class Heartbeat:
 def process_message(repo: Repo, heartbeat_repo: Repo, queue: str, msg: Message,
                     handlers: dict[str, Handler], *, log: Callable[[str], None] = print,
                     heartbeat_interval: float = HEARTBEAT_SECONDS) -> str:
-    """메시지 1건 처리. 반환: 최종 동작(succeeded·failed·retry·stopped·skipped)."""
+    """메시지 1건 처리. 반환: 최종 동작(succeeded·failed·retry·stopped·skipped·deferred)."""
     started = repo.start(queue, msg)
     action = started.get("action")
+    if action == "deferred":
+        # 같은 사용자의 같은 종류가 실행 중: DB가 vt 를 미뤘다. 처리하지 않고 다음 메시지로 넘어간다
+        log(f"deferred job={msg.job_id} queue={queue}")
+        return "deferred"
     if action != "run":
         log(f"skip job={msg.job_id} queue={queue} action={action} status={started.get('status')}")
         return "skipped" if action == "stop" else "failed"
@@ -199,14 +204,55 @@ def process_message(repo: Repo, heartbeat_repo: Repo, queue: str, msg: Message,
     return "stopped"
 
 
-def poll_once(repo: Repo, heartbeat_repo: Repo, handlers: dict[str, Handler],
-              queues: tuple[str, ...] = QUEUES, **kwargs: Any) -> int:
-    """큐마다 1건씩 읽어 처리. 처리한 건수를 돌려준다."""
-    done = 0
-    for queue in queues:
+MAX_DEFERRED_PER_POLL = 10
+
+
+def poll_queue(repo: Repo, heartbeat_repo: Repo, queue: str, handlers: dict[str, Handler],
+               stop: threading.Event | None = None, **kwargs: Any) -> int:
+    """한 큐에서 메시지를 읽어 1건 처리. deferred 는 놓고 다음 메시지를 읽는다. 처리한 건수(0 또는 1)를 돌려준다.
+    stop 이 켜지면 새 메시지를 읽지 않는다."""
+    for _ in range(MAX_DEFERRED_PER_POLL):
+        if stop is not None and stop.is_set():
+            return 0
         msg = repo.read(queue, VT_SECONDS)
         if msg is None:
+            return 0
+        if process_message(repo, heartbeat_repo, queue, msg, handlers, **kwargs) != "deferred":
+            return 1
+    return 0
+
+
+def consume(make_repo: Callable[[], Any], queue: str, handlers: dict[str, Handler], stop: threading.Event,
+            *, idle: float = 2.0, reconnect: float = 5.0, log: Callable[[str], None] = print) -> None:
+    """큐 1개를 소비하는 스레드 본문. make_repo() 는 (repo, heartbeat_repo, close) 를 돌려준다(스레드마다 자기 연결).
+
+    진행 중 작업은 stop 이후에도 끝까지 처리하고(읽기만 멈춘다), 못 끝낸 것은 vt 만료로 넘어간다(기존 동작).
+    """
+    while not stop.is_set():
+        try:
+            repo, hb_repo, close = make_repo()
+        except Exception as exc:
+            log(f"DB 오류로 재접속 대기: {type(exc).__name__}")
+            stop.wait(reconnect)
             continue
-        process_message(repo, heartbeat_repo, queue, msg, handlers, **kwargs)
-        done += 1
-    return done
+        try:
+            while not stop.is_set():
+                if poll_queue(repo, hb_repo, queue, handlers, stop, log=log) == 0:
+                    stop.wait(idle)
+        except Exception as exc:  # DB 끊김 등: 오류 종류만 남기고 다시 접속
+            log(f"DB 오류로 재접속 대기: {type(exc).__name__} queue={queue}")
+            stop.wait(reconnect)
+        finally:
+            close()
+
+
+def concurrency_from_env(env: dict[str, str]) -> dict[str, int]:
+    """큐별 동시 처리 수. WORKER_CONCURRENCY_RENDER(1)·_TTS(2)·_ANALYZE(2). 잘못된 값은 기본값."""
+    result = {}
+    for queue, default in DEFAULT_CONCURRENCY.items():
+        try:
+            value = int(env.get(f"WORKER_CONCURRENCY_{queue.upper()}", default))
+        except ValueError:
+            value = default
+        result[queue] = max(1, value)
+    return result

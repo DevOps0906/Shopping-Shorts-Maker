@@ -439,6 +439,8 @@ declare v_found text[]; v_expected text[] := array[
   'authenticated private.request_step_change(uuid,integer)',
   'authenticated private.save_source_use(uuid,jsonb,boolean,text)',
   'authenticated private.set_source_checks(uuid,uuid[])',
+  -- is_default 변경 트리거(INVOKER)가 부르는 본인 한도 초과 판정(task-034b, auth.uid() 본인만 답함)
+  'authenticated private.channel_over_limit_self(uuid)',
   -- 제작 파트너 Route Handler(서버, service_role) → 제안 저장
   'service_role private.chat_create_proposal(uuid,uuid,text,jsonb)',
   -- 확장 Route Handler(서버, service_role) → public.extension_* 래퍼

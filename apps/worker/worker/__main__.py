@@ -36,23 +36,30 @@ def run() -> int:
 
     from .db import PgRepo, connect
     from .handlers import HANDLERS
-    from .jobs import poll_once
+    from .jobs import concurrency_from_env, consume
 
     stop = threading.Event()
     for sig in (signal.SIGTERM, signal.SIGINT):
         signal.signal(sig, lambda *_: stop.set())
 
-    print("worker 시작: 큐 render·tts·analyze 소비", flush=True)
-    while not stop.is_set():
-        try:
-            with connect() as conn, connect() as hb_conn:
-                repo, hb_repo = PgRepo(conn), PgRepo(hb_conn)
-                while not stop.is_set():
-                    if poll_once(repo, hb_repo, HANDLERS) == 0:
-                        stop.wait(IDLE_SECONDS)
-        except Exception as exc:  # DB 끊김 등: 오류 종류만 남기고 다시 접속(접속 정보·비밀번호 출력 금지)
-            print(f"DB 오류로 재접속 대기: {type(exc).__name__}", file=sys.stderr, flush=True)
-            stop.wait(RECONNECT_SECONDS)
+    def make_repo():
+        """스레드마다 자기 DB 연결 2개(작업용 + 하트비트용)."""
+        conn, hb_conn = connect(), connect()
+        return PgRepo(conn), PgRepo(hb_conn), lambda: (conn.close(), hb_conn.close())
+
+    concurrency = concurrency_from_env(dict(os.environ))
+    threads = [
+        threading.Thread(
+            target=consume, args=(make_repo, queue, HANDLERS, stop),
+            kwargs={"idle": IDLE_SECONDS, "reconnect": RECONNECT_SECONDS},
+            name=f"consume-{queue}-{n}")
+        for queue, count in concurrency.items() for n in range(count)
+    ]
+    print("worker 시작: " + " ".join(f"{q}x{c}" for q, c in concurrency.items()), flush=True)
+    for t in threads:
+        t.start()
+    for t in threads:  # SIGTERM 후 진행 중 작업은 끝까지 처리(오래 걸리면 컨테이너 종료 시 vt 만료로 넘어간다)
+        t.join()
     return 0
 
 

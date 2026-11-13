@@ -60,6 +60,13 @@ describe("createJob", () => {
     });
   });
 
+  it("대기 상한 초과(JQ001)는 too_many_jobs", async () => {
+    expect(await createJob(client({ data: null, error: { code: "JQ001", message: "많음" } }), input)).toMatchObject({
+      ok: false,
+      code: "too_many_jobs",
+    });
+  });
+
   it("권한 오류는 forbidden, 그 밖의 오류는 내부 메시지를 숨긴다", async () => {
     expect(await createJob(client({ data: null, error: { code: "42501", message: "권한 없음" } }), input)).toMatchObject({
       ok: false,

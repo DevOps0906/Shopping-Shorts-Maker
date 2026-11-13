@@ -6,6 +6,7 @@ import type { Database, Json } from "@/types/db";
  * - 같은 idempotencyKey 면 기존 작업을 돌려준다(created: false). 키는 버튼을 누를 때 한 번 만들어 재시도에 그대로 쓴다.
  * - 단계는 DB가 종류로 정한다(collect·select_sources 02 · analyze 03 · tts 04 · render 05). 앞 단계 미승인·이미 승인이면 step_not_ready.
  * - 같은 키를 다른 프로젝트·종류에 쓰면 conflict. 키는 사용자 단위로 유일하다.
+ * - 같은 종류의 진행 중 작업이 상한(render 3·tts 5·analyze 5)이면 JQ001 → too_many_jobs(크레딧 예약 전 거부).
  * - 예상 크레딧은 DB(private.job_cost)가 정한다. 잔액이 부족하면 작업을 만들지 않고 필요·잔액을 돌려준다.
  */
 type CreateJobArgs = Database["public"]["Functions"]["create_job"]["Args"];
@@ -32,7 +33,7 @@ export type CreatedJob = {
 export type CreateJobResult =
   | { ok: true; job: CreatedJob }
   | { ok: false; code: "insufficient_credits"; required: number; balance: number }
-  | { ok: false; code: "forbidden" | "step_not_ready" | "conflict" | "invalid" | "error"; message: string };
+  | { ok: false; code: "forbidden" | "step_not_ready" | "conflict" | "invalid" | "too_many_jobs" | "error"; message: string };
 
 type RpcError = { code?: string; message: string; details?: string | null };
 type RpcClient = {
@@ -54,6 +55,7 @@ export async function createJob(supabase: RpcClient, input: CreateJobInput): Pro
     }
     if (error.code === "42501") return { ok: false, code: "forbidden", message: error.message };
     if (error.code === "55000") return { ok: false, code: "step_not_ready", message: error.message };
+    if (error.code === "JQ001") return { ok: false, code: "too_many_jobs", message: error.message };
     if (error.code === "JK001") return { ok: false, code: "conflict", message: error.message };
     if (error.code === "22023" || error.code === "23514") return { ok: false, code: "invalid", message: error.message };
     return { ok: false, code: "error", message: "작업을 만들지 못했습니다. 잠시 후 다시 시도해 주세요" };
