@@ -1001,7 +1001,7 @@ begin
 
   perform 1
   from nomad_shorts.extension_connections e
-  where e.id = p_extension_id and e.revoked_at is null and nomad_core.organization_role(e.organization_id) IN ('owner', 'admin', 'editor')
+  where e.id = p_extension_id and e.revoked_at is null and e.organization_id = v_uid
   for update;
   if not found then
     raise exception '실행 중인 수집 작업이 아니거나 권한이 없습니다' using errcode = '42501';

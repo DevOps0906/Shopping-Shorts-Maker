@@ -3,7 +3,7 @@ import type { Json } from "@/types/db";
 
 /*
  * 작업 현황(S-17) 데이터·문구 — 근거: docs/planning.md 17-5-1 화면 행·작업 현황 패널 행, docs/design.md 작업 현황 패널.
- * DB 함수 nomad_shorts.job_queue_status()(본인 행만)의 jsonb 를 화면 모델로 바꾼다. 필드를 추정하지 않고 모르는 값은 버린다.
+ * DB 함수 nomad_shorts.job_queue_status()(내가 속한 조직 행만, 다른 조직은 순번 수로만 반영)의 jsonb 를 화면 모델로 바꾼다. 필드를 추정하지 않고 모르는 값은 버린다.
  */
 
 export type QueueKind = "render" | "tts" | "analyze";
@@ -48,6 +48,9 @@ const str = (v: unknown): string | null => (typeof v === "string" ? v : null);
 const num = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) ? v : null);
 
 const QUEUES: readonly string[] = ["render", "tts", "analyze"];
+/** DB 는 pgmq 큐 이름(shorts_render 등)을 돌려준다. 화면은 접두 없는 종류(render 등)를 쓴다 */
+const PGMQ_PREFIX = "shorts_";
+const queueKind = (v: string | null): string | null => (v?.startsWith(PGMQ_PREFIX) ? v.slice(PGMQ_PREFIX.length) : v);
 const PRODUCTION_STATES: readonly string[] = ["running", "queued", "deferred"];
 const POSTING_STATES: readonly string[] = ["pending", "retry_wait", "uploading", "scheduled", "failed", "reconnect_wait"];
 
@@ -60,7 +63,7 @@ export function parseQueueStatus(raw: Json | null | undefined): QueueStatus {
     const e = obj(entry);
     const jobId = str(e?.job_id);
     const projectId = str(e?.project_id);
-    const queue = str(e?.queue);
+    const queue = queueKind(str(e?.queue));
     const state = str(e?.state);
     const step = num(e?.step);
     if (!e || !jobId || !projectId || !queue || !QUEUES.includes(queue) || !state || !PRODUCTION_STATES.includes(state) || step === null) {

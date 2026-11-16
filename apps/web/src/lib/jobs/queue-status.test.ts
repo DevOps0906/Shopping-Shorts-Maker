@@ -45,6 +45,17 @@ describe("parseQueueStatus", () => {
     expect(status.posting).toHaveLength(1);
   });
 
+  it("DB 큐 이름(shorts_ 접두)을 화면 종류로 바꾼다", () => {
+    const status = parseQueueStatus({
+      production: [
+        { job_id: "a", project_id: "p", step: 5, queue: "shorts_tts", state: "queued" },
+        { job_id: "b", project_id: "p", step: 3, queue: "shorts_sources", state: "queued" },
+      ],
+    });
+    expect(status.production).toHaveLength(1);
+    expect(status.production[0]).toMatchObject({ jobId: "a", queue: "tts" });
+  });
+
   it("객체가 아니면 빈 상태", () => {
     expect(parseQueueStatus(null)).toEqual({ production: [], posting: [] });
     expect(parseQueueStatus([1])).toEqual({ production: [], posting: [] });
