@@ -123,13 +123,13 @@ async function modelContext(supabase: Session, projectId: string, slug: unknown)
 }
 
 /** 결과를 AI 메시지로 저장(service_role, 소유권 확인 뒤). 확인이 필요하면 제안(chat_proposals)을 먼저 저장하고 id만 싣는다 */
-async function saveAi(projectId: string, userId: string, result: Exclude<TurnResult, { kind: "error" }>) {
+async function saveAi(projectId: string, organizationId: string, result: Exclude<TurnResult, { kind: "error" }>) {
   const admin = createAdminClient();
   let payload: Record<string, unknown> | null = null;
   if (result.kind === "tool") payload = { tool: result.tool, ok: result.outcome.ok, draft: result.outcome.ok ? (result.outcome.draft ?? null) : null };
   if (result.kind === "confirm") {
     const { data: proposalId, error } = await admin.rpc("chat_create_proposal", {
-      p_user_id: userId,
+      p_organization_id: organizationId,
       p_project_id: projectId,
       p_tool: result.tool,
       p_args: result.args as Json,
@@ -157,10 +157,10 @@ async function saveUser(supabase: Session, projectId: string, kind: "text" | "sc
   return toMessageView(data);
 }
 
-async function finish(projectId: string, userId: string, userMsg: ChatMessageView, result: TurnResult): Promise<ChatSendResponse> {
+async function finish(projectId: string, organizationId: string, userMsg: ChatMessageView, result: TurnResult): Promise<ChatSendResponse> {
   if (result.kind === "error") return { ok: false, error: result.error };
   try {
-    const { message, confirm } = await saveAi(projectId, userId, result);
+    const { message, confirm } = await saveAi(projectId, organizationId, result);
     const changed = result.kind === "tool" && result.outcome.ok && result.tool !== "draft_script" ? result.tool : null;
     return { ok: true, messages: [userMsg, message], confirm, changed };
   } catch {
@@ -180,12 +180,12 @@ export async function sendMessage(projectId: unknown, slug: unknown, rawText: un
   if (text.length > MAX_MESSAGE) return { ok: false, error: `메시지는 ${MAX_MESSAGE}자까지 보낼 수 있습니다.` };
 
   const supabase = await createClient();
-  const saved: { user: ChatMessageView | null; userId: string; error: string | null } = { user: null, userId: "", error: null };
+  const saved: { user: ChatMessageView | null; organizationId: string; error: string | null } = { user: null, organizationId: "", error: null };
   const result = await runChatTurn(
     projectId,
     async (project) => {
-      saved.userId = project.userId;
-      const slot = llmLimiter.acquire(project.id, project.userId);
+      saved.organizationId = project.organizationId;
+      const slot = llmLimiter.acquire(project.id, project.organizationId);
       if (!slot.ok) throw new LlmError("rate_limited", RATE_LIMIT_MESSAGE[slot.reason]);
       try {
         saved.user = await saveUser(supabase, project.id, "text", text);
@@ -212,13 +212,13 @@ export async function sendMessage(projectId: unknown, slug: unknown, rawText: un
   if (!result) return { ok: false, error: saved.error ?? LLM_ERROR_MESSAGE.provider_error };
   if (result.kind === "error") return { ok: false, error: result.error };
   if (!saved.user) return { ok: false, error: "메시지를 저장하지 못했습니다." };
-  return finish(projectId, saved.userId, saved.user, result);
+  return finish(projectId, saved.organizationId, saved.user, result);
 }
 
 /** LLM 을 부르지 않는 도구는 확인 경로에서도 호출 제한(프로젝트 동시 1개 · 분당 상한)을 건다. 소재 검색·대본 초안은 내부에서 건다 */
 async function limited(call: ParsedCall, project: ToolProject, key: string): Promise<ToolOutcome> {
   if (call.name === "search_topics" || call.name === "draft_script") return executeTool(call, project, key);
-  const slot = llmLimiter.acquire(project.id, project.userId);
+  const slot = llmLimiter.acquire(project.id, project.organizationId);
   if (!slot.ok) return { ok: false, error: RATE_LIMIT_MESSAGE[slot.reason] };
   try {
     return await executeTool(call, project, key);
@@ -249,5 +249,5 @@ export async function confirmProposal(proposalId: string): Promise<ChatSendRespo
   const label = result.kind === "tool" ? TOOL_LABEL[result.tool] : "도구";
   const userMsg = await saveUser(supabase, project.id, "screen", `확인 · ${label} 실행`);
   if (!userMsg) return { ok: false, error: "메시지를 저장하지 못했습니다." };
-  return finish(project.id, project.userId, userMsg, result);
+  return finish(project.id, project.organizationId, userMsg, result);
 }

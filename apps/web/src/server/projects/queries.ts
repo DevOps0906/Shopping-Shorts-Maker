@@ -18,12 +18,12 @@ import { escapeLike } from "./input";
  */
 
 export type Channel = Pick<
-  Tables<"accounts">,
+  Tables<{ schema: "nomad_shorts" }, "accounts">,
   "id" | "platform" | "channel_name" | "category_id" | "tone" | "weekly_goal" | "is_default" | "status"
 >;
 const CHANNEL_COLUMNS = "id, platform, channel_name, category_id, tone, weekly_goal, is_default, status";
 
-export type Category = Pick<Tables<"categories">, "id" | "name">;
+export type Category = Pick<Tables<{ schema: "nomad_shorts" }, "categories">, "id" | "name">;
 
 export type ProjectRow = {
   id: string;
@@ -36,7 +36,7 @@ export type ProjectRow = {
   version: number | null;
 };
 
-type RawProject = Pick<Tables<"projects">, "id" | "name" | "status" | "current_step" | "updated_at"> & {
+type RawProject = Pick<Tables<{ schema: "nomad_shorts" }, "projects">, "id" | "name" | "status" | "current_step" | "updated_at"> & {
   accounts?: unknown;
   categories?: unknown;
   renders?: unknown;
@@ -129,8 +129,10 @@ export async function getHomeData(now = new Date()): Promise<HomeData> {
   const supabase = await createClient();
   const weekStart = weekStartKst(now);
 
-  const [profile, statuses, active, uploads, ledger, channels] = await Promise.all([
-    supabase.from("user_profiles").select("name, email").maybeSingle(),
+  const [profile, claims, statuses, active, uploads, ledger, channels] = await Promise.all([
+    // 이름은 nomad_core.profiles(본인 행만), 이메일은 세션 JWT
+    supabase.schema("public").rpc("nomad_my_profile").maybeSingle(),
+    supabase.auth.getClaims(),
     supabase.from("projects").select("status"),
     supabase
       .from("projects")
@@ -149,9 +151,10 @@ export async function getHomeData(now = new Date()): Promise<HomeData> {
   const perChannel = new Map<string, number>();
   for (const row of uploadRows) perChannel.set(row.account_id, (perChannel.get(row.account_id) ?? 0) + 1);
 
-  const p = profile.data as { name: string | null; email: string | null } | null;
+  const p = profile.data as { display_name: string | null } | null;
+  const email = claims.data?.claims?.email;
   return {
-    profileName: p?.name || p?.email?.split("@")[0] || null,
+    profileName: p?.display_name || (typeof email === "string" ? email.split("@")[0] : null) || null,
     inProgress: statusRows.filter((r) => r.status === "in_progress").length,
     awaitingPublish: statusRows.filter((r) => r.status === "awaiting_publish").length,
     weekUploads: uploadRows.length,

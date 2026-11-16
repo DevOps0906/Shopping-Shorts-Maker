@@ -4,7 +4,7 @@
 워커는 그 URL로만 PUT 한다. URL·토큰은 로그·오류 문구에 넣지 않는다.
 
 payload 는 사용자가 create_job RPC로 직접 넣을 수도 있으므로:
-- 경로는 /storage/v1/object/upload/sign/voices/<user>/<project>/<파일> 형태만 받는다(객체 경로 소유 범위는 save_voice_take 가 다시 검사).
+- 경로는 /storage/v1/object/upload/sign/shorts-shorts-voices/<organization>/<project>/<파일> 형태만 받는다(객체 경로 소유 범위는 save_voice_take 가 다시 검사).
 - 접속지(origin)는 payload 값을 쓰지 않고 워커 환경 변수 WORKER_STORAGE_URL(내부망 게이트웨이)로 바꾼다(임의 주소 요청 방지).
 """
 
@@ -20,7 +20,7 @@ from typing import Any
 
 from .providers import ProviderError
 
-SIGN_PREFIX = "/storage/v1/object/upload/sign/voices/"
+SIGN_PREFIX = "/storage/v1/object/upload/sign/shorts-voices/"
 OBJECT_RE = re.compile(r"^[0-9a-f-]{36}/[0-9a-f-]{36}/[A-Za-z0-9._-]{1,120}$")
 
 MSG_BAD_TARGET = "음성 저장 위치가 올바르지 않습니다. 다시 생성해 주세요."

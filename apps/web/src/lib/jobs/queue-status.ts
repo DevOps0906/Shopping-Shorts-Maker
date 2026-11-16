@@ -3,7 +3,7 @@ import type { Json } from "@/types/db";
 
 /*
  * 작업 현황(S-17) 데이터·문구 — 근거: docs/planning.md 17-5-1 화면 행·작업 현황 패널 행, docs/design.md 작업 현황 패널.
- * DB 함수 public.job_queue_status()(본인 행만)의 jsonb 를 화면 모델로 바꾼다. 필드를 추정하지 않고 모르는 값은 버린다.
+ * DB 함수 nomad_shorts.job_queue_status()(본인 행만)의 jsonb 를 화면 모델로 바꾼다. 필드를 추정하지 않고 모르는 값은 버린다.
  */
 
 export type QueueKind = "render" | "tts" | "analyze";
@@ -250,7 +250,7 @@ export function queueBanner(items: ProductionItem[], projectId: string, step: nu
   };
 }
 
-/** 사용자당 같은 종류 대기·실행 상한(가설). DB private.job_queue_limit 과 같은 값 — 안내 문구 판단에만 쓴다 */
+/** 사용자당 같은 종류 대기·실행 상한(가설). DB nomad_shorts_private.job_queue_limit 과 같은 값 — 안내 문구 판단에만 쓴다 */
 export const QUEUE_LIMIT: Record<QueueKind, number> = { render: 3, tts: 5, analyze: 5 };
 
 /** 상한에 이른 종류가 있으면 사전 안내(role=status). 실제 거절(JQ001)은 TOO_MANY_JOBS_MESSAGE 경고(role=alert)로 따로 보인다. 없으면 null */

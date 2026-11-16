@@ -7,6 +7,9 @@
 /** 브라우저·서버가 같은 세션 쿠키를 보도록 이름을 고정한다(기본값은 접속 주소마다 달라진다). */
 export const AUTH_COOKIE_NAME = "sb-shorts-auth-token";
 
+/** 앱 테이블·RPC가 있는 스키마(nomad DB shorts 이식본). nomad_core 공용 함수는 public.nomad_* 래퍼로 부른다. */
+export const DB_SCHEMA = "nomad_shorts";
+
 /** 운영(HTTPS)에서는 Secure 쿠키로만 보낸다. */
 export const AUTH_COOKIE_OPTIONS = {
   name: AUTH_COOKIE_NAME,

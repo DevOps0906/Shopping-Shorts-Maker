@@ -1,1882 +1,2075 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
-  public: {
+  nomad_shorts: {
     Tables: {
       accounts: {
         Row: {
-          category_id: string | null
-          channel_name: string
-          created_at: string
-          disconnected_at: string | null
-          external_channel_id: string | null
-          first_connected_at: string | null
-          id: string
-          is_default: boolean
-          last_bio_no: number
-          oauth_token_ref: string | null
-          platform: string
-          status: string
-          target: string | null
-          tone: string | null
-          user_id: string
-          weekly_goal: number
-        }
-        ComputedFields: never
+          category_id: string | null;
+          channel_name: string;
+          created_at: string;
+          disconnected_at: string | null;
+          external_channel_id: string | null;
+          first_connected_at: string | null;
+          id: string;
+          is_default: boolean;
+          last_bio_no: number;
+          oauth_token_ref: string | null;
+          organization_id: string;
+          platform: string;
+          status: string;
+          target: string | null;
+          tone: string | null;
+          weekly_goal: number;
+        };
+        ComputedFields: never;
         Insert: {
-          category_id?: string | null
-          channel_name: string
-          created_at?: string
-          disconnected_at?: string | null
-          external_channel_id?: string | null
-          first_connected_at?: string | null
-          id?: string
-          is_default?: boolean
-          last_bio_no?: number
-          oauth_token_ref?: string | null
-          platform: string
-          status?: string
-          target?: string | null
-          tone?: string | null
-          user_id?: string
-          weekly_goal?: number
-        }
+          category_id?: string | null;
+          channel_name: string;
+          created_at?: string;
+          disconnected_at?: string | null;
+          external_channel_id?: string | null;
+          first_connected_at?: string | null;
+          id?: string;
+          is_default?: boolean;
+          last_bio_no?: number;
+          oauth_token_ref?: string | null;
+          organization_id: string;
+          platform: string;
+          status?: string;
+          target?: string | null;
+          tone?: string | null;
+          weekly_goal?: number;
+        };
         Update: {
-          category_id?: string | null
-          channel_name?: string
-          created_at?: string
-          disconnected_at?: string | null
-          external_channel_id?: string | null
-          first_connected_at?: string | null
-          id?: string
-          is_default?: boolean
-          last_bio_no?: number
-          oauth_token_ref?: string | null
-          platform?: string
-          status?: string
-          target?: string | null
-          tone?: string | null
-          user_id?: string
-          weekly_goal?: number
-        }
+          category_id?: string | null;
+          channel_name?: string;
+          created_at?: string;
+          disconnected_at?: string | null;
+          external_channel_id?: string | null;
+          first_connected_at?: string | null;
+          id?: string;
+          is_default?: boolean;
+          last_bio_no?: number;
+          oauth_token_ref?: string | null;
+          organization_id?: string;
+          platform?: string;
+          status?: string;
+          target?: string | null;
+          tone?: string | null;
+          weekly_goal?: number;
+        };
         Relationships: [
           {
-            foreignKeyName: "accounts_category_id_fkey"
-            columns: ["category_id"]
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
+            foreignKeyName: "accounts_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       affiliate_links: {
         Row: {
-          bio_no: number | null
-          bio_registered_at: string | null
-          bio_service: string | null
-          created_at: string
-          disclosed: boolean
-          id: string
-          partner_id_ref: string | null
-          program: string
-          project_id: string
-          short_url: string | null
-          url: string | null
-        }
-        ComputedFields: never
+          bio_no: number | null;
+          bio_registered_at: string | null;
+          bio_service: string | null;
+          created_at: string;
+          disclosed: boolean;
+          id: string;
+          partner_id_ref: string | null;
+          program: string;
+          project_id: string;
+          short_url: string | null;
+          url: string | null;
+        };
+        ComputedFields: never;
         Insert: {
-          bio_no?: number | null
-          bio_registered_at?: string | null
-          bio_service?: string | null
-          created_at?: string
-          disclosed?: boolean
-          id?: string
-          partner_id_ref?: string | null
-          program: string
-          project_id: string
-          short_url?: string | null
-          url?: string | null
-        }
+          bio_no?: number | null;
+          bio_registered_at?: string | null;
+          bio_service?: string | null;
+          created_at?: string;
+          disclosed?: boolean;
+          id?: string;
+          partner_id_ref?: string | null;
+          program: string;
+          project_id: string;
+          short_url?: string | null;
+          url?: string | null;
+        };
         Update: {
-          bio_no?: number | null
-          bio_registered_at?: string | null
-          bio_service?: string | null
-          created_at?: string
-          disclosed?: boolean
-          id?: string
-          partner_id_ref?: string | null
-          program?: string
-          project_id?: string
-          short_url?: string | null
-          url?: string | null
-        }
+          bio_no?: number | null;
+          bio_registered_at?: string | null;
+          bio_service?: string | null;
+          created_at?: string;
+          disclosed?: boolean;
+          id?: string;
+          partner_id_ref?: string | null;
+          program?: string;
+          project_id?: string;
+          short_url?: string | null;
+          url?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "affiliate_links_project_id_fkey"
-            columns: ["project_id"]
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
+            foreignKeyName: "affiliate_links_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: true;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       api_keys: {
         Row: {
-          created_at: string
-          id: string
-          last4: string | null
-          provider: string
-          secret_ref: string | null
-          status: string
-          tested_at: string | null
-          user_id: string
-        }
-        ComputedFields: never
+          created_at: string;
+          id: string;
+          last4: string | null;
+          organization_id: string;
+          provider: string;
+          secret_ref: string | null;
+          status: string;
+          tested_at: string | null;
+        };
+        ComputedFields: never;
         Insert: {
-          created_at?: string
-          id?: string
-          last4?: string | null
-          provider: string
-          secret_ref?: string | null
-          status?: string
-          tested_at?: string | null
-          user_id: string
-        }
+          created_at?: string;
+          id?: string;
+          last4?: string | null;
+          organization_id: string;
+          provider: string;
+          secret_ref?: string | null;
+          status?: string;
+          tested_at?: string | null;
+        };
         Update: {
-          created_at?: string
-          id?: string
-          last4?: string | null
-          provider?: string
-          secret_ref?: string | null
-          status?: string
-          tested_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          id?: string;
+          last4?: string | null;
+          organization_id?: string;
+          provider?: string;
+          secret_ref?: string | null;
+          status?: string;
+          tested_at?: string | null;
+        };
+        Relationships: [];
+      };
       bio_items: {
         Row: {
-          affiliate_link_id: string | null
-          archived_at: string | null
-          bio_page_id: string
-          id: string
-          no: number
-          project_id: string | null
-          registered_at: string | null
-          short_url: string | null
-          thumb_url: string | null
-          title: string | null
-        }
-        ComputedFields: never
+          affiliate_link_id: string | null;
+          archived_at: string | null;
+          bio_page_id: string;
+          id: string;
+          no: number;
+          project_id: string | null;
+          registered_at: string | null;
+          short_url: string | null;
+          thumb_url: string | null;
+          title: string | null;
+        };
+        ComputedFields: never;
         Insert: {
-          affiliate_link_id?: string | null
-          archived_at?: string | null
-          bio_page_id: string
-          id?: string
-          no: number
-          project_id?: string | null
-          registered_at?: string | null
-          short_url?: string | null
-          thumb_url?: string | null
-          title?: string | null
-        }
+          affiliate_link_id?: string | null;
+          archived_at?: string | null;
+          bio_page_id: string;
+          id?: string;
+          no: number;
+          project_id?: string | null;
+          registered_at?: string | null;
+          short_url?: string | null;
+          thumb_url?: string | null;
+          title?: string | null;
+        };
         Update: {
-          affiliate_link_id?: string | null
-          archived_at?: string | null
-          bio_page_id?: string
-          id?: string
-          no?: number
-          project_id?: string | null
-          registered_at?: string | null
-          short_url?: string | null
-          thumb_url?: string | null
-          title?: string | null
-        }
+          affiliate_link_id?: string | null;
+          archived_at?: string | null;
+          bio_page_id?: string;
+          id?: string;
+          no?: number;
+          project_id?: string | null;
+          registered_at?: string | null;
+          short_url?: string | null;
+          thumb_url?: string | null;
+          title?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "bio_items_affiliate_link_id_fkey"
-            columns: ["affiliate_link_id"]
-            referencedRelation: "affiliate_links"
-            referencedColumns: ["id"]
+            foreignKeyName: "bio_items_affiliate_link_id_fkey";
+            columns: ["affiliate_link_id"];
+            isOneToOne: false;
+            referencedRelation: "affiliate_links";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "bio_items_bio_page_id_fkey"
-            columns: ["bio_page_id"]
-            referencedRelation: "bio_pages"
-            referencedColumns: ["id"]
+            foreignKeyName: "bio_items_bio_page_id_fkey";
+            columns: ["bio_page_id"];
+            isOneToOne: false;
+            referencedRelation: "bio_pages";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "bio_items_project_id_fkey"
-            columns: ["project_id"]
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
+            foreignKeyName: "bio_items_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       bio_pages: {
         Row: {
-          account_id: string
-          created_at: string
-          id: string
-          service: string
-          url: string | null
-        }
-        ComputedFields: never
+          account_id: string;
+          created_at: string;
+          id: string;
+          service: string;
+          url: string | null;
+        };
+        ComputedFields: never;
         Insert: {
-          account_id: string
-          created_at?: string
-          id?: string
-          service: string
-          url?: string | null
-        }
+          account_id: string;
+          created_at?: string;
+          id?: string;
+          service: string;
+          url?: string | null;
+        };
         Update: {
-          account_id?: string
-          created_at?: string
-          id?: string
-          service?: string
-          url?: string | null
-        }
+          account_id?: string;
+          created_at?: string;
+          id?: string;
+          service?: string;
+          url?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "bio_pages_account_id_fkey"
-            columns: ["account_id"]
-            referencedRelation: "accounts"
-            referencedColumns: ["id"]
+            foreignKeyName: "bio_pages_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: true;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       categories: {
         Row: {
-          banned_terms: string[]
-          id: string
-          keywords_en: string[]
-          keywords_ko: string[]
-          keywords_zh: string[]
-          name: string
-        }
-        ComputedFields: never
+          banned_terms: string[];
+          id: string;
+          keywords_en: string[];
+          keywords_ko: string[];
+          keywords_zh: string[];
+          name: string;
+        };
+        ComputedFields: never;
         Insert: {
-          banned_terms?: string[]
-          id?: string
-          keywords_en?: string[]
-          keywords_ko?: string[]
-          keywords_zh?: string[]
-          name: string
-        }
+          banned_terms?: string[];
+          id?: string;
+          keywords_en?: string[];
+          keywords_ko?: string[];
+          keywords_zh?: string[];
+          name: string;
+        };
         Update: {
-          banned_terms?: string[]
-          id?: string
-          keywords_en?: string[]
-          keywords_ko?: string[]
-          keywords_zh?: string[]
-          name?: string
-        }
-        Relationships: []
-      }
+          banned_terms?: string[];
+          id?: string;
+          keywords_en?: string[];
+          keywords_ko?: string[];
+          keywords_zh?: string[];
+          name?: string;
+        };
+        Relationships: [];
+      };
       channel_slot_events: {
         Row: {
-          account_id: string | null
-          channel_limit: number
-          created_at: string
-          id: string
-          kind: string
-          slots: number
-          user_id: string
-        }
-        ComputedFields: never
+          account_id: string | null;
+          channel_limit: number;
+          created_at: string;
+          id: string;
+          kind: string;
+          organization_id: string;
+          slots: number;
+        };
+        ComputedFields: never;
         Insert: {
-          account_id?: string | null
-          channel_limit: number
-          created_at?: string
-          id?: string
-          kind: string
-          slots: number
-          user_id: string
-        }
+          account_id?: string | null;
+          channel_limit: number;
+          created_at?: string;
+          id?: string;
+          kind: string;
+          organization_id: string;
+          slots: number;
+        };
         Update: {
-          account_id?: string | null
-          channel_limit?: number
-          created_at?: string
-          id?: string
-          kind?: string
-          slots?: number
-          user_id?: string
-        }
+          account_id?: string | null;
+          channel_limit?: number;
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          organization_id?: string;
+          slots?: number;
+        };
         Relationships: [
           {
-            foreignKeyName: "channel_slot_events_account_id_fkey"
-            columns: ["account_id"]
-            referencedRelation: "accounts"
-            referencedColumns: ["id"]
+            foreignKeyName: "channel_slot_events_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       chat_messages: {
         Row: {
-          created_at: string
-          id: string
-          kind: string
-          payload: Json | null
-          project_id: string
-          role: string
-          text: string | null
-        }
-        ComputedFields: never
+          created_at: string;
+          id: string;
+          kind: string;
+          payload: Json | null;
+          project_id: string;
+          role: string;
+          text: string | null;
+        };
+        ComputedFields: never;
         Insert: {
-          created_at?: string
-          id?: string
-          kind?: string
-          payload?: Json | null
-          project_id: string
-          role: string
-          text?: string | null
-        }
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          payload?: Json | null;
+          project_id: string;
+          role: string;
+          text?: string | null;
+        };
         Update: {
-          created_at?: string
-          id?: string
-          kind?: string
-          payload?: Json | null
-          project_id?: string
-          role?: string
-          text?: string | null
-        }
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          payload?: Json | null;
+          project_id?: string;
+          role?: string;
+          text?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "chat_messages_project_id_fkey"
-            columns: ["project_id"]
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
+            foreignKeyName: "chat_messages_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       chat_proposals: {
         Row: {
-          args: NonNullable<Json>
-          args_hash: string
-          consumed_at: string | null
-          created_at: string
-          expires_at: string
-          id: string
-          input_version: NonNullable<Json>
-          project_id: string
-          tool: string
-          user_id: string
-        }
-        ComputedFields: never
+          args: NonNullable<Json>;
+          args_hash: string;
+          consumed_at: string | null;
+          created_at: string;
+          expires_at: string;
+          id: string;
+          input_version: NonNullable<Json>;
+          organization_id: string;
+          project_id: string;
+          tool: string;
+        };
+        ComputedFields: never;
         Insert: {
-          args: NonNullable<Json>
-          args_hash: string
-          consumed_at?: string | null
-          created_at?: string
-          expires_at?: string
-          id?: string
-          input_version: NonNullable<Json>
-          project_id: string
-          tool: string
-          user_id: string
-        }
+          args: NonNullable<Json>;
+          args_hash: string;
+          consumed_at?: string | null;
+          created_at?: string;
+          expires_at?: string;
+          id?: string;
+          input_version: NonNullable<Json>;
+          organization_id: string;
+          project_id: string;
+          tool: string;
+        };
         Update: {
-          args?: NonNullable<Json>
-          args_hash?: string
-          consumed_at?: string | null
-          created_at?: string
-          expires_at?: string
-          id?: string
-          input_version?: NonNullable<Json>
-          project_id?: string
-          tool?: string
-          user_id?: string
-        }
+          args?: NonNullable<Json>;
+          args_hash?: string;
+          consumed_at?: string | null;
+          created_at?: string;
+          expires_at?: string;
+          id?: string;
+          input_version?: NonNullable<Json>;
+          organization_id?: string;
+          project_id?: string;
+          tool?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "chat_proposals_project_id_fkey"
-            columns: ["project_id"]
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
+            foreignKeyName: "chat_proposals_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       credit_ledger: {
         Row: {
-          created_at: string
-          delta: number
-          id: string
-          idempotency_key: string
-          job_id: string | null
-          kind: string
-          project_id: string | null
-          reason: string | null
-          user_id: string
-        }
-        ComputedFields: never
+          created_at: string;
+          delta: number;
+          id: string;
+          idempotency_key: string;
+          job_id: string | null;
+          kind: string;
+          organization_id: string;
+          project_id: string | null;
+          reason: string | null;
+        };
+        ComputedFields: never;
         Insert: {
-          created_at?: string
-          delta: number
-          id?: string
-          idempotency_key: string
-          job_id?: string | null
-          kind: string
-          project_id?: string | null
-          reason?: string | null
-          user_id: string
-        }
+          created_at?: string;
+          delta: number;
+          id?: string;
+          idempotency_key: string;
+          job_id?: string | null;
+          kind: string;
+          organization_id: string;
+          project_id?: string | null;
+          reason?: string | null;
+        };
         Update: {
-          created_at?: string
-          delta?: number
-          id?: string
-          idempotency_key?: string
-          job_id?: string | null
-          kind?: string
-          project_id?: string | null
-          reason?: string | null
-          user_id?: string
-        }
+          created_at?: string;
+          delta?: number;
+          id?: string;
+          idempotency_key?: string;
+          job_id?: string | null;
+          kind?: string;
+          organization_id?: string;
+          project_id?: string | null;
+          reason?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "credit_ledger_job_id_fkey"
-            columns: ["job_id"]
-            referencedRelation: "jobs"
-            referencedColumns: ["id"]
+            foreignKeyName: "credit_ledger_job_id_fkey";
+            columns: ["job_id"];
+            isOneToOne: false;
+            referencedRelation: "jobs";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "credit_ledger_project_id_fkey"
-            columns: ["project_id"]
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
+            foreignKeyName: "credit_ledger_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       extension_connections: {
         Row: {
-          access_expires_at: string
-          activated_at: string | null
-          access_token_hash: string
-          created_at: string
-          family_id: string
-          id: string
-          last_heartbeat_at: string | null
-          prev_refresh_token_hash: string | null
-          refresh_expires_at: string
-          refresh_token_hash: string
-          revoked_at: string | null
-          rotated_at: string | null
-          user_id: string
-        }
-        ComputedFields: never
+          access_expires_at: string;
+          access_token_hash: string;
+          created_at: string;
+          family_id: string;
+          id: string;
+          last_heartbeat_at: string | null;
+          organization_id: string;
+          refresh_expires_at: string;
+          refresh_token_hash: string;
+          revoked_at: string | null;
+        };
+        ComputedFields: never;
         Insert: {
-          access_expires_at: string
-          activated_at?: string | null
-          access_token_hash: string
-          created_at?: string
-          family_id: string
-          id?: string
-          last_heartbeat_at?: string | null
-          prev_refresh_token_hash?: string | null
-          refresh_expires_at: string
-          refresh_token_hash: string
-          revoked_at?: string | null
-          rotated_at?: string | null
-          user_id: string
-        }
+          access_expires_at: string;
+          access_token_hash: string;
+          created_at?: string;
+          family_id: string;
+          id?: string;
+          last_heartbeat_at?: string | null;
+          organization_id: string;
+          refresh_expires_at: string;
+          refresh_token_hash: string;
+          revoked_at?: string | null;
+        };
         Update: {
-          access_expires_at?: string
-          activated_at?: string | null
-          access_token_hash?: string
-          created_at?: string
-          family_id?: string
-          id?: string
-          last_heartbeat_at?: string | null
-          prev_refresh_token_hash?: string | null
-          refresh_expires_at?: string
-          refresh_token_hash?: string
-          revoked_at?: string | null
-          rotated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
+          access_expires_at?: string;
+          access_token_hash?: string;
+          created_at?: string;
+          family_id?: string;
+          id?: string;
+          last_heartbeat_at?: string | null;
+          organization_id?: string;
+          refresh_expires_at?: string;
+          refresh_token_hash?: string;
+          revoked_at?: string | null;
+        };
+        Relationships: [];
+      };
       jobs: {
         Row: {
-          attempts: number
-          created_at: string
-          error: string | null
-          extension_id: string | null
-          files_reported_at: string | null
-          finished_at: string | null
-          id: string
-          idempotency_key: string
-          max_attempts: number
-          payload: NonNullable<Json>
-          project_id: string
-          started_at: string | null
-          status: string
-          step: number
-          type: string
-          waiting_since: string | null
-        }
-        ComputedFields: never
+          attempts: number;
+          created_at: string;
+          error: string | null;
+          extension_id: string | null;
+          finished_at: string | null;
+          id: string;
+          idempotency_key: string;
+          max_attempts: number;
+          payload: NonNullable<Json>;
+          project_id: string;
+          started_at: string | null;
+          status: string;
+          step: number;
+          type: string;
+          waiting_since: string | null;
+        };
+        ComputedFields: never;
         Insert: {
-          attempts?: number
-          created_at?: string
-          error?: string | null
-          extension_id?: string | null
-          files_reported_at?: string | null
-          finished_at?: string | null
-          id?: string
-          idempotency_key: string
-          max_attempts?: number
-          payload?: NonNullable<Json>
-          project_id: string
-          started_at?: string | null
-          status?: string
-          step: number
-          type: string
-          waiting_since?: string | null
-        }
+          attempts?: number;
+          created_at?: string;
+          error?: string | null;
+          extension_id?: string | null;
+          finished_at?: string | null;
+          id?: string;
+          idempotency_key: string;
+          max_attempts?: number;
+          payload?: NonNullable<Json>;
+          project_id: string;
+          started_at?: string | null;
+          status?: string;
+          step: number;
+          type: string;
+          waiting_since?: string | null;
+        };
         Update: {
-          attempts?: number
-          created_at?: string
-          error?: string | null
-          extension_id?: string | null
-          files_reported_at?: string | null
-          finished_at?: string | null
-          id?: string
-          idempotency_key?: string
-          max_attempts?: number
-          payload?: NonNullable<Json>
-          project_id?: string
-          started_at?: string | null
-          status?: string
-          step?: number
-          type?: string
-          waiting_since?: string | null
-        }
+          attempts?: number;
+          created_at?: string;
+          error?: string | null;
+          extension_id?: string | null;
+          finished_at?: string | null;
+          id?: string;
+          idempotency_key?: string;
+          max_attempts?: number;
+          payload?: NonNullable<Json>;
+          project_id?: string;
+          started_at?: string | null;
+          status?: string;
+          step?: number;
+          type?: string;
+          waiting_since?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "jobs_extension_id_fkey"
-            columns: ["extension_id"]
-            referencedRelation: "extension_connections"
-            referencedColumns: ["id"]
+            foreignKeyName: "jobs_extension_id_fkey";
+            columns: ["extension_id"];
+            isOneToOne: false;
+            referencedRelation: "extension_connections";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "jobs_project_id_fkey"
-            columns: ["project_id"]
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
+            foreignKeyName: "jobs_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       link_clicks: {
         Row: {
-          affiliate_link_id: string
-          clicked_at: string
-          counted: boolean
-          id: string
-          platform: string | null
-          referrer: string | null
-          short_url: string | null
-          visitor_hash: string | null
-        }
-        ComputedFields: never
+          affiliate_link_id: string;
+          clicked_at: string;
+          counted: boolean;
+          id: string;
+          platform: string | null;
+          referrer: string | null;
+          short_url: string | null;
+          visitor_hash: string | null;
+        };
+        ComputedFields: never;
         Insert: {
-          affiliate_link_id: string
-          clicked_at?: string
-          counted?: boolean
-          id?: string
-          platform?: string | null
-          referrer?: string | null
-          short_url?: string | null
-          visitor_hash?: string | null
-        }
+          affiliate_link_id: string;
+          clicked_at?: string;
+          counted?: boolean;
+          id?: string;
+          platform?: string | null;
+          referrer?: string | null;
+          short_url?: string | null;
+          visitor_hash?: string | null;
+        };
         Update: {
-          affiliate_link_id?: string
-          clicked_at?: string
-          counted?: boolean
-          id?: string
-          platform?: string | null
-          referrer?: string | null
-          short_url?: string | null
-          visitor_hash?: string | null
-        }
+          affiliate_link_id?: string;
+          clicked_at?: string;
+          counted?: boolean;
+          id?: string;
+          platform?: string | null;
+          referrer?: string | null;
+          short_url?: string | null;
+          visitor_hash?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "link_clicks_affiliate_link_id_fkey"
-            columns: ["affiliate_link_id"]
-            referencedRelation: "affiliate_links"
-            referencedColumns: ["id"]
+            foreignKeyName: "link_clicks_affiliate_link_id_fkey";
+            columns: ["affiliate_link_id"];
+            isOneToOne: false;
+            referencedRelation: "affiliate_links";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       oauth_states: {
         Row: {
-          account_id: string
-          code_verifier: string
-          created_at: string
-          expires_at: string
-          provider: string
-          state_hash: string
-          used_at: string | null
-          user_id: string
-        }
-        ComputedFields: never
+          account_id: string;
+          code_verifier: string;
+          created_at: string;
+          expires_at: string;
+          organization_id: string;
+          provider: string;
+          state_hash: string;
+          used_at: string | null;
+        };
+        ComputedFields: never;
         Insert: {
-          account_id: string
-          code_verifier: string
-          created_at?: string
-          expires_at?: string
-          provider?: string
-          state_hash: string
-          used_at?: string | null
-          user_id: string
-        }
+          account_id: string;
+          code_verifier: string;
+          created_at?: string;
+          expires_at?: string;
+          organization_id: string;
+          provider?: string;
+          state_hash: string;
+          used_at?: string | null;
+        };
         Update: {
-          account_id?: string
-          code_verifier?: string
-          created_at?: string
-          expires_at?: string
-          provider?: string
-          state_hash?: string
-          used_at?: string | null
-          user_id?: string
-        }
+          account_id?: string;
+          code_verifier?: string;
+          created_at?: string;
+          expires_at?: string;
+          organization_id?: string;
+          provider?: string;
+          state_hash?: string;
+          used_at?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "oauth_states_account_id_user_id_fkey"
-            columns: ["account_id", "user_id"]
-            referencedRelation: "accounts"
-            referencedColumns: ["id", "user_id"]
+            foreignKeyName: "oauth_states_account_id_organization_id_fkey";
+            columns: ["account_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id", "organization_id"];
           },
-        ]
-      }
+        ];
+      };
       policy_checks: {
         Row: {
-          checked_at: string | null
-          checked_by: string | null
-          detail: string | null
-          id: string
-          item: string
-          project_id: string
-          result: string
-        }
-        ComputedFields: never
+          checked_at: string | null;
+          checked_by: string | null;
+          detail: string | null;
+          id: string;
+          item: string;
+          project_id: string;
+          result: string;
+        };
+        ComputedFields: never;
         Insert: {
-          checked_at?: string | null
-          checked_by?: string | null
-          detail?: string | null
-          id?: string
-          item: string
-          project_id: string
-          result?: string
-        }
+          checked_at?: string | null;
+          checked_by?: string | null;
+          detail?: string | null;
+          id?: string;
+          item: string;
+          project_id: string;
+          result?: string;
+        };
         Update: {
-          checked_at?: string | null
-          checked_by?: string | null
-          detail?: string | null
-          id?: string
-          item?: string
-          project_id?: string
-          result?: string
-        }
+          checked_at?: string | null;
+          checked_by?: string | null;
+          detail?: string | null;
+          id?: string;
+          item?: string;
+          project_id?: string;
+          result?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "policy_checks_project_id_fkey"
-            columns: ["project_id"]
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
+            foreignKeyName: "policy_checks_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       project_events: {
         Row: {
-          created_at: string
-          event: string
-          id: string
-          project_id: string
-          step: number
-        }
-        ComputedFields: never
+          created_at: string;
+          event: string;
+          id: string;
+          project_id: string;
+          step: number;
+        };
+        ComputedFields: never;
         Insert: {
-          created_at?: string
-          event: string
-          id?: string
-          project_id: string
-          step: number
-        }
+          created_at?: string;
+          event: string;
+          id?: string;
+          project_id: string;
+          step: number;
+        };
         Update: {
-          created_at?: string
-          event?: string
-          id?: string
-          project_id?: string
-          step?: number
-        }
+          created_at?: string;
+          event?: string;
+          id?: string;
+          project_id?: string;
+          step?: number;
+        };
         Relationships: [
           {
-            foreignKeyName: "project_events_project_id_fkey"
-            columns: ["project_id"]
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
+            foreignKeyName: "project_events_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       projects: {
         Row: {
-          account_id: string
-          category_id: string | null
-          created_at: string
-          current_step: number
-          id: string
-          name: string
-          sources_notice_ack_at: string | null
-          sources_notice_ack_by: string | null
-          sources_shortage_reason: string | null
-          status: string
-          step_status: NonNullable<Json>
-          target_sec: number
-          updated_at: string
-          user_id: string
-        }
-        ComputedFields: never
+          account_id: string;
+          category_id: string | null;
+          created_at: string;
+          current_step: number;
+          id: string;
+          name: string;
+          organization_id: string;
+          sources_notice_ack_at: string | null;
+          sources_notice_ack_by: string | null;
+          sources_shortage_reason: string | null;
+          status: string;
+          step_status: NonNullable<Json>;
+          target_sec: number;
+          updated_at: string;
+        };
+        ComputedFields: never;
         Insert: {
-          account_id: string
-          category_id?: string | null
-          created_at?: string
-          current_step?: number
-          id?: string
-          name: string
-          sources_notice_ack_at?: string | null
-          sources_notice_ack_by?: string | null
-          sources_shortage_reason?: string | null
-          status?: string
-          step_status?: NonNullable<Json>
-          target_sec?: number
-          updated_at?: string
-          user_id?: string
-        }
+          account_id: string;
+          category_id?: string | null;
+          created_at?: string;
+          current_step?: number;
+          id?: string;
+          name: string;
+          organization_id: string;
+          sources_notice_ack_at?: string | null;
+          sources_notice_ack_by?: string | null;
+          sources_shortage_reason?: string | null;
+          status?: string;
+          step_status?: NonNullable<Json>;
+          target_sec?: number;
+          updated_at?: string;
+        };
         Update: {
-          account_id?: string
-          category_id?: string | null
-          created_at?: string
-          current_step?: number
-          id?: string
-          name?: string
-          sources_notice_ack_at?: string | null
-          sources_notice_ack_by?: string | null
-          sources_shortage_reason?: string | null
-          status?: string
-          step_status?: NonNullable<Json>
-          target_sec?: number
-          updated_at?: string
-          user_id?: string
-        }
+          account_id?: string;
+          category_id?: string | null;
+          created_at?: string;
+          current_step?: number;
+          id?: string;
+          name?: string;
+          organization_id?: string;
+          sources_notice_ack_at?: string | null;
+          sources_notice_ack_by?: string | null;
+          sources_shortage_reason?: string | null;
+          status?: string;
+          step_status?: NonNullable<Json>;
+          target_sec?: number;
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "projects_account_id_user_id_fkey"
-            columns: ["account_id", "user_id"]
-            referencedRelation: "accounts"
-            referencedColumns: ["id", "user_id"]
+            foreignKeyName: "projects_account_id_organization_id_fkey";
+            columns: ["account_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id", "organization_id"];
           },
           {
-            foreignKeyName: "projects_category_id_fkey"
-            columns: ["category_id"]
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
+            foreignKeyName: "projects_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       publication_upload_sessions: {
         Row: {
-          completed_at: string | null
-          created_at: string
-          publication_id: string
-          restart_allowed: boolean
-          session_uri: string
-          total_bytes: number
-        }
-        ComputedFields: never
+          completed_at: string | null;
+          created_at: string;
+          publication_id: string;
+          restart_allowed: boolean;
+          session_uri: string;
+          total_bytes: number;
+        };
+        ComputedFields: never;
         Insert: {
-          completed_at?: string | null
-          created_at?: string
-          publication_id: string
-          restart_allowed?: boolean
-          session_uri: string
-          total_bytes: number
-        }
+          completed_at?: string | null;
+          created_at?: string;
+          publication_id: string;
+          restart_allowed?: boolean;
+          session_uri: string;
+          total_bytes: number;
+        };
         Update: {
-          completed_at?: string | null
-          created_at?: string
-          publication_id?: string
-          restart_allowed?: boolean
-          session_uri?: string
-          total_bytes?: number
-        }
+          completed_at?: string | null;
+          created_at?: string;
+          publication_id?: string;
+          restart_allowed?: boolean;
+          session_uri?: string;
+          total_bytes?: number;
+        };
         Relationships: [
           {
-            foreignKeyName: "publication_upload_sessions_publication_id_fkey"
-            columns: ["publication_id"]
-            referencedRelation: "publications"
-            referencedColumns: ["id"]
+            foreignKeyName: "publication_upload_sessions_publication_id_fkey";
+            columns: ["publication_id"];
+            isOneToOne: true;
+            referencedRelation: "publications";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       publications: {
         Row: {
-          account_id: string
-          attempt_started_at: string | null
-          attempt_token: string | null
-          body: string | null
-          created_at: string
-          description: string | null
-          error: string | null
-          hashtags: string[]
-          id: string
-          mode: string
-          next_attempt_at: string | null
-          pin_comment: boolean
-          platform_video_id: string | null
-          prepared_at: string | null
-          project_id: string
-          published_at: string | null
-          retry_count: number
-          scheduled_at: string | null
-          status: string
-          title: string | null
-        }
-        ComputedFields: never
+          account_id: string;
+          attempt_started_at: string | null;
+          attempt_token: string | null;
+          body: string | null;
+          created_at: string;
+          description: string | null;
+          error: string | null;
+          hashtags: string[];
+          id: string;
+          mode: string;
+          next_attempt_at: string | null;
+          pin_comment: boolean;
+          platform_video_id: string | null;
+          prepared_at: string | null;
+          project_id: string;
+          published_at: string | null;
+          retry_count: number;
+          scheduled_at: string | null;
+          status: string;
+          title: string | null;
+        };
+        ComputedFields: never;
         Insert: {
-          account_id: string
-          attempt_started_at?: string | null
-          attempt_token?: string | null
-          body?: string | null
-          created_at?: string
-          description?: string | null
-          error?: string | null
-          hashtags?: string[]
-          id?: string
-          mode: string
-          next_attempt_at?: string | null
-          pin_comment?: boolean
-          platform_video_id?: string | null
-          prepared_at?: string | null
-          project_id: string
-          published_at?: string | null
-          retry_count?: number
-          scheduled_at?: string | null
-          status?: string
-          title?: string | null
-        }
+          account_id: string;
+          attempt_started_at?: string | null;
+          attempt_token?: string | null;
+          body?: string | null;
+          created_at?: string;
+          description?: string | null;
+          error?: string | null;
+          hashtags?: string[];
+          id?: string;
+          mode: string;
+          next_attempt_at?: string | null;
+          pin_comment?: boolean;
+          platform_video_id?: string | null;
+          prepared_at?: string | null;
+          project_id: string;
+          published_at?: string | null;
+          retry_count?: number;
+          scheduled_at?: string | null;
+          status?: string;
+          title?: string | null;
+        };
         Update: {
-          account_id?: string
-          attempt_started_at?: string | null
-          attempt_token?: string | null
-          body?: string | null
-          created_at?: string
-          description?: string | null
-          error?: string | null
-          hashtags?: string[]
-          id?: string
-          mode?: string
-          next_attempt_at?: string | null
-          pin_comment?: boolean
-          platform_video_id?: string | null
-          prepared_at?: string | null
-          project_id?: string
-          published_at?: string | null
-          retry_count?: number
-          scheduled_at?: string | null
-          status?: string
-          title?: string | null
-        }
+          account_id?: string;
+          attempt_started_at?: string | null;
+          attempt_token?: string | null;
+          body?: string | null;
+          created_at?: string;
+          description?: string | null;
+          error?: string | null;
+          hashtags?: string[];
+          id?: string;
+          mode?: string;
+          next_attempt_at?: string | null;
+          pin_comment?: boolean;
+          platform_video_id?: string | null;
+          prepared_at?: string | null;
+          project_id?: string;
+          published_at?: string | null;
+          retry_count?: number;
+          scheduled_at?: string | null;
+          status?: string;
+          title?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "publications_project_id_account_id_fkey"
-            columns: ["project_id", "account_id"]
-            referencedRelation: "projects"
-            referencedColumns: ["id", "account_id"]
+            foreignKeyName: "publications_project_id_account_id_fkey";
+            columns: ["project_id", "account_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id", "account_id"];
           },
-        ]
-      }
+        ];
+      };
       renders: {
         Row: {
-          clean_status: string
-          created_at: string
-          cut_map: Json | null
-          duration_sec: number | null
-          file_deleted_at: string | null
-          id: string
-          job_id: string | null
-          mp4_path: string | null
-          project_id: string
-          purge_after: string
-          retention_deleting_at: string | null
-          retention_reserved_at: string | null
-          retention_token: string | null
-          upscale_status: string
-          version: number
-        }
-        ComputedFields: never
+          clean_status: string;
+          created_at: string;
+          cut_map: Json | null;
+          duration_sec: number | null;
+          file_deleted_at: string | null;
+          id: string;
+          job_id: string | null;
+          mp4_path: string | null;
+          project_id: string;
+          purge_after: string;
+          retention_deleting_at: string | null;
+          retention_reserved_at: string | null;
+          retention_token: string | null;
+          upscale_status: string;
+          version: number;
+        };
+        ComputedFields: never;
         Insert: {
-          clean_status?: string
-          created_at?: string
-          cut_map?: Json | null
-          duration_sec?: number | null
-          file_deleted_at?: string | null
-          id?: string
-          job_id?: string | null
-          mp4_path?: string | null
-          project_id: string
-          purge_after?: string
-          retention_deleting_at?: string | null
-          retention_reserved_at?: string | null
-          retention_token?: string | null
-          upscale_status?: string
-          version: number
-        }
+          clean_status?: string;
+          created_at?: string;
+          cut_map?: Json | null;
+          duration_sec?: number | null;
+          file_deleted_at?: string | null;
+          id?: string;
+          job_id?: string | null;
+          mp4_path?: string | null;
+          project_id: string;
+          purge_after?: string;
+          retention_deleting_at?: string | null;
+          retention_reserved_at?: string | null;
+          retention_token?: string | null;
+          upscale_status?: string;
+          version: number;
+        };
         Update: {
-          clean_status?: string
-          created_at?: string
-          cut_map?: Json | null
-          duration_sec?: number | null
-          file_deleted_at?: string | null
-          id?: string
-          job_id?: string | null
-          mp4_path?: string | null
-          project_id?: string
-          purge_after?: string
-          retention_deleting_at?: string | null
-          retention_reserved_at?: string | null
-          retention_token?: string | null
-          upscale_status?: string
-          version?: number
-        }
+          clean_status?: string;
+          created_at?: string;
+          cut_map?: Json | null;
+          duration_sec?: number | null;
+          file_deleted_at?: string | null;
+          id?: string;
+          job_id?: string | null;
+          mp4_path?: string | null;
+          project_id?: string;
+          purge_after?: string;
+          retention_deleting_at?: string | null;
+          retention_reserved_at?: string | null;
+          retention_token?: string | null;
+          upscale_status?: string;
+          version?: number;
+        };
         Relationships: [
           {
-            foreignKeyName: "renders_job_id_fkey"
-            columns: ["job_id"]
-            referencedRelation: "jobs"
-            referencedColumns: ["id"]
+            foreignKeyName: "renders_job_id_fkey";
+            columns: ["job_id"];
+            isOneToOne: false;
+            referencedRelation: "jobs";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "renders_project_id_fkey"
-            columns: ["project_id"]
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
+            foreignKeyName: "renders_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       scripts: {
         Row: {
-          approved_at: string | null
-          created_at: string
-          est_sec: number | null
-          id: string
-          lines: NonNullable<Json>
-          project_id: string
-          version: number
-        }
-        ComputedFields: never
+          approved_at: string | null;
+          created_at: string;
+          est_sec: number | null;
+          id: string;
+          lines: NonNullable<Json>;
+          project_id: string;
+          version: number;
+        };
+        ComputedFields: never;
         Insert: {
-          approved_at?: string | null
-          created_at?: string
-          est_sec?: number | null
-          id?: string
-          lines?: NonNullable<Json>
-          project_id: string
-          version: number
-        }
+          approved_at?: string | null;
+          created_at?: string;
+          est_sec?: number | null;
+          id?: string;
+          lines?: NonNullable<Json>;
+          project_id: string;
+          version: number;
+        };
         Update: {
-          approved_at?: string | null
-          created_at?: string
-          est_sec?: number | null
-          id?: string
-          lines?: NonNullable<Json>
-          project_id?: string
-          version?: number
-        }
+          approved_at?: string | null;
+          created_at?: string;
+          est_sec?: number | null;
+          id?: string;
+          lines?: NonNullable<Json>;
+          project_id?: string;
+          version?: number;
+        };
         Relationships: [
           {
-            foreignKeyName: "scripts_project_id_fkey"
-            columns: ["project_id"]
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
+            foreignKeyName: "scripts_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       sources: {
         Row: {
-          author: string
-          checked: boolean
-          collected_at: string
-          created_at: string
-          duration_sec: number | null
-          exclude_reason: string | null
-          file_deleted_at: string | null
-          file_path: string | null
-          height: number | null
-          id: string
-          platform: string
-          project_id: string
-          purge_after: string
-          quarantined: boolean
-          retention_deleting_at: string | null
-          retention_reserved_at: string | null
-          retention_token: string | null
-          rights_basis: string | null
-          rights_confirmed_at: string | null
-          rights_confirmed_by: string | null
-          score: number | null
-          thumbnail_deleted_at: string | null
-          thumbnail_path: string | null
-          thumbnail_retention_deleting_at: string | null
-          thumbnail_retention_reserved_at: string | null
-          thumbnail_retention_token: string | null
-          title: string | null
-          url: string
-          used: boolean
-          width: number | null
-        }
-        ComputedFields: never
+          author: string;
+          checked: boolean;
+          collected_at: string;
+          created_at: string;
+          duration_sec: number | null;
+          exclude_reason: string | null;
+          file_deleted_at: string | null;
+          file_path: string | null;
+          height: number | null;
+          id: string;
+          platform: string;
+          project_id: string;
+          purge_after: string;
+          quarantined: boolean;
+          retention_deleting_at: string | null;
+          retention_reserved_at: string | null;
+          retention_token: string | null;
+          rights_basis: string | null;
+          rights_confirmed_at: string | null;
+          rights_confirmed_by: string | null;
+          score: number | null;
+          thumbnail_deleted_at: string | null;
+          thumbnail_path: string | null;
+          thumbnail_retention_deleting_at: string | null;
+          thumbnail_retention_reserved_at: string | null;
+          thumbnail_retention_token: string | null;
+          title: string | null;
+          url: string;
+          used: boolean;
+          width: number | null;
+        };
+        ComputedFields: never;
         Insert: {
-          author: string
-          checked?: boolean
-          collected_at?: string
-          created_at?: string
-          duration_sec?: number | null
-          exclude_reason?: string | null
-          file_deleted_at?: string | null
-          file_path?: string | null
-          height?: number | null
-          id?: string
-          platform: string
-          project_id: string
-          purge_after: string
-          quarantined?: boolean
-          retention_deleting_at?: string | null
-          retention_reserved_at?: string | null
-          retention_token?: string | null
-          rights_basis?: string | null
-          rights_confirmed_at?: string | null
-          rights_confirmed_by?: string | null
-          score?: number | null
-          thumbnail_deleted_at?: string | null
-          thumbnail_path?: string | null
-          thumbnail_retention_deleting_at?: string | null
-          thumbnail_retention_reserved_at?: string | null
-          thumbnail_retention_token?: string | null
-          title?: string | null
-          url: string
-          used?: boolean
-          width?: number | null
-        }
+          author: string;
+          checked?: boolean;
+          collected_at?: string;
+          created_at?: string;
+          duration_sec?: number | null;
+          exclude_reason?: string | null;
+          file_deleted_at?: string | null;
+          file_path?: string | null;
+          height?: number | null;
+          id?: string;
+          platform: string;
+          project_id: string;
+          purge_after: string;
+          quarantined?: boolean;
+          retention_deleting_at?: string | null;
+          retention_reserved_at?: string | null;
+          retention_token?: string | null;
+          rights_basis?: string | null;
+          rights_confirmed_at?: string | null;
+          rights_confirmed_by?: string | null;
+          score?: number | null;
+          thumbnail_deleted_at?: string | null;
+          thumbnail_path?: string | null;
+          thumbnail_retention_deleting_at?: string | null;
+          thumbnail_retention_reserved_at?: string | null;
+          thumbnail_retention_token?: string | null;
+          title?: string | null;
+          url: string;
+          used?: boolean;
+          width?: number | null;
+        };
         Update: {
-          author?: string
-          checked?: boolean
-          collected_at?: string
-          created_at?: string
-          duration_sec?: number | null
-          exclude_reason?: string | null
-          file_deleted_at?: string | null
-          file_path?: string | null
-          height?: number | null
-          id?: string
-          platform?: string
-          project_id?: string
-          purge_after?: string
-          quarantined?: boolean
-          retention_deleting_at?: string | null
-          retention_reserved_at?: string | null
-          retention_token?: string | null
-          rights_basis?: string | null
-          rights_confirmed_at?: string | null
-          rights_confirmed_by?: string | null
-          score?: number | null
-          thumbnail_deleted_at?: string | null
-          thumbnail_path?: string | null
-          thumbnail_retention_deleting_at?: string | null
-          thumbnail_retention_reserved_at?: string | null
-          thumbnail_retention_token?: string | null
-          title?: string | null
-          url?: string
-          used?: boolean
-          width?: number | null
-        }
+          author?: string;
+          checked?: boolean;
+          collected_at?: string;
+          created_at?: string;
+          duration_sec?: number | null;
+          exclude_reason?: string | null;
+          file_deleted_at?: string | null;
+          file_path?: string | null;
+          height?: number | null;
+          id?: string;
+          platform?: string;
+          project_id?: string;
+          purge_after?: string;
+          quarantined?: boolean;
+          retention_deleting_at?: string | null;
+          retention_reserved_at?: string | null;
+          retention_token?: string | null;
+          rights_basis?: string | null;
+          rights_confirmed_at?: string | null;
+          rights_confirmed_by?: string | null;
+          score?: number | null;
+          thumbnail_deleted_at?: string | null;
+          thumbnail_path?: string | null;
+          thumbnail_retention_deleting_at?: string | null;
+          thumbnail_retention_reserved_at?: string | null;
+          thumbnail_retention_token?: string | null;
+          title?: string | null;
+          url?: string;
+          used?: boolean;
+          width?: number | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "sources_project_id_fkey"
-            columns: ["project_id"]
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
+            foreignKeyName: "sources_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       topics: {
         Row: {
-          created_at: string
-          evidence_urls: string[]
-          id: string
-          name: string
-          picked: boolean
-          product_url: string | null
-          project_id: string
-          reason: string | null
-          round: number
-        }
-        ComputedFields: never
+          created_at: string;
+          evidence_urls: string[];
+          id: string;
+          name: string;
+          picked: boolean;
+          product_url: string | null;
+          project_id: string;
+          reason: string | null;
+          round: number;
+        };
+        ComputedFields: never;
         Insert: {
-          created_at?: string
-          evidence_urls?: string[]
-          id?: string
-          name: string
-          picked?: boolean
-          product_url?: string | null
-          project_id: string
-          reason?: string | null
-          round?: number
-        }
+          created_at?: string;
+          evidence_urls?: string[];
+          id?: string;
+          name: string;
+          picked?: boolean;
+          product_url?: string | null;
+          project_id: string;
+          reason?: string | null;
+          round?: number;
+        };
         Update: {
-          created_at?: string
-          evidence_urls?: string[]
-          id?: string
-          name?: string
-          picked?: boolean
-          product_url?: string | null
-          project_id?: string
-          reason?: string | null
-          round?: number
-        }
+          created_at?: string;
+          evidence_urls?: string[];
+          id?: string;
+          name?: string;
+          picked?: boolean;
+          product_url?: string | null;
+          project_id?: string;
+          reason?: string | null;
+          round?: number;
+        };
         Relationships: [
           {
-            foreignKeyName: "topics_project_id_fkey"
-            columns: ["project_id"]
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
+            foreignKeyName: "topics_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       trend_items: {
         Row: {
-          captured_at: string
-          category_id: string
-          id: string
-          kr_competition: number | null
-          kr_search_growth: number | null
-          name: string
-          opportunity_score: number | null
-          overseas_growth: number | null
-          period: string
-          sellable: boolean
-        }
-        ComputedFields: never
+          captured_at: string;
+          category_id: string;
+          id: string;
+          kr_competition: number | null;
+          kr_search_growth: number | null;
+          name: string;
+          opportunity_score: number | null;
+          overseas_growth: number | null;
+          period: string;
+          sellable: boolean;
+        };
+        ComputedFields: never;
         Insert: {
-          captured_at?: string
-          category_id: string
-          id?: string
-          kr_competition?: number | null
-          kr_search_growth?: number | null
-          name: string
-          opportunity_score?: number | null
-          overseas_growth?: number | null
-          period: string
-          sellable?: boolean
-        }
+          captured_at?: string;
+          category_id: string;
+          id?: string;
+          kr_competition?: number | null;
+          kr_search_growth?: number | null;
+          name: string;
+          opportunity_score?: number | null;
+          overseas_growth?: number | null;
+          period: string;
+          sellable?: boolean;
+        };
         Update: {
-          captured_at?: string
-          category_id?: string
-          id?: string
-          kr_competition?: number | null
-          kr_search_growth?: number | null
-          name?: string
-          opportunity_score?: number | null
-          overseas_growth?: number | null
-          period?: string
-          sellable?: boolean
-        }
+          captured_at?: string;
+          category_id?: string;
+          id?: string;
+          kr_competition?: number | null;
+          kr_search_growth?: number | null;
+          name?: string;
+          opportunity_score?: number | null;
+          overseas_growth?: number | null;
+          period?: string;
+          sellable?: boolean;
+        };
         Relationships: [
           {
-            foreignKeyName: "trend_items_category_id_fkey"
-            columns: ["category_id"]
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
+            foreignKeyName: "trend_items_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
           },
-        ]
-      }
-      user_profiles: {
+        ];
+      };
+      user_settings: {
         Row: {
-          default_lang: string | null
-          default_len: number
-          default_tone: string | null
-          email: string | null
-          name: string | null
-          notify_done: boolean
-          notify_weekly: boolean
-          subtitle_style: string | null
-          user_id: string
-        }
-        ComputedFields: never
+          default_lang: string | null;
+          default_len: number;
+          default_tone: string | null;
+          deleted_at: string | null;
+          notify_done: boolean;
+          notify_weekly: boolean;
+          subtitle_style: string | null;
+          updated_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
         Insert: {
-          default_lang?: string | null
-          default_len?: number
-          default_tone?: string | null
-          email?: string | null
-          name?: string | null
-          notify_done?: boolean
-          notify_weekly?: boolean
-          subtitle_style?: string | null
-          user_id?: string
-        }
+          default_lang?: string | null;
+          default_len?: number;
+          default_tone?: string | null;
+          deleted_at?: string | null;
+          notify_done?: boolean;
+          notify_weekly?: boolean;
+          subtitle_style?: string | null;
+          updated_at?: string;
+          user_id?: string;
+        };
         Update: {
-          default_lang?: string | null
-          default_len?: number
-          default_tone?: string | null
-          email?: string | null
-          name?: string | null
-          notify_done?: boolean
-          notify_weekly?: boolean
-          subtitle_style?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
+          default_lang?: string | null;
+          default_len?: number;
+          default_tone?: string | null;
+          deleted_at?: string | null;
+          notify_done?: boolean;
+          notify_weekly?: boolean;
+          subtitle_style?: string | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       video_metrics: {
         Row: {
-          avg_view_pct: number | null
-          collected_at: string
-          date: string
-          est_revenue: number | null
-          id: string
-          link_clicks: number
-          publication_id: string
-          views: number
-        }
-        ComputedFields: never
+          avg_view_pct: number | null;
+          collected_at: string;
+          date: string;
+          est_revenue: number | null;
+          id: string;
+          link_clicks: number;
+          publication_id: string;
+          views: number;
+        };
+        ComputedFields: never;
         Insert: {
-          avg_view_pct?: number | null
-          collected_at?: string
-          date: string
-          est_revenue?: number | null
-          id?: string
-          link_clicks?: number
-          publication_id: string
-          views?: number
-        }
+          avg_view_pct?: number | null;
+          collected_at?: string;
+          date: string;
+          est_revenue?: number | null;
+          id?: string;
+          link_clicks?: number;
+          publication_id: string;
+          views?: number;
+        };
         Update: {
-          avg_view_pct?: number | null
-          collected_at?: string
-          date?: string
-          est_revenue?: number | null
-          id?: string
-          link_clicks?: number
-          publication_id?: string
-          views?: number
-        }
+          avg_view_pct?: number | null;
+          collected_at?: string;
+          date?: string;
+          est_revenue?: number | null;
+          id?: string;
+          link_clicks?: number;
+          publication_id?: string;
+          views?: number;
+        };
         Relationships: [
           {
-            foreignKeyName: "video_metrics_publication_id_fkey"
-            columns: ["publication_id"]
-            referencedRelation: "publications"
-            referencedColumns: ["id"]
+            foreignKeyName: "video_metrics_publication_id_fkey";
+            columns: ["publication_id"];
+            isOneToOne: false;
+            referencedRelation: "publications";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       voice_takes: {
         Row: {
-          audio_path: string | null
-          created_at: string
-          duration_sec: number | null
-          file_deleted_at: string | null
-          id: string
-          job_id: string | null
-          pauses: Json | null
-          project_id: string
-          purge_after: string
-          retention_deleting_at: string | null
-          retention_reserved_at: string | null
-          retention_token: string | null
-          sentences: Json | null
-          source: string
-          voice_id: string | null
-          words: Json | null
-        }
-        ComputedFields: never
+          audio_path: string | null;
+          created_at: string;
+          duration_sec: number | null;
+          file_deleted_at: string | null;
+          id: string;
+          job_id: string | null;
+          pauses: Json | null;
+          project_id: string;
+          purge_after: string;
+          retention_deleting_at: string | null;
+          retention_reserved_at: string | null;
+          retention_token: string | null;
+          sentences: Json | null;
+          source: string;
+          voice_id: string | null;
+          words: Json | null;
+        };
+        ComputedFields: never;
         Insert: {
-          audio_path?: string | null
-          created_at?: string
-          duration_sec?: number | null
-          file_deleted_at?: string | null
-          id?: string
-          job_id?: string | null
-          pauses?: Json | null
-          project_id: string
-          purge_after?: string
-          retention_deleting_at?: string | null
-          retention_reserved_at?: string | null
-          retention_token?: string | null
-          sentences?: Json | null
-          source: string
-          voice_id?: string | null
-          words?: Json | null
-        }
+          audio_path?: string | null;
+          created_at?: string;
+          duration_sec?: number | null;
+          file_deleted_at?: string | null;
+          id?: string;
+          job_id?: string | null;
+          pauses?: Json | null;
+          project_id: string;
+          purge_after?: string;
+          retention_deleting_at?: string | null;
+          retention_reserved_at?: string | null;
+          retention_token?: string | null;
+          sentences?: Json | null;
+          source: string;
+          voice_id?: string | null;
+          words?: Json | null;
+        };
         Update: {
-          audio_path?: string | null
-          created_at?: string
-          duration_sec?: number | null
-          file_deleted_at?: string | null
-          id?: string
-          job_id?: string | null
-          pauses?: Json | null
-          project_id?: string
-          purge_after?: string
-          retention_deleting_at?: string | null
-          retention_reserved_at?: string | null
-          retention_token?: string | null
-          sentences?: Json | null
-          source?: string
-          voice_id?: string | null
-          words?: Json | null
-        }
+          audio_path?: string | null;
+          created_at?: string;
+          duration_sec?: number | null;
+          file_deleted_at?: string | null;
+          id?: string;
+          job_id?: string | null;
+          pauses?: Json | null;
+          project_id?: string;
+          purge_after?: string;
+          retention_deleting_at?: string | null;
+          retention_reserved_at?: string | null;
+          retention_token?: string | null;
+          sentences?: Json | null;
+          source?: string;
+          voice_id?: string | null;
+          words?: Json | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "voice_takes_job_id_fkey"
-            columns: ["job_id"]
-            referencedRelation: "jobs"
-            referencedColumns: ["id"]
+            foreignKeyName: "voice_takes_job_id_fkey";
+            columns: ["job_id"];
+            isOneToOne: false;
+            referencedRelation: "jobs";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "voice_takes_project_id_fkey"
-            columns: ["project_id"]
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
+            foreignKeyName: "voice_takes_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       youtube_upload_quota: {
         Row: {
-          day: string
-          updated_at: string
-          used: number
-        }
-        ComputedFields: never
+          day: string;
+          updated_at: string;
+          used: number;
+        };
+        ComputedFields: never;
         Insert: {
-          day: string
-          updated_at?: string
-          used?: number
-        }
+          day: string;
+          updated_at?: string;
+          used?: number;
+        };
         Update: {
-          day?: string
-          updated_at?: string
-          used?: number
-        }
-        Relationships: []
-      }
-    }
+          day?: string;
+          updated_at?: string;
+          used?: number;
+        };
+        Relationships: [];
+      };
+    };
     Views: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     Functions: {
       add_direct_source: {
-        Args: {
-          p_author: string
-          p_project_id: string
-          p_title: string
-          p_url: string
-        }
-        Returns: string
-      }
-      approve_step: {
-        Args: { p_project_id: string; p_step: number }
-        Returns: Json
-      }
-      assign_bio_number: {
-        Args: { p_project_id: string; p_service: string }
-        Returns: number
-      }
+        Args: { p_author: string; p_project_id: string; p_title: string; p_url: string };
+        Returns: string;
+      };
+      approve_step: { Args: { p_project_id: string; p_step: number }; Returns: Json };
+      assign_bio_number: { Args: { p_project_id: string; p_service: string }; Returns: number };
       channel_slot_status: {
-        Args: { p_account_id?: string; p_user_id: string }
+        Args: { p_account_id?: string; p_organization_id: string };
         Returns: {
-          allowed: boolean
-          channel_limit: number
-          code: string
-          next_at: string
-          recent_new: number
-          slots: number
-        }[]
-      }
-      chat_consume_proposal: { Args: { p_proposal_id: string }; Returns: Json }
+          allowed: boolean;
+          channel_limit: number;
+          code: string;
+          next_at: string;
+          recent_new: number;
+          slots: number;
+        }[];
+      };
+      chat_consume_proposal: { Args: { p_proposal_id: string }; Returns: Json };
       chat_create_proposal: {
-        Args: {
-          p_args: Json
-          p_project_id: string
-          p_tool: string
-          p_user_id: string
-        }
-        Returns: string
-      }
+        Args: { p_args: Json; p_organization_id: string; p_project_id: string; p_tool: string };
+        Returns: string;
+      };
       chat_start_collect: {
         Args: {
-          p_idempotency_key: string
-          p_platform: string
-          p_project_id: string
-          p_query: string
-        }
-        Returns: Json
-      }
+          p_idempotency_key: string;
+          p_platform: string;
+          p_project_id: string;
+          p_query: string;
+        };
+        Returns: Json;
+      };
       confirm_policy_check: {
-        Args: { p_checked: boolean; p_item: string; p_project_id: string }
-        Returns: undefined
-      }
+        Args: { p_checked: boolean; p_item: string; p_project_id: string };
+        Returns: undefined;
+      };
       create_job: {
-        Args: {
-          p_idempotency_key: string
-          p_payload?: Json
-          p_project_id: string
-          p_type: string
-        }
-        Returns: Json
-      }
+        Args: { p_idempotency_key: string; p_payload?: Json; p_project_id: string; p_type: string };
+        Returns: Json;
+      };
       edit_input_sources: {
-        Args: { p_project_id: string }
+        Args: { p_project_id: string };
         Returns: {
-          author: string
-          checked: boolean
-          collected_at: string
-          created_at: string
-          duration_sec: number | null
-          exclude_reason: string | null
-          file_deleted_at: string | null
-          file_path: string | null
-          height: number | null
-          id: string
-          platform: string
-          project_id: string
-          purge_after: string
-          quarantined: boolean
-          retention_deleting_at: string | null
-          retention_reserved_at: string | null
-          retention_token: string | null
-          rights_basis: string | null
-          rights_confirmed_at: string | null
-          rights_confirmed_by: string | null
-          score: number | null
-          thumbnail_deleted_at: string | null
-          thumbnail_path: string | null
-          thumbnail_retention_deleting_at: string | null
-          thumbnail_retention_reserved_at: string | null
-          thumbnail_retention_token: string | null
-          title: string | null
-          url: string
-          used: boolean
-          width: number | null
-        }[]
+          author: string;
+          checked: boolean;
+          collected_at: string;
+          created_at: string;
+          duration_sec: number | null;
+          exclude_reason: string | null;
+          file_deleted_at: string | null;
+          file_path: string | null;
+          height: number | null;
+          id: string;
+          platform: string;
+          project_id: string;
+          purge_after: string;
+          quarantined: boolean;
+          retention_deleting_at: string | null;
+          retention_reserved_at: string | null;
+          retention_token: string | null;
+          rights_basis: string | null;
+          rights_confirmed_at: string | null;
+          rights_confirmed_by: string | null;
+          score: number | null;
+          thumbnail_deleted_at: string | null;
+          thumbnail_path: string | null;
+          thumbnail_retention_deleting_at: string | null;
+          thumbnail_retention_reserved_at: string | null;
+          thumbnail_retention_token: string | null;
+          title: string | null;
+          url: string;
+          used: boolean;
+          width: number | null;
+        }[];
         SetofOptions: {
-          from: "*"
-          to: "sources"
-          isOneToOne: false
-          isSetofReturn: true
-        }
-      }
-      extension_authenticate: {
-        Args: { p_access_hash: string }
-        Returns: {
-          extension_id: string
-          user_id: string
-        }[]
-      }
+          from: "*";
+          to: "sources";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       extension_claim_job: {
-        Args: { p_extension_id: string; p_job_id: string }
+        Args: { p_extension_id: string; p_job_id: string };
         Returns: {
-          id: string
-          payload: Json
-          type: string
-        }[]
-      }
+          id: string;
+          payload: Json;
+          type: string;
+        }[];
+      };
       extension_collect_download: {
-        Args: { p_extension_id: string; p_files: Json; p_job_id: string }
-        Returns: number
-      }
+        Args: { p_extension_id: string; p_files: Json; p_job_id: string };
+        Returns: number;
+      };
       extension_collect_list: {
-        Args: { p_extension_id: string; p_items: Json; p_job_id: string }
-        Returns: Json
-      }
+        Args: { p_extension_id: string; p_items: Json; p_job_id: string };
+        Returns: Json;
+      };
       extension_heartbeat: {
-        Args: { p_extension_id: string }
+        Args: { p_extension_id: string };
         Returns: {
-          id: string
-          payload: Json
-          type: string
-        }[]
-      }
-      extension_issue: {
-        Args: { p_access_hash: string; p_refresh_hash: string; p_user_id: string }
-        Returns: {
-          access_expires_at: string
-          extension_id: string
-          refresh_expires_at: string
-        }[]
-      }
-      extension_rate_hit: {
-        Args: { p_key: string; p_limit: number; p_window_seconds: number }
-        Returns: boolean
-      }
-      extension_report_abort: {
-        Args: { p_extension_id: string; p_job_id: string; p_reason: string }
-        Returns: undefined
-      }
-      extension_report_complete: {
-        Args: { p_extension_id: string; p_job_id: string }
-        Returns: string
-      }
-      extension_revoke: {
-        Args: { p_extension_id: string; p_user_id: string }
-        Returns: boolean
-      }
-      extension_rotate: {
-        Args: {
-          p_new_access_hash: string
-          p_new_refresh_hash: string
-          p_old_refresh_hash: string
-        }
-        Returns: {
-          access_expires_at: string | null
-          extension_id: string | null
-          refresh_expires_at: string | null
-          result: string
-        }[]
-      }
-      job_queue_status: { Args: Record<PropertyKey, never>; Returns: Json }
+          id: string;
+          payload: Json;
+          type: string;
+        }[];
+      };
       mark_step_ready: {
-        Args: { p_project_id: string; p_status: string; p_step: number }
-        Returns: Json
-      }
+        Args: { p_project_id: string; p_status: string; p_step: number };
+        Returns: Json;
+      };
       metrics_run_finish: {
-        Args: { p_error: string; p_id: number; p_ok: number; p_skipped: number }
-        Returns: undefined
-      }
-      metrics_run_start: { Args: Record<PropertyKey, never>; Returns: number }
+        Args: { p_error: string; p_id: number; p_ok: number; p_skipped: number };
+        Returns: undefined;
+      };
+      metrics_run_start: { Args: Record<PropertyKey, never>; Returns: number };
       metrics_targets: {
-        Args: Record<PropertyKey, never>
+        Args: Record<PropertyKey, never>;
         Returns: {
-          account_id: string
-          platform_video_id: string
-          publication_id: string
-          published_at: string
-          user_id: string
-        }[]
-      }
+          account_id: string;
+          organization_id: string;
+          platform_video_id: string;
+          publication_id: string;
+          published_at: string;
+        }[];
+      };
       oauth_state_consume: {
-        Args: { p_state_hash: string; p_user_id: string }
+        Args: { p_organization_id: string; p_state_hash: string };
         Returns: {
-          account_id: string
-          code_verifier: string
-        }[]
-      }
+          account_id: string;
+          code_verifier: string;
+        }[];
+      };
       oauth_state_create: {
         Args: {
-          p_account_id: string
-          p_state_hash: string
-          p_user_id: string
-          p_verifier: string
-        }
-        Returns: undefined
-      }
+          p_account_id: string;
+          p_organization_id: string;
+          p_state_hash: string;
+          p_verifier: string;
+        };
+        Returns: undefined;
+      };
       prepare_publication: {
         Args: {
-          p_body: string
-          p_hashtags: string[]
-          p_mode: string
-          p_pin_comment: boolean
-          p_project_id: string
-          p_purchase_guide: boolean
-          p_scheduled_at: string
-          p_title: string
-        }
-        Returns: Json
-      }
+          p_body: string;
+          p_hashtags: string[];
+          p_mode: string;
+          p_pin_comment: boolean;
+          p_project_id: string;
+          p_purchase_guide: boolean;
+          p_scheduled_at: string;
+          p_title: string;
+        };
+        Returns: Json;
+      };
       publication_attempt_fail: {
-        Args: {
-          p_attempt_token: string
-          p_code: string
-          p_kind: string
-          p_publication_id: string
-        }
-        Returns: Json
-      }
-      publication_claim: { Args: never; Returns: Json }
-      publication_confirm_absent: { Args: { p_project_id: string }; Returns: Json }
+        Args: { p_attempt_token: string; p_code: string; p_kind: string; p_publication_id: string };
+        Returns: Json;
+      };
+      publication_claim: { Args: Record<PropertyKey, never>; Returns: Json };
+      publication_confirm_absent: { Args: { p_project_id: string }; Returns: Json };
       publication_finish: {
         Args: {
-          p_attempt_token: string
-          p_publication_id: string
-          p_test_private: boolean
-          p_video_id: string
-        }
-        Returns: Json
-      }
+          p_attempt_token: string;
+          p_publication_id: string;
+          p_test_private: boolean;
+          p_video_id: string;
+        };
+        Returns: Json;
+      };
       publication_reject_copy: {
-        Args: { p_attempt_token: string; p_code: string; p_publication_id: string }
-        Returns: Json
-      }
+        Args: { p_attempt_token: string; p_code: string; p_publication_id: string };
+        Returns: Json;
+      };
       publication_resume_check: {
-        Args: { p_attempt_token: string; p_publication_id: string }
-        Returns: Json
-      }
-      publication_retry: { Args: { p_project_id: string }; Returns: Json }
+        Args: { p_attempt_token: string; p_publication_id: string };
+        Returns: Json;
+      };
+      publication_retry: { Args: { p_project_id: string }; Returns: Json };
       publication_session_begin: {
-        Args: { p_attempt_token: string; p_publication_id: string }
-        Returns: Json
-      }
+        Args: { p_attempt_token: string; p_publication_id: string };
+        Returns: Json;
+      };
       publication_session_save: {
         Args: {
-          p_attempt_token: string
-          p_publication_id: string
-          p_session_uri: string
-          p_total_bytes: number
-        }
-        Returns: undefined
-      }
+          p_attempt_token: string;
+          p_publication_id: string;
+          p_session_uri: string;
+          p_total_bytes: number;
+        };
+        Returns: undefined;
+      };
       publish_policy: {
-        Args: {
-          p_body: string
-          p_hashtags: string[]
-          p_project_id: string
-          p_title: string
-        }
-        Returns: Json
-      }
-      publish_recheck: { Args: { p_project_id: string }; Returns: Json }
+        Args: { p_body: string; p_hashtags: string[]; p_project_id: string; p_title: string };
+        Returns: Json;
+      };
+      publish_recheck: { Args: { p_project_id: string }; Returns: Json };
+      queue_health: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          oldest_msg_age_sec: number;
+          queue_length: number;
+          queue_name: string;
+          queued: number;
+          running: number;
+        }[];
+      };
       record_link_click: {
-        Args: {
-          p_code: string
-          p_ip: string
-          p_platform: string
-          p_ref_host: string
-        }
+        Args: { p_code: string; p_ip: string; p_platform: string; p_ref_host: string };
         Returns: {
-          program: string
-          url: string
-        }[]
-      }
-      request_step_change: {
-        Args: { p_project_id: string; p_step: number }
-        Returns: Json
-      }
+          program: string;
+          url: string;
+        }[];
+      };
+      request_step_change: { Args: { p_project_id: string; p_step: number }; Returns: Json };
       retention_confirm: {
-        Args: { p_ids: string[]; p_kind: string; p_token: string }
-        Returns: string[]
-      }
+        Args: { p_ids: string[]; p_kind: string; p_token: string };
+        Returns: string[];
+      };
       retention_due: {
-        Args: {
-          p_after_due?: string
-          p_after_id?: string
-          p_after_kind?: string
-          p_limit: number
-        }
+        Args: { p_after_due?: string; p_after_id?: string; p_after_kind?: string; p_limit: number };
         Returns: {
-          bucket: string
-          due_on: string
-          id: string
-          kind: string
-          path: string
-          project_id: string
-          user_id: string
-        }[]
-      }
+          bucket: string;
+          due_on: string;
+          id: string;
+          kind: string;
+          organization_id: string;
+          path: string;
+          project_id: string;
+        }[];
+      };
       retention_mark_deleted: {
-        Args: { p_ids: string[]; p_kind: string; p_token: string }
-        Returns: number
-      }
+        Args: { p_ids: string[]; p_kind: string; p_token: string };
+        Returns: number;
+      };
       retention_reserve: {
-        Args: { p_ids: string[]; p_kind: string }
+        Args: { p_ids: string[]; p_kind: string };
         Returns: {
-          id: string
-          path: string
-          project_id: string
-          token: string
-          user_id: string
-        }[]
-      }
+          id: string;
+          organization_id: string;
+          path: string;
+          project_id: string;
+          token: string;
+        }[];
+      };
       save_source_use: {
-        Args: {
-          p_notice_ack: boolean
-          p_project_id: string
-          p_reason: string
-          p_uses: Json
-        }
-        Returns: Json
-      }
+        Args: { p_notice_ack: boolean; p_project_id: string; p_reason: string; p_uses: Json };
+        Returns: Json;
+      };
       save_video_metrics: {
-        Args: {
-          p_end: string
-          p_publication_id: string
-          p_rows: Json
-          p_start: string
-        }
-        Returns: number
-      }
+        Args: { p_end: string; p_publication_id: string; p_rows: Json; p_start: string };
+        Returns: number;
+      };
       set_source_checks: {
-        Args: { p_project_id: string; p_source_ids: string[] }
-        Returns: number
-      }
+        Args: { p_project_id: string; p_source_ids: string[] };
+        Returns: number;
+      };
       youtube_clear_token: {
-        Args: { p_account_id: string; p_user_id?: string }
-        Returns: undefined
-      }
+        Args: { p_account_id: string; p_organization_id?: string };
+        Returns: undefined;
+      };
       youtube_expire_token: {
-        Args: { p_account_id: string; p_token_ref: string }
-        Returns: boolean
-      }
+        Args: { p_account_id: string; p_token_ref: string };
+        Returns: boolean;
+      };
       youtube_refresh_token: {
-        Args: { p_account_id: string; p_user_id?: string }
-        Returns: string
-      }
+        Args: { p_account_id: string; p_organization_id?: string };
+        Returns: string;
+      };
       youtube_save_connection: {
         Args: {
-          p_account_id: string
-          p_channel_id: string
-          p_refresh_token: string
-          p_scopes: string[]
-          p_user_id: string
-        }
-        Returns: string
-      }
+          p_account_id: string;
+          p_channel_id: string;
+          p_organization_id: string;
+          p_refresh_token: string;
+          p_scopes: string[];
+        };
+        Returns: string;
+      };
       youtube_token_for: {
-        Args: { p_account_id: string; p_user_id: string }
+        Args: { p_account_id: string; p_organization_id: string };
         Returns: {
-          refresh_token: string
-          token_ref: string
-        }[]
-      }
-    }
+          refresh_token: string;
+          token_ref: string;
+        }[];
+      };
+    };
     Enums: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-}
+      [_ in never]: never;
+    };
+  };
+  public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      nomad_accept_invitation: { Args: { invite_token: string }; Returns: string };
+      nomad_affiliate_accounts: {
+        Args: { target_organization: string };
+        Returns: {
+          created_at: string;
+          has_credential: boolean;
+          id: string;
+          label: string;
+          partner_id: string;
+          provider: string;
+          risk_consented_at: string;
+          status: string;
+          updated_at: string;
+        }[];
+      };
+      nomad_affiliate_clicks: {
+        Args: { page_size?: number; target_link?: string; target_organization: string };
+        Returns: {
+          clicked_at: string;
+          country: string;
+          id: number;
+          link_id: string;
+          referrer: string;
+        }[];
+      };
+      nomad_affiliate_links: {
+        Args: { page_size?: number; target_organization: string };
+        Returns: {
+          account_id: string;
+          affiliate_url: string;
+          click_count: number;
+          created_at: string;
+          created_by: string;
+          id: string;
+          is_active: boolean;
+          original_url: string;
+          product_code: string;
+          product_name: string;
+          provider: string;
+          short_code: string;
+          source_ref: string;
+          updated_at: string;
+          utm: Json;
+        }[];
+      };
+      nomad_audit_log: {
+        Args: { before_id?: number; page_size?: number; target_organization: string };
+        Returns: {
+          action: string;
+          actor_id: string;
+          actor_role: string;
+          after: Json;
+          before: Json;
+          created_at: string;
+          id: number;
+          metadata: Json;
+          target_id: string;
+          target_type: string;
+        }[];
+      };
+      nomad_brandconnect_applications: {
+        Args: { page_size?: number; target_organization: string };
+        Returns: {
+          account_id: string;
+          attempts: number;
+          brand_name: string;
+          campaign_id: string;
+          category: string;
+          created_at: string;
+          created_by: string;
+          decided_at: string;
+          id: string;
+          product_code: string;
+          product_name: string;
+          status: string;
+          submitted_at: string;
+          target_kind: string;
+          target_url: string;
+          updated_at: string;
+        }[];
+      };
+      nomad_cancel_job: { Args: { job_id: string }; Returns: string };
+      nomad_change_member_role: {
+        Args: { new_role: string; target_organization: string; target_user: string };
+        Returns: undefined;
+      };
+      nomad_consent_brandconnect_risk: { Args: { account_id: string }; Returns: string };
+      nomad_create_brandconnect_application: {
+        Args: {
+          account_id: string;
+          brand_name?: string;
+          campaign_id: string;
+          category?: string;
+          message?: string;
+          product_name?: string;
+          target_kind: string;
+          target_product: string;
+          target_url: string;
+        };
+        Returns: string;
+      };
+      nomad_create_invitation: {
+        Args: { invitee_email: string; invitee_role: string; target_organization: string };
+        Returns: string;
+      };
+      nomad_create_team_organization: { Args: { name: string }; Returns: string };
+      nomad_credit_balance: { Args: { target_organization: string }; Returns: number };
+      nomad_dashboard_features: {
+        Args: { target_organization: string; target_product: string };
+        Returns: {
+          addon_sku: string;
+          can_purchase: boolean;
+          feature_code: string;
+          title: string;
+          unlocked: boolean;
+          upgrade_to: string;
+        }[];
+      };
+      nomad_decline_invitation: { Args: { invitation_id: string }; Returns: undefined };
+      nomad_effective_disclosure: {
+        Args: { target_organization: string; target_placement: string; target_provider: string };
+        Returns: string;
+      };
+      nomad_list_provider_credentials: {
+        Args: { target_organization: string };
+        Returns: {
+          created_at: string;
+          id: string;
+          label: string;
+          last_used_at: string;
+          last4: string;
+          provider_code: string;
+        }[];
+      };
+      nomad_my_invitations: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          created_at: string;
+          email: string;
+          expires_at: string;
+          id: string;
+          organization_id: string;
+          organization_name: string;
+          role: string;
+          token: string;
+        }[];
+      };
+      nomad_my_jobs: {
+        Args: {
+          before_created_at?: string;
+          before_id?: string;
+          page_size?: number;
+          target_organization: string;
+        };
+        Returns: {
+          attempts: number;
+          created_at: string;
+          created_by: string;
+          finished_at: string;
+          id: string;
+          job_type: string;
+          max_attempts: number;
+          parent_job_id: string;
+          product_code: string;
+          progress: number;
+          progress_message: string;
+          queue: string;
+          run_after: string;
+          started_at: string;
+          status: string;
+          updated_at: string;
+        }[];
+      };
+      nomad_my_organizations: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          id: string;
+          kind: string;
+          name: string;
+          role: string;
+        }[];
+      };
+      nomad_my_profile: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          avatar_url: string;
+          display_name: string;
+          locale: string;
+          theme: string;
+        }[];
+      };
+      nomad_my_voice_jobs: {
+        Args: { page_size?: number; target_organization: string };
+        Returns: {
+          characters: number;
+          created_at: string;
+          credits: number;
+          duration_seconds: number;
+          expires_at: string;
+          feature: string;
+          id: string;
+          kind: string;
+          product_code: string;
+          provider: string;
+          session_id: string;
+          status: string;
+          store_audio: boolean;
+          updated_at: string;
+        }[];
+      };
+      nomad_my_voice_sessions: {
+        Args: { page_size?: number; target_organization: string };
+        Returns: {
+          conversation_id: string;
+          ended_at: string;
+          id: string;
+          product_code: string;
+          started_at: string;
+          status: string;
+          stt_provider: string;
+          total_seconds: number;
+          tts_provider: string;
+        }[];
+      };
+      nomad_org_provider_secret: {
+        Args: { credential_label?: string; target_organization: string; target_provider: string };
+        Returns: string;
+      };
+      nomad_remove_member: {
+        Args: { target_organization: string; target_user: string };
+        Returns: undefined;
+      };
+      nomad_revoke_invitation: { Args: { invitation_id: string }; Returns: undefined };
+      nomad_revoke_provider_credential: { Args: { credential_id: string }; Returns: undefined };
+      nomad_set_my_theme: { Args: { new_theme: string }; Returns: undefined };
+      nomad_set_provider_credential: {
+        Args: {
+          credential_label: string;
+          secret_value: string;
+          target_organization: string;
+          target_provider: string;
+        };
+        Returns: string;
+      };
+      nomad_spend_credits: {
+        Args: {
+          amount: number;
+          idempotency_key: string;
+          product?: string;
+          reason: string;
+          target_organization: string;
+        };
+        Returns: number;
+      };
+      nomad_upsert_affiliate_disclosure: {
+        Args: {
+          disclosure_body: string;
+          target_organization: string;
+          target_placement: string;
+          target_provider: string;
+        };
+        Returns: string;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
+};
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never) = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
+      Row: infer R;
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R;
       }
       ? R
       : never
-    : never
+    : never;
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never) = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
+      Insert: infer I;
     }
     ? I
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
+        Insert: infer I;
       }
       ? I
       : never
-    : never
+    : never;
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never) = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
+      Update: infer U;
     }
     ? U
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
+        Update: infer U;
       }
       ? U
       : never
-    : never
+    : never;
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends (DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never) = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
+> = DefaultSchemaEnumNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
+    : never;
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never) = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
+    : never;
 
 export const Constants = {
+  nomad_shorts: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
-} as const
+} as const;

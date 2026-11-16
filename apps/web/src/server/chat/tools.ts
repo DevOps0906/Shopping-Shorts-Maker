@@ -31,7 +31,7 @@ export async function loadToolProject(projectId: string): Promise<ToolProject | 
     .eq("type", "collect")
     .in("status", ACTIVE_COLLECT);
   if (error) throw new Error("collect_count_failed");
-  return { id: project.id, userId: project.userId, status: project.status, collectRounds: count ?? 0 };
+  return { id: project.id, organizationId: project.organizationId, status: project.status, collectRounds: count ?? 0 };
 }
 
 const jobKey = (key: string | null) => key ?? `chat-${crypto.randomUUID()}`;

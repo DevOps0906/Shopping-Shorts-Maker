@@ -2,6 +2,7 @@ import "server-only";
 import { NextResponse } from "next/server";
 import { isProjectId } from "@/lib/steps/project-id";
 import { createClient } from "@/lib/supabase/server";
+import { currentOrganizationId } from "@/server/organization";
 import type { OAuthResult } from "./youtube";
 
 /*
@@ -34,12 +35,9 @@ export function backToAccounts(request: Request, result: OAuthResult) {
   return res;
 }
 
-/** 세션 사용자 id(서명 검증된 JWT). 없으면 null */
-export async function sessionUserId() {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  const sub = data?.claims?.sub;
-  return typeof sub === "string" ? sub : null;
+/** 세션 사용자의 현재 업체 id(nomad_core 멤버십, 세션으로 확인). 없으면 null */
+export async function sessionOrganizationId() {
+  return currentOrganizationId(await createClient());
 }
 
 /** 폼의 accountId(uuid) */

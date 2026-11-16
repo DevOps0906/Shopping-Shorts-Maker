@@ -1,6 +1,6 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
-import { getSupabaseServerUrl } from "@/lib/supabase/env";
+import { DB_SCHEMA, getSupabaseServerUrl } from "@/lib/supabase/env";
 
 /**
  * service_role 클라이언트 — RLS를 우회한다. 이 모듈은 src/server/** 에서만 import한다.
@@ -13,6 +13,7 @@ export function createAdminClient() {
     throw new Error("SERVICE_ROLE_KEY가 서버 환경 변수에 없습니다.");
   }
   return createClient(getSupabaseServerUrl(), serviceRoleKey, {
+    db: { schema: DB_SCHEMA },
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   });
 }

@@ -1,7 +1,7 @@
-"""render 작업 처리기(05 편집, render 큐). 시간 상한 10분(jobs.TIME_LIMIT_SECONDS['render'] · private.job_time_limit).
+"""render 작업 처리기(05 편집, render 큐). 시간 상한 10분(jobs.TIME_LIMIT_SECONDS['render'] · nomad_shorts_private.job_time_limit).
 
 입력: job payload {cuts: [원본 id(대본 줄마다)], take_id, voice_url, source_urls{id: url}, upload_url, upload_expires_at}.
-대본·음성·편집 입력 원본은 payload 가 아니라 DB(private.render_job_context)에서 읽고, payload 의 컷 원본이 편집 입력
+대본·음성·편집 입력 원본은 payload 가 아니라 DB(nomad_shorts_private.render_job_context)에서 읽고, payload 의 컷 원본이 편집 입력
 (권리 근거 있음·격리 아님·고지 확인)에 없으면 그 컷 번호로 실패한다(다음 순위 원본으로 교체 안내).
 순서: 음성 내려받기 → verify_take 재검사 → 원본 내려받기·probe → 컷 계획 → ffmpeg 1회(크롭·정지 화면 채움·자막·출처·음성)
 → ffprobe 결과 검사(1080x1920 · target ±0.1초 · 영상/음성 차 ≤ 0.05초) → 서명 URL 업로드 → renders 기록(+ render_succeeded).
@@ -82,10 +82,10 @@ def run_render(ctx: JobContext, repo: RenderRepo, downloader: Downloader = downl
     work = Path(tempfile.mkdtemp(prefix="render-"))
     try:
         try:
-            target_up = upload_target(payload, str(info["user_id"]), str(info["project_id"]))
+            target_up = upload_target(payload, str(info["organization_id"]), str(info["project_id"]))
             # 음성: voices 객체는 신뢰하지 않는 입력 → verify_take 로 형식·길이·타이밍 재검사
             voice = work / "voice.wav"
-            downloader(download_url(payload.get("voice_url"), "voices", str(take["audio_path"])), voice,
+            downloader(download_url(payload.get("voice_url"), "shorts-voices", str(take["audio_path"])), voice,
                        MAX_WAV_BYTES, _left(ctx, STEP_TIMEOUT_MAX), deadline=ctx.deadline, check=ctx.check)
             sentences = list(take.get("sentences") or [])
             try:
@@ -103,7 +103,7 @@ def run_render(ctx: JobContext, repo: RenderRepo, downloader: Downloader = downl
                 src = sources[sid]
                 path = work / f"src-{len(local) + 1}{_suffix(str(src['file_path']))}"
                 try:
-                    url = download_url(urls.get(sid), "sources", str(src["file_path"]))
+                    url = download_url(urls.get(sid), "shorts-sources", str(src["file_path"]))
                     downloader(url, path, MAX_FILE_BYTES, _left(ctx, STEP_TIMEOUT_MAX),
                                deadline=ctx.deadline, check=ctx.check)
                 except FetchError as exc:
@@ -180,13 +180,13 @@ class PgRenderRepo:
         self.conn = conn
 
     def context(self, job_id: str) -> dict[str, Any]:
-        row = self.conn.execute("select private.render_job_context(%s) as ctx", (job_id,)).fetchone()
+        row = self.conn.execute("select nomad_shorts_private.render_job_context(%s) as ctx", (job_id,)).fetchone()
         return row["ctx"]
 
     def save(self, job_id: str, mp4_path: str, duration_sec: float, cut_map: dict[str, Any]) -> dict[str, Any]:
         from psycopg.types.json import Jsonb
 
-        row = self.conn.execute("select private.save_render(%s, %s, %s, %s) as r",
+        row = self.conn.execute("select nomad_shorts_private.save_render(%s, %s, %s, %s) as r",
                                 (job_id, mp4_path, duration_sec, Jsonb(cut_map))).fetchone()
         return row["r"]
 

@@ -1,7 +1,7 @@
 /*
  * 02 소스 규칙 — 정본은 docs/planning.md 3장 02(승인 조건)와 17-2 D1·D7·D8,
  * DB 강제는 supabase/migrations/20261112210000_source_selection.sql
- * (private.source_approval_problem · public.edit_input_sources). 이 파일은 같은 판단을 하는 순수 함수만 둔다.
+ * (nomad_shorts_private.source_approval_problem · nomad_shorts.edit_input_sources). 이 파일은 같은 판단을 하는 순수 함수만 둔다.
  * 화면의 안내·버튼 상태에 쓰고, 실제 저장·승인은 항상 DB 함수가 다시 검사한다.
  */
 
@@ -61,7 +61,7 @@ function isConfirmedUse(s: SourceView) {
   return s.used && !s.quarantined && s.rightsBasis !== null && s.rightsConfirmedAt !== null && s.downloaded;
 }
 
-/** private.source_approval_problem 과 같은 판단. 통과면 null */
+/** nomad_shorts_private.source_approval_problem 과 같은 판단. 통과면 null */
 export function approvalProblem(sources: readonly SourceView[], noticeAck: boolean, reason: string | null): ApprovalProblem | null {
   const used = sources.filter(isConfirmedUse);
   if (used.length < USE_MINIMUM) return "too_few";
@@ -71,7 +71,7 @@ export function approvalProblem(sources: readonly SourceView[], noticeAck: boole
   return null;
 }
 
-/** public.edit_input_sources 와 같은 판단: 미확인 원본(권리 근거 없음)·고지 미확인 출처 표기 원본은 빠진다 */
+/** nomad_shorts.edit_input_sources 와 같은 판단: 미확인 원본(권리 근거 없음)·고지 미확인 출처 표기 원본은 빠진다 */
 export function editInputSources(sources: readonly SourceView[], noticeAck: boolean): SourceView[] {
   return sources.filter((s) => isConfirmedUse(s) && (s.rightsBasis !== "attribution_notice" || noticeAck));
 }
@@ -123,7 +123,7 @@ export function isPlatform(value: unknown): value is SourcePlatform {
   return typeof value === "string" && (PLATFORMS as readonly string[]).includes(value);
 }
 
-/** 제어 문자·양방향 제어 문자(U+202A–U+202E, U+2066–U+2069). DB private.has_unsafe_chars 와 같다 */
+/** 제어 문자·양방향 제어 문자(U+202A–U+202E, U+2066–U+2069). DB nomad_shorts_private.has_unsafe_chars 와 같다 */
 const UNSAFE_CHARS = /[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/;
 const HOST_PATTERN = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/;
 

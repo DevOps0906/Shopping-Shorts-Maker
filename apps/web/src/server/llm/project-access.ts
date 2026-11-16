@@ -15,7 +15,7 @@ export type OwnedProject = {
   categoryName: string | null;
   keywords: string[];
   bannedTerms: string[];
-  userId: string;
+  organizationId: string;
 };
 
 function embedded(value: unknown): Record<string, unknown> | null {
@@ -30,7 +30,7 @@ export async function loadOwnedProject(projectId: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("projects")
-    .select("id, user_id, name, target_sec, step_status, categories(name, keywords_ko, banned_terms)")
+    .select("id, organization_id, name, target_sec, step_status, categories(name, keywords_ko, banned_terms)")
     .eq("id", projectId)
     .maybeSingle();
   if (error) throw new Error("project_load_failed");
@@ -45,7 +45,7 @@ export async function loadOwnedProject(projectId: string) {
     categoryName: typeof category?.name === "string" ? category.name : null,
     keywords: strings(category?.keywords_ko),
     bannedTerms: strings(category?.banned_terms),
-    userId: String(data.user_id),
+    organizationId: String(data.organization_id),
   };
   return { supabase, project };
 }

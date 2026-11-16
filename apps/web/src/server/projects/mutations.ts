@@ -6,7 +6,7 @@ import { type NewProjectState, parseNewProject, topicHref, trendsUrl } from "./i
 
 /*
  * 프로젝트 생성·복제·삭제. 사용자 세션 + RLS. current_step·step_status·status는 DB 트리거가 정한다
- * (INSERT 열 GRANT: user_id·account_id·category_id·name·target_sec). 원문 DB 오류는 화면에 내보내지 않는다.
+ * (INSERT 열 GRANT: organization_id·account_id·category_id·name·target_sec). 원문 DB 오류는 화면에 내보내지 않는다.
  */
 
 export type CreateResult =
@@ -24,10 +24,10 @@ export async function createProjectFromForm(form: FormData): Promise<CreateResul
   const supabase = await createClient();
   const { data: account, error: accountError } = await supabase
     .from("accounts")
-    .select("id, platform")
+    .select("id, platform, organization_id")
     .eq("id", parsed.accountId)
     .maybeSingle();
-  const channel = account as { id: string; platform: string } | null;
+  const channel = account as { id: string; platform: string; organization_id: string } | null;
   if (accountError || !channel || !isUploadPlatform(channel.platform)) {
     return {
       kind: "invalid",
@@ -38,6 +38,7 @@ export async function createProjectFromForm(form: FormData): Promise<CreateResul
   const { data, error } = await supabase
     .from("projects")
     .insert({
+      organization_id: channel.organization_id,
       account_id: parsed.accountId,
       category_id: parsed.categoryId,
       name: parsed.name,
@@ -58,15 +59,15 @@ export async function duplicateProject(projectId: string): Promise<MutationResul
   const supabase = await createClient();
   const { data: source, error } = await supabase
     .from("projects")
-    .select("account_id, category_id, name, target_sec")
+    .select("organization_id, account_id, category_id, name, target_sec")
     .eq("id", projectId)
     .maybeSingle();
   if (error || !source) return { ok: false, error: "프로젝트를 찾을 수 없습니다." };
-  const s = source as { account_id: string; category_id: string | null; name: string; target_sec: number };
+  const s = source as { organization_id: string; account_id: string; category_id: string | null; name: string; target_sec: number };
   const name = `${s.name} (복사본)`.slice(0, 120);
   const { error: insertError } = await supabase
     .from("projects")
-    .insert({ account_id: s.account_id, category_id: s.category_id, name, target_sec: s.target_sec });
+    .insert({ organization_id: s.organization_id, account_id: s.account_id, category_id: s.category_id, name, target_sec: s.target_sec });
   if (insertError?.code === "CS004") return { ok: false, error: "이 채널은 요금제 채널 수를 넘어 새 프로젝트를 만들 수 없습니다." };
   if (insertError) return { ok: false, error: "복제하지 못했습니다. 잠시 뒤 다시 시도해 주세요." };
   return { ok: true, name: s.name };

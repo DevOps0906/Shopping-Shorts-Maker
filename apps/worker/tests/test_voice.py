@@ -33,7 +33,7 @@ def _future(minutes: int = 10) -> str:
 
 def _payload(**over: Any) -> dict[str, Any]:
     p = {"voice_id": "Leda",
-         "upload_url": f"http://127.0.0.1:8000/storage/v1/object/upload/sign/voices/{OBJECT}?token=t0k",
+         "upload_url": f"http://127.0.0.1:8000/storage/v1/object/upload/sign/shorts-voices/{OBJECT}?token=t0k",
          "upload_expires_at": _future()}
     p.update(over)
     return p
@@ -69,7 +69,7 @@ class FakeTtsRepo:
         self.saved: list[dict[str, Any]] = []
 
     def context(self, job_id: str) -> dict[str, Any]:
-        return {"project_id": PROJECT, "user_id": USER, "lines": self.lines}
+        return {"project_id": PROJECT, "organization_id": USER, "lines": self.lines}
 
     def save(self, job_id: str, voice_id: str, audio_path: str, duration_sec: float, timing: Timing) -> str:
         self.saved.append({"voice_id": voice_id, "audio_path": audio_path, "duration": duration_sec, "timing": timing})
@@ -228,17 +228,17 @@ def test_timing_counts_match_script(gaps: list[tuple[float, float]]) -> None:
 # ── 서명 업로드 URL ───────────────────────────────────────────────
 
 def test_upload_target_rewrites_origin_and_hides_token() -> None:
-    target = storage.parse_target(_payload(upload_url=f"https://evil.example/storage/v1/object/upload/sign/voices/{OBJECT}?token=abc"))
-    assert target.url.startswith("http://api-gw:8000/storage/v1/object/upload/sign/voices/")
+    target = storage.parse_target(_payload(upload_url=f"https://evil.example/storage/v1/object/upload/sign/shorts-voices/{OBJECT}?token=abc"))
+    assert target.url.startswith("http://api-gw:8000/storage/v1/object/upload/sign/shorts-voices/")
     assert target.object_path == OBJECT
     assert "abc" not in repr(target)
 
 
 @pytest.mark.parametrize("over, message", [
     ({"upload_expires_at": (datetime.now(timezone.utc) - timedelta(seconds=1)).isoformat()}, storage.MSG_EXPIRED),
-    ({"upload_url": f"http://x/storage/v1/object/upload/sign/sources/{OBJECT}?token=a"}, storage.MSG_BAD_TARGET),
-    ({"upload_url": f"http://x/storage/v1/object/upload/sign/voices/{USER}/../x.wav?token=a"}, storage.MSG_BAD_TARGET),
-    ({"upload_url": f"http://x/storage/v1/object/upload/sign/voices/{OBJECT}"}, storage.MSG_BAD_TARGET),
+    ({"upload_url": f"http://x/storage/v1/object/upload/sign/shorts-sources/{OBJECT}?token=a"}, storage.MSG_BAD_TARGET),
+    ({"upload_url": f"http://x/storage/v1/object/upload/sign/shorts-voices/{USER}/../x.wav?token=a"}, storage.MSG_BAD_TARGET),
+    ({"upload_url": f"http://x/storage/v1/object/upload/sign/shorts-voices/{OBJECT}"}, storage.MSG_BAD_TARGET),
     ({"upload_url": None}, storage.MSG_BAD_TARGET),
 ])
 def test_upload_target_rejects(over: dict[str, Any], message: str) -> None:
@@ -249,7 +249,7 @@ def test_upload_target_rejects(over: dict[str, Any], message: str) -> None:
 
 def test_other_project_path_rejected() -> None:
     other = f"{USER}/00000000-0000-4000-a000-000000000009/tts-1.wav"
-    ctx = _ctx(_payload(upload_url=f"http://x/storage/v1/object/upload/sign/voices/{other}?token=a"))
+    ctx = _ctx(_payload(upload_url=f"http://x/storage/v1/object/upload/sign/shorts-voices/{other}?token=a"))
     provider = FakeProvider(Speech(speech_pcm([1.0]), RATE))
     with pytest.raises(PermanentError):
         run_tts(ctx, FakeTtsRepo(), provider, Uploads(), log=lambda _: None)

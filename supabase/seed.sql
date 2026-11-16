@@ -2,7 +2,7 @@
 -- 트렌드 수치는 화면 개발용 가상 값이다(실데이터·개인정보 없음).
 -- 기회 점수 = 0.4·해외 영상 증가 + 0.3·국내 검색 증가 + 0.3·(100 - 국내 숏폼 경쟁), 0~100 정규화 값 기준.
 
-insert into public.categories (name, keywords_ko, keywords_en, keywords_zh, banned_terms) values
+insert into nomad_shorts.categories (name, keywords_ko, keywords_en, keywords_zh, banned_terms) values
   ('생활·수납',
    array['수납', '압축팩', '정리', '점착 롤러'],
    array['storage', 'vacuum bag', 'organizer', 'lint roller'],
@@ -54,7 +54,7 @@ insert into public.categories (name, keywords_ko, keywords_en, keywords_zh, bann
    array['泡沫轴', '居家健身', '拉伸'],
    array['질병 치료', '다이어트 보장', '살 빠지는', '통증 완치']);
 
-insert into public.trend_items
+insert into nomad_shorts.trend_items
   (category_id, name, period, overseas_growth, kr_search_growth, kr_competition, opportunity_score, sellable)
 select c.id, t.name, t.period, t.overseas_growth, t.kr_search_growth, t.kr_competition,
        round(0.4 * t.overseas_growth + 0.3 * t.kr_search_growth + 0.3 * (100 - t.kr_competition), 1),
@@ -73,4 +73,4 @@ from (values
   ('캠핑·차량',   '차량용 틈새 수납 포켓', '7d',    90, 72, 25, true),
   ('건강·운동',   '접이식 폼롤러',         '30d',   73, 60, 47, true)
 ) as t(category, name, period, overseas_growth, kr_search_growth, kr_competition, sellable)
-join public.categories c on c.name = t.category;
+join nomad_shorts.categories c on c.name = t.category;

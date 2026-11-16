@@ -4,7 +4,7 @@ import { isProjectId } from "@/lib/steps/project-id";
 import { type StepStatusMap, isStepNumber, parseStepStatus } from "@/lib/steps/state";
 
 /*
- * 단계 승인·변경 요청 구현. 사용자 세션으로 DB 함수(public.approve_step · public.request_step_change)를 부르고,
+ * 단계 승인·변경 요청 구현. 사용자 세션으로 DB 함수(nomad_shorts.approve_step · nomad_shorts.request_step_change)를 부르고,
  * 소유자·전이 규칙·이벤트 기록(step_approved · step_change_requested)은 함수가 맡는다.
  * 사용자가 누른 버튼의 서버 액션에서만 부른다(제작 파트너 AI 도구 목록에는 없다, planning.md 17-7).
  */

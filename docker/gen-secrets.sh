@@ -94,7 +94,7 @@ SITE_URL=http://localhost:3000
 ADDITIONAL_REDIRECT_URLS=
 
 # pgmq 스키마는 노출하지 않는다 (ADR-0001)
-PGRST_DB_SCHEMAS=public,storage,graphql_public
+PGRST_DB_SCHEMAS=public,storage,graphql_public,nomad_shorts
 
 JWT_EXPIRY=3600
 DISABLE_SIGNUP=false

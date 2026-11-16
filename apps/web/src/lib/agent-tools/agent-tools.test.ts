@@ -15,7 +15,7 @@ const approvedThrough = (n: number): StepStatusMap =>
   ({ ...INITIAL_STEP_STATUS, ...Object.fromEntries([1, 2, 3, 4, 5].filter((s) => s <= n).map((s) => [s, "approved"])) }) as StepStatusMap;
 
 function setup(project: Partial<ToolProject> = {}) {
-  const mine: ToolProject = { id: MINE, userId: "u1", status: approvedThrough(4), collectRounds: 0, ...project };
+  const mine: ToolProject = { id: MINE, organizationId: "u1", status: approvedThrough(4), collectRounds: 0, ...project };
   const execute = vi.fn<TurnDeps["execute"]>(async () => ({ ok: true, text: "실행함" }));
   // DB chat_consume_proposal 흉내: 본인 제안만, 1회만 소비
   const proposals = new Map<string, { projectId: string; tool: string; args: unknown; consumed: boolean }>();

@@ -50,7 +50,7 @@ export async function draftScript(projectId: string): Promise<DraftResult> {
   if (sourceError) return { ok: false, error: "원본 목록을 읽지 못했습니다. 잠시 뒤 다시 시도해 주세요." };
   if (!sources || sources.length === 0) return { ok: false, error: "체크된 원본이 없습니다. 02 소스에서 원본을 체크해 주세요." };
 
-  const slot = llmLimiter.acquire(project.id, project.userId);
+  const slot = llmLimiter.acquire(project.id, project.organizationId);
   if (!slot.ok) return { ok: false, error: RATE_LIMIT_MESSAGE[slot.reason] };
   let result;
   try {

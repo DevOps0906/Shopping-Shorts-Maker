@@ -1,7 +1,7 @@
 import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { AUTH_COOKIE_OPTIONS, getSupabasePublicEnv, getSupabaseServerUrl } from "./env";
+import { AUTH_COOKIE_OPTIONS, DB_SCHEMA, getSupabasePublicEnv, getSupabaseServerUrl } from "./env";
 
 /** 서버 컴포넌트·서버 액션·Route Handler용. 요청마다 새로 만든다(anon 키 + 사용자 세션 쿠키). */
 export async function createClient() {
@@ -10,6 +10,7 @@ export async function createClient() {
 
   return createServerClient(getSupabaseServerUrl(), anonKey, {
     cookieOptions: AUTH_COOKIE_OPTIONS,
+    db: { schema: DB_SCHEMA },
     cookies: {
       getAll() {
         return cookieStore.getAll();

@@ -2,7 +2,7 @@ import { isProjectId } from "@/lib/steps/project-id";
 
 /*
  * 새 프로젝트·목록 입력 검사(순수 함수, 테스트 대상). 서버 액션이 DB에 넘기기 전에 거른다.
- * 소유자 검사는 RLS와 projects(account_id, user_id) 복합 FK가 최종 방어선이다.
+ * 소유자 검사는 RLS와 projects(account_id, organization_id) 복합 FK가 최종 방어선이다.
  */
 
 export const START_MODES = ["trend", "direct", "link"] as const;

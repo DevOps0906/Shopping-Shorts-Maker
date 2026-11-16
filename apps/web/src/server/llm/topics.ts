@@ -50,7 +50,7 @@ export async function suggestTopics(projectId: string, hint: string): Promise<To
   if (state === "approved") return LOCKED;
   if (state === "running") return { ok: false, error: "이미 진행 중인 작업이 있습니다." };
 
-  const slot = llmLimiter.acquire(project.id, project.userId);
+  const slot = llmLimiter.acquire(project.id, project.organizationId);
   if (!slot.ok) return { ok: false, error: RATE_LIMIT_MESSAGE[slot.reason] };
   let result;
   try {

@@ -1,9 +1,9 @@
 /**
  * task-024b 보관 기간 지난 파일 삭제(출처 행은 남긴다). 근거: docs/planning.md 17-2 D5, docs/05_DATA_MODEL.md 1절 보관.
  *
- * 순서(한 묶음): 목록(public.retention_due, 키셋 페이지) → 삭제 예약(public.retention_reserve: 행 잠금·기준일·발행 재판정,
- * 통과한 행만 토큰) → 객체마다 삭제 직전 확인(public.retention_confirm: 토큰·예약 30분·기준일 재판정, 5분 "삭제 중")
- * → Storage 삭제(요청 60초 제한, 재시도마다 다시 확인) → 성공한 것만 public.retention_mark_deleted(같은 토큰 행만 표시).
+ * 순서(한 묶음): 목록(nomad_shorts.retention_due, 키셋 페이지) → 삭제 예약(nomad_shorts.retention_reserve: 행 잠금·기준일·발행 재판정,
+ * 통과한 행만 토큰) → 객체마다 삭제 직전 확인(nomad_shorts.retention_confirm: 토큰·예약 30분·기준일 재판정, 5분 "삭제 중")
+ * → Storage 삭제(요청 60초 제한, 재시도마다 다시 확인) → 성공한 것만 nomad_shorts.retention_mark_deleted(같은 토큰 행만 표시).
  * 실패·건너뜀은 표시하지 않고 다음 회차에서 다시 시도한다.
  * - service_role 키로만 돈다(워커는 Storage 삭제 권한이 없다). 키·경로는 로그에 남기지 않는다.
  * - 이 파일은 Node가 직접 실행한다(타입 제거 실행): 상대 경로·@ 별칭 값 import 금지, 타입은 `import type`만.
@@ -16,10 +16,10 @@ import type { Database } from "@/types/db";
 
 export type RetentionKind = "source" | "thumbnail" | "voice" | "render";
 
-export type DueItem = Database["public"]["Functions"]["retention_due"]["Returns"][number];
-type ReservedItem = Database["public"]["Functions"]["retention_reserve"]["Returns"][number];
+export type DueItem = Database["nomad_shorts"]["Functions"]["retention_due"]["Returns"][number];
+type ReservedItem = Database["nomad_shorts"]["Functions"]["retention_reserve"]["Returns"][number];
 
-type Client = SupabaseClient<Database>;
+type Client = SupabaseClient<Database, "nomad_shorts">;
 
 export type RetentionOptions = {
   /** 한 번에 가져올 대상 수(DB 상한 1000) */
@@ -40,10 +40,10 @@ export type RetentionResult = {
 };
 
 const BUCKET_OF: Record<RetentionKind, string> = {
-  source: "sources",
-  thumbnail: "thumbnails",
-  voice: "voices",
-  render: "renders",
+  source: "shorts-sources",
+  thumbnail: "shorts-thumbnails",
+  voice: "shorts-voices",
+  render: "shorts-renders",
 };
 
 /** 예약 한 번에 보낼 행 수 */
@@ -60,9 +60,9 @@ function isKind(kind: string): kind is RetentionKind {
   return Object.hasOwn(BUCKET_OF, kind);
 }
 
-/** 경로가 이 프로젝트 폴더(<user_id>/<project_id>/) 안의 평범한 파일 이름인지. 남의 객체를 지우지 않게 서버에서 다시 확인한다. */
-export function isSafePath(path: string, userId: string, projectId: string): boolean {
-  const prefix = `${userId}/${projectId}/`;
+/** 경로가 이 프로젝트 폴더(<organization_id>/<project_id>/) 안의 평범한 파일 이름인지. 남의 객체를 지우지 않게 서버에서 다시 확인한다. */
+export function isSafePath(path: string, organizationId: string, projectId: string): boolean {
+  const prefix = `${organizationId}/${projectId}/`;
   if (!path.startsWith(prefix)) return false;
   const segments = path.slice(prefix.length).split("/");
   return segments.every((seg) => SEGMENT.test(seg) && seg !== "." && seg !== "..");
@@ -70,7 +70,7 @@ export function isSafePath(path: string, userId: string, projectId: string): boo
 
 /** 버킷이 종류와 맞고 경로가 안전한지 */
 export function isSafeItem(item: DueItem): item is DueItem & { kind: RetentionKind } {
-  return isKind(item.kind) && item.bucket === BUCKET_OF[item.kind] && isSafePath(item.path, item.user_id, item.project_id);
+  return isKind(item.kind) && item.bucket === BUCKET_OF[item.kind] && isSafePath(item.path, item.organization_id, item.project_id);
 }
 
 /** 한 종류의 묶음: 예약 → 삭제 → 표시 */
@@ -95,7 +95,7 @@ async function processChunk(
   const reserved: ReservedItem[] = reservedData ?? [];
   // 예약 단계에서 빠진 것(그사이 발행·활동으로 연장)은 건너뜀으로 센다
   result.skipped += items.length - reserved.length;
-  const safe = reserved.filter((r) => isSafePath(r.path, r.user_id, r.project_id));
+  const safe = reserved.filter((r) => isSafePath(r.path, r.organization_id, r.project_id));
   result.skipped += reserved.length - safe.length;
   if (safe.length === 0) return;
   for (const r of safe) {
@@ -209,7 +209,8 @@ function createRetentionClient(): Client {
   if (!url || !serviceRoleKey) {
     throw new Error("SUPABASE_INTERNAL_URL(또는 SUPABASE_PUBLIC_URL)·SERVICE_ROLE_KEY가 서버 환경 변수에 없습니다.");
   }
-  return createClient<Database>(url, serviceRoleKey, {
+  return createClient<Database, "nomad_shorts">(url, serviceRoleKey, {
+    db: { schema: "nomad_shorts" },
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     // 삭제 중 창(5분) 안에서 끝나도록 요청마다 60초 제한
     global: {

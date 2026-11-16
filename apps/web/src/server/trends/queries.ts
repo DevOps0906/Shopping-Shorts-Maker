@@ -10,7 +10,7 @@ import type { Tables } from "@/types/db";
  */
 
 type RawTrend = Pick<
-  Tables<"trend_items">,
+  Tables<{ schema: "nomad_shorts" }, "trend_items">,
   | "id"
   | "name"
   | "category_id"

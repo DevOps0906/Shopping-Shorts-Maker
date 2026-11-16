@@ -41,7 +41,7 @@ export function useStepStatus(projectId: string, initial: StepStatusMap) {
       .channel(`project-steps:${projectId}`)
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "projects", filter: `id=eq.${projectId}` },
+        { event: "UPDATE", schema: "nomad_shorts", table: "projects", filter: `id=eq.${projectId}` },
         (payload) => {
           const next = parseStepStatus((payload.new as { step_status?: unknown }).step_status);
           if (!active || !next) return;

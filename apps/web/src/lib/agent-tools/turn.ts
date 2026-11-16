@@ -13,7 +13,7 @@ import { type AgentToolName, type ParsedCall, TOOL_LABEL, parseToolCall } from "
  * runProposal이 제안을 DB에서 원자적으로 1회 소비하고(본인·미소비·만료 전·입력 버전 같음) 저장된 tool·args로만 실행한다.
  */
 
-export type ToolProject = PolicyProject & { id: string; userId: string };
+export type ToolProject = PolicyProject & { id: string; organizationId: string };
 export type ToolOutcome = { ok: true; text: string; draft?: string[] } | { ok: false; error: string };
 
 export type ConsumedProposal = { ok: true; projectId: string; tool: unknown; args: unknown } | { ok: false; error: string };
