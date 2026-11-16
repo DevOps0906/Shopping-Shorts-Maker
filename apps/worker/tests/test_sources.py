@@ -65,7 +65,7 @@ class FakeRepo:
         self.saved: list[Any] = []
 
     def context(self, job_id: str) -> dict[str, Any]:
-        return {"user_id": USER, "project_id": PROJECT, "sources": self.sources}
+        return {"organization_id": USER, "project_id": PROJECT, "sources": self.sources}
 
     def save(self, job_id: str, results: list[Any]) -> int:
         self.saved = results

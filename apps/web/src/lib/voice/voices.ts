@@ -26,7 +26,7 @@ export function voiceLabel(id: string | null): string {
   return voice ? `${voice.name}(${voice.gender})` : "직접 녹음";
 }
 
-/** 예상 비용(호출 전 표시, D9). 크레딧은 DB private.job_cost('tts')와 같다. 테스트 공급자는 무료 키라 0원 */
+/** 예상 비용(호출 전 표시, D9). 크레딧은 DB nomad_shorts_private.job_cost('tts')와 같다. 테스트 공급자는 무료 키라 0원 */
 export const TTS_CREDITS = 10;
 export const TTS_COST_LINE = `예상 크레딧 ${TTS_CREDITS} · ${VOICE_PROVIDER_LABEL} 무료 키 기준 약 0원`;
 

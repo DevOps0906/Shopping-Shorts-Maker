@@ -77,7 +77,7 @@ class FakeRenderRepo:
         self.saved: list[dict[str, Any]] = []
 
     def context(self, job_id: str) -> dict[str, Any]:
-        return {"project_id": PROJECT, "user_id": USER, "target_sec": self.target, "lines": LINES,
+        return {"project_id": PROJECT, "organization_id": USER, "target_sec": self.target, "lines": LINES,
                 "take": self.take, "sources": self.sources}
 
     def save(self, job_id: str, mp4_path: str, duration_sec: float, cut_map: dict[str, Any]) -> dict[str, Any]:
@@ -109,10 +109,10 @@ class Files:
 def _payload(cuts: list[str], take_id: str = "take-1", **over: Any) -> dict[str, Any]:
     p: dict[str, Any] = {
         "cuts": cuts, "take_id": take_id,
-        "voice_url": f"{BASE}/storage/v1/object/sign/voices/{USER}/{PROJECT}/tts-1.wav?token=v",
-        "source_urls": {sid: f"{BASE}/storage/v1/object/sign/sources/{USER}/{PROJECT}/{n}.mp4?token=s{n}"
+        "voice_url": f"{BASE}/storage/v1/object/sign/shorts-voices/{USER}/{PROJECT}/tts-1.wav?token=v",
+        "source_urls": {sid: f"{BASE}/storage/v1/object/sign/shorts-sources/{USER}/{PROJECT}/{n}.mp4?token=s{n}"
                         for sid, n in ((SRC_A, "a"), (SRC_B, "b"), (SRC_C, "c"))},
-        "upload_url": f"{BASE}/storage/v1/object/upload/sign/renders/{OBJECT}?token=u",
+        "upload_url": f"{BASE}/storage/v1/object/upload/sign/shorts-renders/{OBJECT}?token=u",
         "upload_expires_at": _future(),
     }
     p.update(over)
@@ -255,18 +255,18 @@ def test_process_message_settles(media: dict[str, Path], tmp_path: Path) -> None
 
 def test_signed_urls_checked() -> None:
     path = f"{USER}/{PROJECT}/a.mp4"
-    url = download_url(f"https://evil.example/storage/v1/object/sign/sources/{path}?token=t", "sources", path)
-    assert url.startswith("http://api-gw:8000/storage/v1/object/sign/sources/")  # 접속지 교체
-    for raw, bucket in [(f"{BASE}/storage/v1/object/sign/sources/{USER}/{PROJECT}/other.mp4?token=t", "sources"),
-                        (f"{BASE}/storage/v1/object/sign/voices/{path}?token=t", "sources"),
-                        (f"{BASE}/storage/v1/object/sign/sources/{path}", "sources"),
-                        (None, "sources")]:
+    url = download_url(f"https://evil.example/storage/v1/object/sign/shorts-sources/{path}?token=t", "shorts-sources", path)
+    assert url.startswith("http://api-gw:8000/storage/v1/object/sign/shorts-sources/")  # 접속지 교체
+    for raw, bucket in [(f"{BASE}/storage/v1/object/sign/shorts-sources/{USER}/{PROJECT}/other.mp4?token=t", "shorts-sources"),
+                        (f"{BASE}/storage/v1/object/sign/shorts-voices/{path}?token=t", "shorts-sources"),
+                        (f"{BASE}/storage/v1/object/sign/shorts-sources/{path}", "shorts-sources"),
+                        (None, "shorts-sources")]:
         with pytest.raises(FetchError):
             download_url(raw, bucket, path)
     target = upload_target(_payload([]), USER, PROJECT)
     assert target.object_path == OBJECT and target.url.startswith("http://api-gw:8000/") and "token=u" in target.url
     assert "token" not in repr(target)
-    other = f"{BASE}/storage/v1/object/upload/sign/renders/{USER}/00000000-0000-4000-a000-000000000009/r.mp4?token=u"
+    other = f"{BASE}/storage/v1/object/upload/sign/shorts-renders/{USER}/00000000-0000-4000-a000-000000000009/r.mp4?token=u"
     for bad in [{"upload_url": other}, {"upload_expires_at": (datetime.now(timezone.utc) - timedelta(seconds=1)).isoformat()},
                 {"upload_url": OBJECT.replace(".mp4", ".wav")}]:
         with pytest.raises(FetchError):

@@ -1,7 +1,7 @@
 """큐 소비 1건 처리 규칙 (ADR-0001, docs/planning.md 17-5).
 
 DB 접근은 `Repo` 프로토콜 뒤에 두어 단위 테스트에서 가짜 저장소로 바꿀 수 있게 한다.
-상태 전이·원장 기록·archive 는 전부 DB 함수(private.job_*) 한 번 호출 = 한 트랜잭션이다.
+상태 전이·원장 기록·archive 는 전부 DB 함수(nomad_shorts_private.job_*) 한 번 호출 = 한 트랜잭션이다.
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ VT_SECONDS = 12 * 60  # 렌더 상한 10분보다 길게
 HEARTBEAT_SECONDS = 60  # 1분마다 vt 연장 + 상태 확인
 BACKOFF_BASE_SECONDS = 10
 BACKOFF_MAX_SECONDS = 300
-# 종류별 실행 상한(가설, 17-5). 스위퍼(private.job_time_limit)와 같은 값
+# 종류별 실행 상한(가설, 17-5). 스위퍼(nomad_shorts_private.job_time_limit)와 같은 값
 TIME_LIMIT_SECONDS = {"tts": 120, "render": 600, "analyze": 300}
 
 

@@ -13,7 +13,7 @@ from worker.jobs import JobContext, Message, PermanentError, TransientError, bac
 
 
 class FakeRepo:
-    """DB 함수(private.job_*)의 상태 전이를 흉내 낸다. 작업 1건, 최대 3회."""
+    """DB 함수(nomad_shorts_private.job_*)의 상태 전이를 흉내 낸다. 작업 1건, 최대 3회."""
 
     def __init__(self, job_type: str = "render", max_attempts: int = 3) -> None:
         self.status = "queued"

@@ -152,7 +152,7 @@ export function canPublish(items: readonly PolicyCheck[]) {
   return POLICY_ITEMS.every((p) => items.find((i) => i.item === p.id)?.result === "pass");
 }
 
-/* ── 금지·과장 표현(DB private.publish_banned_term 미러) ─────────── */
+/* ── 금지·과장 표현(DB nomad_shorts_private.publish_banned_term 미러) ─────────── */
 export const COMMON_BANNED_TERMS = ["최고", "완벽", "100%", "무조건", "기적", "치료"] as const;
 
 /** DB normalize_for_ban 과 같은 규칙: NFC → 제로폭 문자·공백 제거 → 소문자 */
@@ -182,7 +182,7 @@ export function withLocalBanned(items: readonly PolicyCheck[], banned: string | 
   );
 }
 
-/* ── 설명란(DB private.publish_description 미러) ───────────────── */
+/* ── 설명란(DB nomad_shorts_private.publish_description 미러) ───────────────── */
 export const TITLE_MAX = 100;
 export const BODY_MAX = 4000;
 export const HASHTAG_MAX = 15;

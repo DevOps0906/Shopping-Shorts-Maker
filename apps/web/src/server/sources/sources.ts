@@ -15,7 +15,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 
 /*
- * 02 소스 — 사용자 세션으로 DB 함수(public.set_source_checks · save_source_use · add_direct_source)를 부른다.
+ * 02 소스 — 사용자 세션으로 DB 함수(nomad_shorts.set_source_checks · save_source_use · add_direct_source)를 부른다.
  * 소유자·단계 상태·승인 조건·권리 근거 확인자 기록은 함수가 맡는다(20261112210000). service_role 은 쓰지 않는다.
  * 사용자가 누른 버튼의 서버 액션에서만 부른다(제작 파트너 AI 도구 목록에는 없다, planning.md 17-7).
  */

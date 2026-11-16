@@ -14,7 +14,7 @@ import { createAdminClient } from "@/server/supabase-admin";
  * - 매칭 후보: 사용자 세션으로 DB 함수 edit_input_sources(권리 근거 있음 · 격리 아님 · 고지 확인)만 읽는다. 미확인 원본은 후보에 없다.
  * - MP4 만들기: 사용자 세션으로 render 작업을 만든다(create_job: 단계·멱등·잔액·예약). 워커는 Storage 키가 없으므로
  *   이 서버가 원본·음성 서명 다운로드 URL과 renders 서명 업로드 URL(기한 30분)을 payload 에 넣는다(팀장 결정). URL은 로그에 남기지 않는다.
- *   워커는 payload 를 믿지 않고 DB 함수(private.render_job_context · save_render)로 원본 조건을 다시 검사한다.
+ *   워커는 payload 를 믿지 않고 DB 함수(nomad_shorts_private.render_job_context · save_render)로 원본 조건을 다시 검사한다.
  * - 미리보기·다운로드: 소유권을 확인한 뒤 10분짜리 서명 다운로드 URL만 준다(공개 URL 없음).
  * - 승인 조건(검토본 1개 이상): 렌더가 성공한 뒤에만 5단계를 ready 로 바꾼다. 승인은 StepActions 버튼만.
  * - 스케일업·자막/워터마크 제거는 3단계 유료 후보라 구현하지 않는다(버튼 비활성 표시만).
@@ -66,7 +66,7 @@ async function toRenderViews(rows: RenderRow[]): Promise<RenderView[]> {
   const paths = rows.flatMap((r) => (r.mp4_path ? [r.mp4_path] : []));
   const urls = new Map<string, string>();
   if (paths.length) {
-    const { data } = await createAdminClient().storage.from("renders").createSignedUrls(paths, PLAY_TTL_SEC);
+    const { data } = await createAdminClient().storage.from("shorts-renders").createSignedUrls(paths, PLAY_TTL_SEC);
     for (const item of data ?? []) if (item.path && item.signedUrl) urls.set(item.path, item.signedUrl);
   }
   return rows.map((r) => {
@@ -225,13 +225,13 @@ export async function startRender(projectId: string, assignment: unknown, idempo
   const sourceUrls: Record<string, string> = {};
   for (const id of new Set(ids)) {
     const path = byId.get(id)?.file_path;
-    const { data } = path ? await admin.storage.from("sources").createSignedUrl(path, LINK_TTL_SEC) : { data: null };
+    const { data } = path ? await admin.storage.from("shorts-sources").createSignedUrl(path, LINK_TTL_SEC) : { data: null };
     if (!data?.signedUrl) return { ok: false, error: "원본 파일을 준비하지 못했습니다. 잠시 뒤 다시 시도해 주세요." };
     sourceUrls[id] = data.signedUrl;
   }
-  const { data: voice } = await admin.storage.from("voices").createSignedUrl(take.audioPath, LINK_TTL_SEC);
-  const objectPath = `${project.userId}/${project.id}/render-${crypto.randomUUID()}.mp4`;
-  const { data: upload } = await admin.storage.from("renders").createSignedUploadUrl(objectPath, { upsert: true });
+  const { data: voice } = await admin.storage.from("shorts-voices").createSignedUrl(take.audioPath, LINK_TTL_SEC);
+  const objectPath = `${project.organizationId}/${project.id}/render-${crypto.randomUUID()}.mp4`;
+  const { data: upload } = await admin.storage.from("shorts-renders").createSignedUploadUrl(objectPath, { upsert: true });
   if (!voice?.signedUrl || !upload) return { ok: false, error: "영상 저장 공간을 준비하지 못했습니다. 잠시 뒤 다시 시도해 주세요." };
 
   const result = await createJob(supabase, {

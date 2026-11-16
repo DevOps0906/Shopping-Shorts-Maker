@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getGoogleOAuthConfig } from "@/server/oauth/config";
-import { backToAccounts, readAccountId, sameOrigin, sessionUserId } from "@/server/oauth/http";
+import { backToAccounts, readAccountId, sameOrigin, sessionOrganizationId } from "@/server/oauth/http";
 import { createOAuthStore } from "@/server/oauth/store";
 import { startConnect } from "@/server/oauth/youtube";
 
@@ -13,12 +13,12 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return NextResponse.json({ ok: false, error: "허용되지 않은 요청입니다." }, { status: 403 });
-  const userId = await sessionUserId();
-  if (!userId) return NextResponse.json({ ok: false, error: "로그인이 필요합니다." }, { status: 401 });
+  const organizationId = await sessionOrganizationId();
+  if (!organizationId) return NextResponse.json({ ok: false, error: "로그인이 필요합니다." }, { status: 401 });
   const accountId = await readAccountId(request);
   if (!accountId) return backToAccounts(request, "not_allowed");
 
-  const result = await startConnect(createOAuthStore(), getGoogleOAuthConfig(), userId, accountId);
+  const result = await startConnect(createOAuthStore(), getGoogleOAuthConfig(), organizationId, accountId);
   if (!result.ok) return backToAccounts(request, result.result);
   const res = NextResponse.redirect(result.url, 303);
   res.headers.set("Cache-Control", "no-store");

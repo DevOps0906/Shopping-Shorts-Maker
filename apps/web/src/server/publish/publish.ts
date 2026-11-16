@@ -27,7 +27,7 @@ import { createAdminClient } from "@/server/supabase-admin";
  *   private SECURITY DEFINER)를 부른다. 소유자 검사·함수 전용 열 쓰기는 DB가 한다. 사용자가 누른 요청의 서버 액션만 이 모듈을 부른다
  *   (제작 파트너 AI 도구 목록에는 없다, 17-7).
  * - affiliate_links.url 은 서버(SR)만 쓴다: 사용자 세션으로 소유를 확인하고 프로그램별 허용 도메인을 검사한 뒤 service_role 로 쓴다.
- * - 정책이 바뀌면 DB가 pending 발행 행을 invalidated 로 돌린다. 업로드 직전 재판정은 public.publish_recheck(서버 service_role, task-024).
+ * - 정책이 바뀌면 DB가 pending 발행 행을 invalidated 로 돌린다. 업로드 직전 재판정은 nomad_shorts.publish_recheck(서버 service_role, task-024).
  * - 단축 링크(task-025): 링크를 저장하면 코드가 없을 때 한 번만 만든다(server/analytics/short-link.ts).
  * - 발행 버튼은 "발행 준비 완료"(publications 행 + projects.status = awaiting_publish)까지. 실제 업로드는 Compose 서비스
  *   uploader(src/server/publish/uploader.ts, task-024a)가 publications 상태로 한다. 화면은 상태 표시와 다시 시도만.

@@ -24,7 +24,7 @@ export type Claim = {
   publicationId: string;
   attemptToken: string;
   projectId: string;
-  userId: string;
+  organizationId: string;
   accountId: string;
   mode: "scheduled" | "now";
   scheduledAt: string | null;
@@ -85,7 +85,7 @@ export type UploaderStore = {
 export type UploaderDeps = {
   store: UploaderStore;
   fetch: FetchLike;
-  getAccessToken(userId: string, accountId: string): Promise<string>;
+  getAccessToken(organizationId: string, accountId: string): Promise<string>;
   /** 렌더 MP4 바이트. 없으면 null(보관 기간 삭제 등) */
   loadVideo(claim: Claim): Promise<Uint8Array<ArrayBuffer> | null>;
   /** 서버 전용 설정 UPLOAD_TEST_PRIVATE=1: privacyStatus=private · publishAt 없음 */
@@ -135,7 +135,7 @@ async function attempt(deps: UploaderDeps, c: Claim): Promise<RunResult> {
 
   let accessToken: string;
   try {
-    accessToken = await deps.getAccessToken(c.userId, c.accountId);
+    accessToken = await deps.getAccessToken(c.organizationId, c.accountId);
   } catch (e) {
     return e instanceof ReconnectRequiredError ? fail("reconnect", "reconnect_required") : fail("transient", "token_error");
   }

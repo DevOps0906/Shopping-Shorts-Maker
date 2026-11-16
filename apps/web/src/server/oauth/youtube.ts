@@ -59,9 +59,9 @@ export function slotResult(status: SlotStatus): SlotResult {
 }
 
 /** DB 최종 검사에서 거부된 뒤 화면 값(한도·날짜)을 다시 읽는다. 읽지 못하면 코드만 */
-async function slotRejection(store: OAuthStore, userId: string, accountId: string, code: "CS001" | "CS002") {
+async function slotRejection(store: OAuthStore, organizationId: string, accountId: string, code: "CS001" | "CS002") {
   try {
-    const status = await store.slotStatus(userId, accountId);
+    const status = await store.slotStatus(organizationId, accountId);
     return status.code === code ? slotResult(status) : code;
   } catch {
     return code;
@@ -90,14 +90,14 @@ const storeCode = (e: unknown) => (e instanceof OAuthStoreError ? e.code : null)
 export async function startConnect(
   store: OAuthStore,
   cfg: GoogleOAuthConfig | null,
-  userId: string,
+  organizationId: string,
   accountId: string,
 ): Promise<{ ok: true; url: string } | { ok: false; result: OAuthResult }> {
   if (!cfg) return { ok: false, result: "config_missing" };
   // 한도·30일 회전에 걸리면 Google 로 보내지 않는다(최종 판정은 콜백의 DB 함수가 잠금 뒤 다시 한다)
   let slot: SlotStatus;
   try {
-    slot = await store.slotStatus(userId, accountId);
+    slot = await store.slotStatus(organizationId, accountId);
   } catch (e) {
     return { ok: false, result: storeCode(e) === "42501" ? "not_allowed" : "failed" };
   }
@@ -105,7 +105,7 @@ export async function startConnect(
   const state = base64url(randomBytes(32));
   const verifier = base64url(randomBytes(48)); // 64자(43~128)
   try {
-    await store.createState(userId, accountId, sha256Hex(state), verifier);
+    await store.createState(organizationId, accountId, sha256Hex(state), verifier);
   } catch (e) {
     const code = storeCode(e);
     return { ok: false, result: code === "42501" ? "not_allowed" : code === "54000" ? "too_many" : "failed" };
@@ -117,14 +117,14 @@ export async function startConnect(
 export async function finishConnect(
   store: OAuthStore,
   cfg: GoogleOAuthConfig | null,
-  userId: string,
+  organizationId: string,
   query: { code: string | null; state: string | null; error: string | null },
 ): Promise<OAuthResult> {
   if (!cfg) return "config_missing";
   if (!query.state || query.state.length > 200) return "invalid_state";
   let pending: Awaited<ReturnType<OAuthStore["consumeState"]>>;
   try {
-    pending = await store.consumeState(userId, sha256Hex(query.state));
+    pending = await store.consumeState(organizationId, sha256Hex(query.state));
   } catch {
     return "failed";
   }
@@ -145,7 +145,7 @@ export async function finishConnect(
 
   try {
     const status = await store.saveConnection({
-      userId,
+      organizationId,
       accountId: pending.accountId,
       channelId,
       refreshToken: tokens.refreshToken,
@@ -157,7 +157,7 @@ export async function finishConnect(
     switch (code) {
       case "CS001":
       case "CS002":
-        return slotRejection(store, userId, pending.accountId, code);
+        return slotRejection(store, organizationId, pending.accountId, code);
       case "CS003":
         return "CS003";
       case "OA001":
@@ -175,10 +175,10 @@ export async function finishConnect(
 }
 
 /** 연결 해제: 소유 확인 → Google 폐기 → Vault 삭제. 폐기가 실패하면 Vault 를 남기고 다시 시도하게 한다 */
-export async function disconnect(store: OAuthStore, userId: string, accountId: string): Promise<OAuthResult> {
+export async function disconnect(store: OAuthStore, organizationId: string, accountId: string): Promise<OAuthResult> {
   let token: string | null;
   try {
-    token = await store.getRefreshToken(accountId, userId);
+    token = await store.getRefreshToken(accountId, organizationId);
   } catch (e) {
     return storeCode(e) === "42501" ? "not_allowed" : "failed";
   }
@@ -190,7 +190,7 @@ export async function disconnect(store: OAuthStore, userId: string, accountId: s
     }
   }
   try {
-    await store.clearToken(accountId, userId);
+    await store.clearToken(accountId, organizationId);
   } catch (e) {
     return storeCode(e) === "42501" ? "not_allowed" : "failed";
   }
@@ -207,17 +207,17 @@ export class ReconnectRequiredError extends Error {
 
 /**
  * 서버 전용 access token 발급(업로드 주체 = Next.js 서버). 요청마다 갱신 토큰으로 새로 받고 캐시하지 않는다.
- * accounts.user_id = userId 가 아니면 예외(DB 42501). invalid_grant 면 갱신에 쓴 토큰 버전이 아직 현재일 때만
+ * accounts.organization_id = organizationId 가 아니면 예외(DB 42501). invalid_grant 면 갱신에 쓴 토큰 버전이 아직 현재일 때만
  * Vault 를 지우고 reconnect_required 로 바꾼다(그사이 재연결로 받은 새 토큰은 지우지 않는다).
  */
 export async function getAccessTokenWith(
   store: OAuthStore,
   cfg: GoogleOAuthConfig | null,
-  userId: string,
+  organizationId: string,
   accountId: string,
 ): Promise<string> {
   if (!cfg) throw new Error("GOOGLE_OAUTH_* 환경 변수가 설정되지 않았습니다.");
-  const current = await store.getTokenForUse(userId, accountId);
+  const current = await store.getTokenForUse(organizationId, accountId);
   if (!current) throw new ReconnectRequiredError();
   try {
     const tokens = await refreshAccessToken(cfg, current.refreshToken);

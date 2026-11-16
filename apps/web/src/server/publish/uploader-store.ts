@@ -30,7 +30,7 @@ export function parseClaim(data: unknown): ClaimResult {
     publicationId: str(d.publication_id) ?? "",
     attemptToken: str(d.attempt_token) ?? "",
     projectId: str(d.project_id) ?? "",
-    userId: str(d.user_id) ?? "",
+    organizationId: str(d.organization_id) ?? "",
     accountId: str(d.account_id) ?? "",
     mode: d.mode === "scheduled" ? "scheduled" : "now",
     scheduledAt: str(d.scheduled_at),
@@ -43,7 +43,7 @@ export function parseClaim(data: unknown): ClaimResult {
         ? { uri: s.uri, totalBytes: s.total_bytes }
         : null,
   };
-  if (!claim.publicationId || !claim.attemptToken || !claim.userId || !claim.accountId) {
+  if (!claim.publicationId || !claim.attemptToken || !claim.organizationId || !claim.accountId) {
     throw new UploaderStoreError("bad_claim");
   }
   return { claimed: true, claim };
@@ -116,13 +116,13 @@ export function createUploaderStore(): UploaderStore {
   };
 }
 
-/** 렌더 MP4(비공개 버킷 renders). 경로는 <user_id>/<project_id>/ 로 시작해야 한다. 없으면 null */
+/** 렌더 MP4(비공개 버킷 shorts-renders). 경로는 <organization_id>/<project_id>/ 로 시작해야 한다. 없으면 null */
 export function createVideoLoader() {
   const db = createAdminClient();
   return async (claim: Claim): Promise<Uint8Array<ArrayBuffer> | null> => {
     const path = claim.mp4Path;
-    if (!path || !path.startsWith(`${claim.userId}/${claim.projectId}/`) || path.includes("..")) return null;
-    const { data, error } = await db.storage.from("renders").download(path);
+    if (!path || !path.startsWith(`${claim.organizationId}/${claim.projectId}/`) || path.includes("..")) return null;
+    const { data, error } = await db.storage.from("shorts-renders").download(path);
     if (error) {
       const status = (error as { status?: unknown; statusCode?: unknown }).status ?? (error as { statusCode?: unknown }).statusCode;
       if (status === 404 || status === "404" || /not.?found/i.test(error.message)) return null;

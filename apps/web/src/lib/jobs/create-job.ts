@@ -7,9 +7,9 @@ import type { Database, Json } from "@/types/db";
  * - 단계는 DB가 종류로 정한다(collect·select_sources 02 · analyze 03 · tts 04 · render 05). 앞 단계 미승인·이미 승인이면 step_not_ready.
  * - 같은 키를 다른 프로젝트·종류에 쓰면 conflict. 키는 사용자 단위로 유일하다.
  * - 같은 종류의 진행 중 작업이 상한(render 3·tts 5·analyze 5)이면 JQ001 → too_many_jobs(크레딧 예약 전 거부).
- * - 예상 크레딧은 DB(private.job_cost)가 정한다. 잔액이 부족하면 작업을 만들지 않고 필요·잔액을 돌려준다.
+ * - 예상 크레딧은 DB(nomad_shorts_private.job_cost)가 정한다. 잔액이 부족하면 작업을 만들지 않고 필요·잔액을 돌려준다.
  */
-type CreateJobArgs = Database["public"]["Functions"]["create_job"]["Args"];
+type CreateJobArgs = Database["nomad_shorts"]["Functions"]["create_job"]["Args"];
 
 export type JobType = "render" | "tts" | "analyze" | "collect" | "select_sources";
 export type JobStatus = "queued" | "waiting_extension" | "running" | "succeeded" | "failed" | "canceled";

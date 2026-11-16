@@ -9,8 +9,8 @@ const { startConnect, finishConnect, disconnect, getAccessTokenWith, ReconnectRe
 type OAuthStore = import("./store").OAuthStore;
 type SlotStatus = import("./store").SlotStatus;
 
-const USER_A = "00000000-0000-4000-8000-00000000000a";
-const USER_B = "00000000-0000-4000-8000-00000000000b";
+const ORG_A = "00000000-0000-4000-8000-00000000000a";
+const ORG_B = "00000000-0000-4000-8000-00000000000b";
 const ACC_A = "00000000-0000-4000-8000-0000000000a1";
 const ACC_B = "00000000-0000-4000-8000-0000000000b1";
 const CFG = { clientId: "cid", clientSecret: "csecret", redirectUri: "https://app.test/api/oauth/youtube/callback" };
@@ -21,8 +21,8 @@ const ACCESS = "at-SECRET-9";
 
 /** DB 함수(20261112270000)와 같은 규칙의 메모리 저장소 */
 function fakeStore() {
-  const owners: Record<string, string> = { [ACC_A]: USER_A, [ACC_B]: USER_B };
-  const states = new Map<string, { userId: string; accountId: string; verifier: string; expires: number; used: boolean }>();
+  const owners: Record<string, string> = { [ACC_A]: ORG_A, [ACC_B]: ORG_B };
+  const states = new Map<string, { organizationId: string; accountId: string; verifier: string; expires: number; used: boolean }>();
   const accounts: Record<string, { channel: string | null; token: string | null; status: string }> = {
     [ACC_A]: { channel: null, token: null, status: "reconnect_required" },
     [ACC_B]: { channel: null, token: null, status: "reconnect_required" },
@@ -37,19 +37,19 @@ function fakeStore() {
     reject: null,
   };
   const store: OAuthStore = {
-    async createState(userId, accountId, stateHash, verifier) {
-      if (owners[accountId] !== userId) throw new OAuthStoreError("42501");
-      states.set(stateHash, { userId, accountId, verifier, expires: Date.now() + 600_000, used: false });
+    async createState(organizationId, accountId, stateHash, verifier) {
+      if (owners[accountId] !== organizationId) throw new OAuthStoreError("42501");
+      states.set(stateHash, { organizationId, accountId, verifier, expires: Date.now() + 600_000, used: false });
     },
-    async consumeState(userId, stateHash) {
+    async consumeState(organizationId, stateHash) {
       const s = states.get(stateHash);
       if (!s || s.used) return null;
       s.used = true;
-      if (s.expires <= Date.now() || s.userId !== userId) return null;
+      if (s.expires <= Date.now() || s.organizationId !== organizationId) return null;
       return { accountId: s.accountId, codeVerifier: s.verifier };
     },
-    async saveConnection({ userId, accountId, channelId, refreshToken, scopes }) {
-      if (owners[accountId] !== userId) throw new OAuthStoreError("42501");
+    async saveConnection({ organizationId, accountId, channelId, refreshToken, scopes }) {
+      if (owners[accountId] !== organizationId) throw new OAuthStoreError("42501");
       const acc = accounts[accountId];
       if (acc.channel && acc.channel !== channelId) throw new OAuthStoreError("OA001");
       if (!YOUTUBE_SCOPES.every((s) => scopes.includes(s))) throw new OAuthStoreError("OA002");
@@ -65,21 +65,21 @@ function fakeStore() {
       acc.status = acc.token ? "connected" : "reconnect_required";
       return acc.status;
     },
-    async getRefreshToken(accountId, userId) {
-      if (userId && owners[accountId] !== userId) throw new OAuthStoreError("42501");
+    async getRefreshToken(accountId, organizationId) {
+      if (organizationId && owners[accountId] !== organizationId) throw new OAuthStoreError("42501");
       return accounts[accountId].token;
     },
-    async slotStatus(userId, accountId) {
-      if (owners[accountId] !== userId) throw new OAuthStoreError("42501");
+    async slotStatus(organizationId, accountId) {
+      if (owners[accountId] !== organizationId) throw new OAuthStoreError("42501");
       return slot.status;
     },
-    async clearToken(accountId, userId) {
-      if (userId && owners[accountId] !== userId) throw new OAuthStoreError("42501");
+    async clearToken(accountId, organizationId) {
+      if (organizationId && owners[accountId] !== organizationId) throw new OAuthStoreError("42501");
       accounts[accountId].token = null;
       accounts[accountId].status = "reconnect_required";
     },
-    async getTokenForUse(userId, accountId) {
-      if (owners[accountId] !== userId) throw new OAuthStoreError("42501");
+    async getTokenForUse(organizationId, accountId) {
+      if (owners[accountId] !== organizationId) throw new OAuthStoreError("42501");
       const t = accounts[accountId].token;
       return t ? { ref: ver(accountId), refreshToken: t } : null;
     },
@@ -123,8 +123,8 @@ function mockGoogle(m: GoogleMock) {
 }
 
 /** 시작 → 동의 화면 URL 의 state 를 꺼내 콜백 흉내 */
-async function start(store: OAuthStore, userId = USER_A, accountId = ACC_A) {
-  const r = await startConnect(store, CFG, userId, accountId);
+async function start(store: OAuthStore, organizationId = ORG_A, accountId = ACC_A) {
+  const r = await startConnect(store, CFG, organizationId, accountId);
   if (!r.ok) throw new Error(r.result);
   const url = new URL(r.url);
   return { url, state: url.searchParams.get("state")! };
@@ -156,14 +156,14 @@ describe("시작", () => {
 
   it("남의 account_id 로 시작하면 거부", async () => {
     const { store, states } = fakeStore();
-    const r = await startConnect(store, CFG, USER_A, ACC_B);
+    const r = await startConnect(store, CFG, ORG_A, ACC_B);
     expect(r).toEqual({ ok: false, result: "not_allowed" });
     expect(states.size).toBe(0);
   });
 
   it("설정이 없으면 config_missing", async () => {
     const { store } = fakeStore();
-    expect(await startConnect(store, null, USER_A, ACC_A)).toEqual({ ok: false, result: "config_missing" });
+    expect(await startConnect(store, null, ORG_A, ACC_A)).toEqual({ ok: false, result: "config_missing" });
   });
 });
 
@@ -171,18 +171,18 @@ describe("채널 한도(task-034a)", () => {
   it("사전 검사에서 한도·30일 회전에 걸리면 Google 로 보내지 않고 값이 붙은 코드로 돌려보낸다", async () => {
     const { store, states, slot } = fakeStore();
     slot.status = { allowed: false, code: "CS001", limit: 2, nextAt: null };
-    expect(await startConnect(store, CFG, USER_A, ACC_A)).toEqual({ ok: false, result: "CS001:2" });
+    expect(await startConnect(store, CFG, ORG_A, ACC_A)).toEqual({ ok: false, result: "CS001:2" });
     // 2026-12-02T16:00Z = KST 12월 3일 01시
     slot.status = { allowed: false, code: "CS002", limit: 5, nextAt: "2026-12-02T16:00:00+00:00" };
-    expect(await startConnect(store, CFG, USER_A, ACC_A)).toEqual({ ok: false, result: "CS002:2026-12-03" });
+    expect(await startConnect(store, CFG, ORG_A, ACC_A)).toEqual({ ok: false, result: "CS002:2026-12-03" });
     slot.status = { allowed: false, code: "CS002", limit: 5, nextAt: null };
-    expect(await startConnect(store, CFG, USER_A, ACC_A)).toEqual({ ok: false, result: "CS002" });
+    expect(await startConnect(store, CFG, ORG_A, ACC_A)).toEqual({ ok: false, result: "CS002" });
     expect(states.size).toBe(0);
   });
 
   it("남의 계정 사전 검사는 not_allowed", async () => {
     const { store } = fakeStore();
-    expect(await startConnect(store, CFG, USER_A, ACC_B)).toEqual({ ok: false, result: "not_allowed" });
+    expect(await startConnect(store, CFG, ORG_A, ACC_B)).toEqual({ ok: false, result: "not_allowed" });
   });
 
   it("콜백의 DB 최종 검사가 거부하면 토큰을 저장하지 않고 CS 코드로 돌려보낸다", async () => {
@@ -191,12 +191,12 @@ describe("채널 한도(task-034a)", () => {
     const s1 = await start(store);
     slot.reject = "CS001";
     slot.status = { allowed: false, code: "CS001", limit: 1, nextAt: null };
-    expect(await finishConnect(store, CFG, USER_A, { code: "c", state: s1.state, error: null })).toBe("CS001:1");
+    expect(await finishConnect(store, CFG, ORG_A, { code: "c", state: s1.state, error: null })).toBe("CS001:1");
     slot.reject = null;
     slot.status = { allowed: true, code: null, limit: 1, nextAt: null };
     const s2 = await start(store);
     slot.reject = "CS003";
-    expect(await finishConnect(store, CFG, USER_A, { code: "c", state: s2.state, error: null })).toBe("CS003");
+    expect(await finishConnect(store, CFG, ORG_A, { code: "c", state: s2.state, error: null })).toBe("CS003");
     expect(accounts[ACC_A]).toEqual({ channel: null, token: null, status: "reconnect_required" });
   });
 });
@@ -206,7 +206,7 @@ describe("콜백", () => {
     const { store, accounts } = fakeStore();
     mockGoogle({});
     const { state } = await start(store);
-    const r = await finishConnect(store, CFG, USER_A, { code: "c1", state, error: null });
+    const r = await finishConnect(store, CFG, ORG_A, { code: "c1", state, error: null });
     expect(r).toBe("connected");
     expect(accounts[ACC_A]).toEqual({ channel: "UC-A", token: NEW_REFRESH, status: "connected" });
     expect(JSON.stringify(r)).not.toMatch(/SECRET/);
@@ -217,7 +217,7 @@ describe("콜백", () => {
     const calls = mockGoogle({});
     const { state } = await start(store);
     const verifier = states.get(sha256Hex(state))!.verifier;
-    await finishConnect(store, CFG, USER_A, { code: "c1", state, error: null });
+    await finishConnect(store, CFG, ORG_A, { code: "c1", state, error: null });
     const tokenCall = calls.find((c) => c.url === TOKEN_URL)!;
     expect(new URLSearchParams(tokenCall.body).get("code_verifier")).toBe(verifier);
   });
@@ -225,22 +225,22 @@ describe("콜백", () => {
   it("state 불일치·재사용·만료·다른 사용자 콜백은 거부, Google 호출 없음", async () => {
     const { store, states, accounts } = fakeStore();
     const calls = mockGoogle({});
-    expect(await finishConnect(store, CFG, USER_A, { code: "c", state: "wrong", error: null })).toBe("invalid_state");
-    expect(await finishConnect(store, CFG, USER_A, { code: "c", state: null, error: null })).toBe("invalid_state");
+    expect(await finishConnect(store, CFG, ORG_A, { code: "c", state: "wrong", error: null })).toBe("invalid_state");
+    expect(await finishConnect(store, CFG, ORG_A, { code: "c", state: null, error: null })).toBe("invalid_state");
 
     const s1 = await start(store);
-    expect(await finishConnect(store, CFG, USER_B, { code: "c", state: s1.state, error: null })).toBe("invalid_state");
+    expect(await finishConnect(store, CFG, ORG_B, { code: "c", state: s1.state, error: null })).toBe("invalid_state");
     // 다른 사용자가 건드린 state 는 소모되어 본인도 못 쓴다
-    expect(await finishConnect(store, CFG, USER_A, { code: "c", state: s1.state, error: null })).toBe("invalid_state");
+    expect(await finishConnect(store, CFG, ORG_A, { code: "c", state: s1.state, error: null })).toBe("invalid_state");
 
     const s2 = await start(store);
     states.get(sha256Hex(s2.state))!.expires = Date.now() - 1;
-    expect(await finishConnect(store, CFG, USER_A, { code: "c", state: s2.state, error: null })).toBe("invalid_state");
+    expect(await finishConnect(store, CFG, ORG_A, { code: "c", state: s2.state, error: null })).toBe("invalid_state");
 
     expect(calls).toHaveLength(0);
     const s3 = await start(store);
-    expect(await finishConnect(store, CFG, USER_A, { code: "c", state: s3.state, error: null })).toBe("connected");
-    expect(await finishConnect(store, CFG, USER_A, { code: "c", state: s3.state, error: null })).toBe("invalid_state");
+    expect(await finishConnect(store, CFG, ORG_A, { code: "c", state: s3.state, error: null })).toBe("connected");
+    expect(await finishConnect(store, CFG, ORG_A, { code: "c", state: s3.state, error: null })).toBe("invalid_state");
     expect(accounts[ACC_A].status).toBe("connected");
   });
 
@@ -253,7 +253,7 @@ describe("콜백", () => {
       },
     });
     const { state } = await start(store);
-    expect(await finishConnect(store, CFG, USER_A, { code: "c", state, error: null })).toBe("scope_missing");
+    expect(await finishConnect(store, CFG, ORG_A, { code: "c", state, error: null })).toBe("scope_missing");
     expect(accounts[ACC_A]).toEqual({ channel: null, token: null, status: "reconnect_required" });
   });
 
@@ -262,7 +262,7 @@ describe("콜백", () => {
     accounts[ACC_A] = { channel: "UC-A", token: OLD_REFRESH, status: "connected" };
     mockGoogle({ channelId: "UC-OTHER" });
     const { state } = await start(store);
-    expect(await finishConnect(store, CFG, USER_A, { code: "c", state, error: null })).toBe("channel_mismatch");
+    expect(await finishConnect(store, CFG, ORG_A, { code: "c", state, error: null })).toBe("channel_mismatch");
     expect(accounts[ACC_A]).toEqual({ channel: "UC-A", token: OLD_REFRESH, status: "connected" });
   });
 
@@ -271,7 +271,7 @@ describe("콜백", () => {
     accounts[ACC_B] = { channel: "UC-A", token: "rt-b", status: "connected" };
     mockGoogle({ channelId: "UC-A" });
     const { state } = await start(store);
-    expect(await finishConnect(store, CFG, USER_A, { code: "c", state, error: null })).toBe("channel_taken");
+    expect(await finishConnect(store, CFG, ORG_A, { code: "c", state, error: null })).toBe("channel_taken");
     expect(accounts[ACC_A].token).toBeNull();
   });
 
@@ -280,7 +280,7 @@ describe("콜백", () => {
     accounts[ACC_A] = { channel: "UC-A", token: OLD_REFRESH, status: "connected" };
     mockGoogle({ token: { status: 200, body: { access_token: ACCESS, refresh_token: "", scope: ALL_SCOPES.join(" ") } } });
     const { state } = await start(store);
-    expect(await finishConnect(store, CFG, USER_A, { code: "c", state, error: null })).toBe("connected");
+    expect(await finishConnect(store, CFG, ORG_A, { code: "c", state, error: null })).toBe("connected");
     expect(accounts[ACC_A].token).toBe(OLD_REFRESH);
   });
 
@@ -288,9 +288,9 @@ describe("콜백", () => {
     const { store } = fakeStore();
     mockGoogle({ channelId: null });
     const s1 = await start(store);
-    expect(await finishConnect(store, CFG, USER_A, { code: null, state: s1.state, error: "access_denied" })).toBe("denied");
+    expect(await finishConnect(store, CFG, ORG_A, { code: null, state: s1.state, error: "access_denied" })).toBe("denied");
     const s2 = await start(store);
-    expect(await finishConnect(store, CFG, USER_A, { code: "c", state: s2.state, error: null })).toBe("no_channel");
+    expect(await finishConnect(store, CFG, ORG_A, { code: "c", state: s2.state, error: null })).toBe("no_channel");
   });
 });
 
@@ -299,8 +299,8 @@ describe("access token·해제", () => {
     const { store, accounts } = fakeStore();
     accounts[ACC_A] = { channel: "UC-A", token: OLD_REFRESH, status: "connected" };
     const calls = mockGoogle({ token: { status: 200, body: { access_token: ACCESS, scope: ALL_SCOPES.join(" ") } } });
-    expect(await getAccessTokenWith(store, CFG, USER_A, ACC_A)).toBe(ACCESS);
-    expect(await getAccessTokenWith(store, CFG, USER_A, ACC_A)).toBe(ACCESS);
+    expect(await getAccessTokenWith(store, CFG, ORG_A, ACC_A)).toBe(ACCESS);
+    expect(await getAccessTokenWith(store, CFG, ORG_A, ACC_A)).toBe(ACCESS);
     expect(calls.filter((c) => c.url === TOKEN_URL)).toHaveLength(2);
     expect(new URLSearchParams(calls[0].body).get("grant_type")).toBe("refresh_token");
   });
@@ -309,7 +309,7 @@ describe("access token·해제", () => {
     const { store, accounts } = fakeStore();
     accounts[ACC_A] = { channel: "UC-A", token: OLD_REFRESH, status: "connected" };
     mockGoogle({ token: { status: 400, body: { error: "invalid_grant" } } });
-    await expect(getAccessTokenWith(store, CFG, USER_A, ACC_A)).rejects.toBeInstanceOf(ReconnectRequiredError);
+    await expect(getAccessTokenWith(store, CFG, ORG_A, ACC_A)).rejects.toBeInstanceOf(ReconnectRequiredError);
     expect(accounts[ACC_A]).toEqual({ channel: "UC-A", token: null, status: "reconnect_required" });
   });
 
@@ -317,7 +317,7 @@ describe("access token·해제", () => {
     const { store, accounts } = fakeStore();
     accounts[ACC_A] = { channel: "UC-A", token: OLD_REFRESH, status: "connected" };
     const calls = mockGoogle({});
-    await expect(getAccessTokenWith(store, CFG, USER_B, ACC_A)).rejects.toBeInstanceOf(OAuthStoreError);
+    await expect(getAccessTokenWith(store, CFG, ORG_B, ACC_A)).rejects.toBeInstanceOf(OAuthStoreError);
     expect(calls).toHaveLength(0);
   });
 
@@ -336,11 +336,11 @@ describe("access token·해제", () => {
         return new Response(JSON.stringify({ error: "invalid_grant" }), { status: 400 });
       }),
     );
-    const pending = getAccessTokenWith(store, CFG, USER_A, ACC_A);
+    const pending = getAccessTokenWith(store, CFG, ORG_A, ACC_A);
     await fetched;
     // 갱신 응답이 오기 전에 사용자가 재연결(새 버전)
     await store.saveConnection({
-      userId: USER_A,
+      organizationId: ORG_A,
       accountId: ACC_A,
       channelId: "UC-A",
       refreshToken: NEW_REFRESH,
@@ -355,7 +355,7 @@ describe("access token·해제", () => {
     const { store, accounts } = fakeStore();
     accounts[ACC_A] = { channel: "UC-A", token: OLD_REFRESH, status: "connected" };
     mockGoogle({ token: { status: 500, body: { error: "server_error" } } });
-    const err = await getAccessTokenWith(store, CFG, USER_A, ACC_A).catch((e: Error) => e);
+    const err = await getAccessTokenWith(store, CFG, ORG_A, ACC_A).catch((e: Error) => e);
     expect(String(err)).not.toMatch(/SECRET/);
   });
 
@@ -363,7 +363,7 @@ describe("access token·해제", () => {
     const { store, accounts } = fakeStore();
     accounts[ACC_A] = { channel: "UC-A", token: OLD_REFRESH, status: "connected" };
     const calls = mockGoogle({});
-    expect(await disconnect(store, USER_A, ACC_A)).toBe("disconnected");
+    expect(await disconnect(store, ORG_A, ACC_A)).toBe("disconnected");
     const revoke = calls.find((c) => c.url === REVOKE_URL)!;
     expect(new URLSearchParams(revoke.body).get("token")).toBe(OLD_REFRESH);
     expect(accounts[ACC_A]).toEqual({ channel: "UC-A", token: null, status: "reconnect_required" });
@@ -373,13 +373,13 @@ describe("access token·해제", () => {
     const a = fakeStore();
     a.accounts[ACC_A] = { channel: "UC-A", token: OLD_REFRESH, status: "connected" };
     mockGoogle({ revokeStatus: 400 });
-    expect(await disconnect(a.store, USER_A, ACC_A)).toBe("disconnected");
+    expect(await disconnect(a.store, ORG_A, ACC_A)).toBe("disconnected");
     expect(a.accounts[ACC_A].token).toBeNull();
 
     const b = fakeStore();
     b.accounts[ACC_A] = { channel: "UC-A", token: OLD_REFRESH, status: "connected" };
     mockGoogle({ revokeStatus: 503 });
-    expect(await disconnect(b.store, USER_A, ACC_A)).toBe("revoke_failed");
+    expect(await disconnect(b.store, ORG_A, ACC_A)).toBe("revoke_failed");
     expect(b.accounts[ACC_A].token).toBe(OLD_REFRESH);
   });
 
@@ -387,7 +387,7 @@ describe("access token·해제", () => {
     const { store, accounts } = fakeStore();
     accounts[ACC_B] = { channel: "UC-B", token: "rt-b", status: "connected" };
     const calls = mockGoogle({});
-    expect(await disconnect(store, USER_A, ACC_B)).toBe("not_allowed");
+    expect(await disconnect(store, ORG_A, ACC_B)).toBe("not_allowed");
     expect(calls).toHaveLength(0);
     expect(accounts[ACC_B].token).toBe("rt-b");
   });

@@ -1,6 +1,6 @@
-"""tts 작업 처리기(04 목소리, tts 큐). 시간 상한 2분(jobs.TIME_LIMIT_SECONDS['tts'] · private.job_time_limit).
+"""tts 작업 처리기(04 목소리, tts 큐). 시간 상한 2분(jobs.TIME_LIMIT_SECONDS['tts'] · nomad_shorts_private.job_time_limit).
 
-입력: job payload {voice_id, upload_url, upload_expires_at}. 대본은 payload 가 아니라 DB 승인 대본(private.tts_job_context).
+입력: job payload {voice_id, upload_url, upload_expires_at}. 대본은 payload 가 아니라 DB 승인 대본(nomad_shorts_private.tts_job_context).
 순서: 승인 대본 → 공급자 합성(한 번에, tmp/<job_id>.wav 캐시) → silencedetect 문장 경계 → 단어 타이밍
 → ffprobe 재검사(형식·길이·타이밍) → 서명 URL 업로드 → voice_takes 기록.
 서명 URL의 실제 기한은 Storage 기본값(약 2시간)이고 payload.upload_expires_at(10분)은 워커가 지키는 UX용 기한이다.
@@ -96,7 +96,7 @@ def run_tts(ctx: JobContext, repo: TtsRepo, provider: TTSProvider, uploader: Upl
         lines = [str(x).strip() for x in info.get("lines") or [] if str(x).strip()]
         if not lines:
             raise PermanentError(MSG_NO_SCRIPT)
-        if not target.object_path.startswith(f"{info['user_id']}/{info['project_id']}/"):
+        if not target.object_path.startswith(f"{info['organization_id']}/{info['project_id']}/"):
             raise ProviderError("음성 저장 위치가 올바르지 않습니다. 다시 생성해 주세요.", transient=False)
 
         data, duration, usage, model = _synthesize_cached(ctx, provider, "\n".join(lines), voice_id, cached)
@@ -139,14 +139,14 @@ class PgTtsRepo:
         self.conn = conn
 
     def context(self, job_id: str) -> dict[str, Any]:
-        row = self.conn.execute("select private.tts_job_context(%s) as ctx", (job_id,)).fetchone()
+        row = self.conn.execute("select nomad_shorts_private.tts_job_context(%s) as ctx", (job_id,)).fetchone()
         return row["ctx"]
 
     def save(self, job_id: str, voice_id: str, audio_path: str, duration_sec: float, timing: Timing) -> str:
         from psycopg.types.json import Jsonb
 
         row = self.conn.execute(
-            "select private.save_voice_take(%s, %s, %s, %s, %s, %s, %s) as id",
+            "select nomad_shorts_private.save_voice_take(%s, %s, %s, %s, %s, %s, %s) as id",
             (job_id, voice_id, audio_path, duration_sec,
              Jsonb(timing.sentences), Jsonb(timing.words), Jsonb(timing.pauses))).fetchone()
         return str(row["id"])

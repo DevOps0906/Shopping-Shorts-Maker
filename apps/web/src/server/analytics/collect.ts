@@ -5,7 +5,7 @@ import { createAdminClient } from "@/server/supabase-admin";
 
 /*
  * YouTube 성과 하루 1회 수집(task-025, docs/planning.md 15-3). pg_cron → POST /api/internal/metrics → 여기.
- * - 대상: public.metrics_targets()(업로드 완료·연결된 YouTube·발행 33일 이내·마지막 수집 20시간 지남).
+ * - 대상: nomad_shorts.metrics_targets()(업로드 완료·연결된 YouTube·발행 33일 이내·마지막 수집 20시간 지남).
  * - 최근 3일(Analytics day = America/Los_Angeles)을 다시 가져와 덮어쓴다. 클릭 집계·덮어쓰기는 DB 함수(save_video_metrics).
  * - 토큰은 계정별로 한 번만 발급한다. 토큰·원문 오류는 기록·로그에 넣지 않는다(오류 코드만).
  */
@@ -14,11 +14,11 @@ export const RECOLLECT_DAYS = 3;
 const VIDEO_ID_RE = /^[A-Za-z0-9_-]{6,64}$/;
 const LA_DATE = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Los_Angeles", year: "numeric", month: "2-digit", day: "2-digit" });
 
-export type MetricsTarget = { publicationId: string; accountId: string; userId: string; videoId: string; publishedAt: string };
+export type MetricsTarget = { publicationId: string; accountId: string; organizationId: string; videoId: string; publishedAt: string };
 
 export type CollectDeps = {
   admin: ReturnType<typeof createAdminClient>;
-  getToken: (userId: string, accountId: string) => Promise<string>;
+  getToken: (organizationId: string, accountId: string) => Promise<string>;
   fetchDaily: (token: string, videoId: string, start: string, end: string) => Promise<DailyMetric[]>;
   now: () => Date;
 };
@@ -47,10 +47,10 @@ function toTargets(raw: unknown): MetricsTarget[] {
   return raw.flatMap((r: Record<string, unknown>) =>
     typeof r?.publication_id === "string" &&
     typeof r.account_id === "string" &&
-    typeof r.user_id === "string" &&
+    typeof r.organization_id === "string" &&
     typeof r.platform_video_id === "string" &&
     typeof r.published_at === "string"
-      ? [{ publicationId: r.publication_id, accountId: r.account_id, userId: r.user_id, videoId: r.platform_video_id, publishedAt: r.published_at }]
+      ? [{ publicationId: r.publication_id, accountId: r.account_id, organizationId: r.organization_id, videoId: r.platform_video_id, publishedAt: r.published_at }]
       : [],
   );
 }
@@ -100,7 +100,7 @@ export async function collectMetrics(deps?: Partial<CollectDeps>) {
     for (const targets of byAccount.values()) {
       let token: string;
       try {
-        token = await d.getToken(targets[0].userId, targets[0].accountId);
+        token = await d.getToken(targets[0].organizationId, targets[0].accountId);
       } catch (e) {
         skipped += targets.length;
         failure ??= `token:${errorCode(e)}`;

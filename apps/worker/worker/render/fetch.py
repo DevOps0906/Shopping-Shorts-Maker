@@ -24,7 +24,7 @@ from typing import Any, Callable
 from ..voice.storage import UploadTarget
 
 SIGN_PREFIX = "/storage/v1/object/sign/"
-UPLOAD_PREFIX = "/storage/v1/object/upload/sign/renders/"
+UPLOAD_PREFIX = "/storage/v1/object/upload/sign/shorts-renders/"
 RENDER_OBJECT_RE = re.compile(r"^[0-9a-f-]{36}/[0-9a-f-]{36}/[A-Za-z0-9._-]{1,120}\.mp4$")
 CHUNK = 1 << 20
 
@@ -70,7 +70,7 @@ def download_url(raw: Any, bucket: str, object_path: str, base: str | None = Non
     return f"{_origin(base)}{prefix}{urllib.parse.quote(object_path)}?{urllib.parse.urlencode({'token': token})}"
 
 
-def upload_target(payload: dict[str, Any], user_id: str, project_id: str, now: datetime | None = None,
+def upload_target(payload: dict[str, Any], organization_id: str, project_id: str, now: datetime | None = None,
                   base: str | None = None) -> UploadTarget:
     raw, expires = payload.get("upload_url"), payload.get("upload_expires_at")
     if not isinstance(raw, str) or not isinstance(expires, str):
@@ -88,7 +88,7 @@ def upload_target(payload: dict[str, Any], user_id: str, project_id: str, now: d
         raise FetchError(MSG_BAD_LINK, transient=False)
     object_path = urllib.parse.unquote(parts.path[len(UPLOAD_PREFIX):])
     if (not RENDER_OBJECT_RE.match(object_path) or ".." in object_path
-            or not object_path.startswith(f"{user_id}/{project_id}/")):
+            or not object_path.startswith(f"{organization_id}/{project_id}/")):
         raise FetchError(MSG_BAD_LINK, transient=False)
     token = _token(parts)
     url = f"{_origin(base)}{UPLOAD_PREFIX}{urllib.parse.quote(object_path)}?{urllib.parse.urlencode({'token': token})}"

@@ -18,7 +18,7 @@ import { createAdminClient } from "@/server/supabase-admin";
  * - 승인 조건(음성 1개 이상): 테이크가 생긴 뒤에만 4단계를 ready 로 바꾼다. 승인은 StepActions 버튼만.
  */
 
-const BUCKET = "voices";
+const BUCKET = "shorts-voices";
 const UPLOAD_TTL_MS = 10 * 60 * 1000;
 const PLAY_TTL_SEC = 10 * 60;
 
@@ -109,7 +109,7 @@ export async function startTts(projectId: string, voiceId: unknown, idempotencyK
   const blocked = precondition(project);
   if (blocked) return { ok: false, error: blocked };
 
-  const objectPath = `${project.userId}/${project.id}/tts-${crypto.randomUUID()}.wav`;
+  const objectPath = `${project.organizationId}/${project.id}/tts-${crypto.randomUUID()}.wav`;
   const { data: signed, error: signError } = await createAdminClient().storage.from(BUCKET).createSignedUploadUrl(objectPath, { upsert: true });
   if (signError || !signed) return { ok: false, error: "음성 저장 공간을 준비하지 못했습니다. 잠시 뒤 다시 시도해 주세요." };
 
@@ -182,7 +182,7 @@ export async function uploadRecording(projectId: string, file: unknown, duration
   if (!checked.ok) return checked;
 
   const admin = createAdminClient();
-  const objectPath = `${project.userId}/${project.id}/rec-${crypto.randomUUID()}.${checked.kind.ext}`;
+  const objectPath = `${project.organizationId}/${project.id}/rec-${crypto.randomUUID()}.${checked.kind.ext}`;
   const { error: uploadError } = await admin.storage
     .from(BUCKET)
     .upload(objectPath, bytes, { contentType: checked.kind.mime, upsert: false });

@@ -1,6 +1,6 @@
 """select_sources 작업 처리기(02 단계, analyze 큐 공유): 후보 대표 프레임 ↔ 승인 제품 이미지 일치도 → 점수 → 상위 20편 저장.
 
-- 입력: job payload `product_image_path`(sources 버킷 객체 경로 `<user_id>/<project_id>/<파일>`).
+- 입력: job payload `product_image_path`(shorts-sources 버킷 객체 경로 `<organization_id>/<project_id>/<파일>`).
 - 후보: 그 작업 프로젝트의 sources. file_path 가 있으면 원본 파일, 없으면 thumbnail_path 로 점수(일치도 40·화질 20 고정 0.7).
 - 원본은 WORKER_MEDIA_DIR, 썸네일은 WORKER_THUMB_DIR 아래 같은 객체 경로에서 읽는다(Storage 내려받기는 이후 작업).
 - 썸네일: jpeg·webp, 512KiB, 한 변 4096 이하. 위장 형식·경로 오류만 격리, 없음·삭제·시간·크기 초과는 격리 없이 사유만.
@@ -19,7 +19,7 @@ from . import match, media
 from .select import Result, rank, score, thumbnail_score
 
 MEDIA_DIR = os.environ.get("WORKER_MEDIA_DIR", "/tmp/media")
-TIME_LIMIT_SECONDS = 300  # 스위퍼 private.job_time_limit('select_sources')와 같다
+TIME_LIMIT_SECONDS = 300  # 스위퍼 nomad_shorts_private.job_time_limit('select_sources')와 같다
 THUMB_DIR = os.environ.get("WORKER_THUMB_DIR", "/tmp/thumbs")
 THUMB_KINDS = frozenset({"jpeg", "webp"})
 THUMB_MAX_BYTES = 524_288  # thumbnails 버킷 상한(512 KiB)
@@ -75,7 +75,7 @@ def _thumb_frames(ctx: JobContext, thumb_root: Path, object_path: Any, prefix: s
 
 def analyze(ctx: JobContext, repo: SourcesRepo, root: Path, thumb_root: Path | None = None) -> list[Result]:
     info = repo.context(ctx.job_id)
-    prefix = f"{info['user_id']}/{info['project_id']}/"
+    prefix = f"{info['organization_id']}/{info['project_id']}/"
     try:
         product_path = resolve(root, ctx.payload.get("product_image_path"), prefix)
         product_probe = media.probe(product_path, _left(ctx))
@@ -139,7 +139,7 @@ class PgSourcesRepo:
         self.conn = conn
 
     def context(self, job_id: str) -> dict[str, Any]:
-        row = self.conn.execute("select private.analyze_sources_context(%s) as ctx", (job_id,)).fetchone()
+        row = self.conn.execute("select nomad_shorts_private.analyze_sources_context(%s) as ctx", (job_id,)).fetchone()
         return row["ctx"]
 
     def save(self, job_id: str, results: list[Result]) -> int:
@@ -147,7 +147,7 @@ class PgSourcesRepo:
 
         payload = [{"id": r.source_id, "score": r.score, "rank": r.rank, "exclude_reason": r.exclude_reason,
                     "quarantined": r.quarantined} for r in results]
-        row = self.conn.execute("select private.save_source_scores(%s, %s) as n",
+        row = self.conn.execute("select nomad_shorts_private.save_source_scores(%s, %s) as n",
                                 (job_id, Jsonb(payload))).fetchone()
         return int(row["n"])
 

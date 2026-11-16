@@ -3,7 +3,7 @@
 # `supabase db reset` 은 CLI 로컬 스택 전용이라 이 스크립트로 대체한다.
 #
 #   sh docker/migrate.sh up      # 아직 적용하지 않은 마이그레이션만 적용
-#   MIGRATE_ALLOW_RESET=1 sh docker/migrate.sh reset   # (로컬 컨텍스트만) 앱 객체(public 스키마 객체·private·api)만 지우고 전부 재적용 + seed.sql
+#   MIGRATE_ALLOW_RESET=1 sh docker/migrate.sh reset   # (로컬 컨텍스트만) 앱 객체(public 스키마 객체·nomad_core·nomad_shorts·nomad_shorts_private·옛 private·api)만 지우고 전부 재적용 + seed.sql
 #
 # - db 컨테이너 안의 psql(postgres 역할)로 실행하므로 비밀번호를 쓰지 않는다.
 # - auth·storage·vault 등 Supabase 스키마와 auth.users 데이터는 건드리지 않는다.
@@ -35,8 +35,12 @@ drop extension if exists pgmq cascade;
 drop extension if exists pg_cron cascade;
 -- 개발 DB 초기화에서만 Storage 보호 트리거의 공식 우회 설정을 켠다(이 연결에만 적용).
 set storage.allow_delete_query = 'true';
-delete from storage.objects where bucket_id in ('sources', 'voices', 'renders', 'thumbnails');
-delete from storage.buckets where id in ('sources', 'voices', 'renders', 'thumbnails');
+delete from storage.objects where bucket_id in ('shorts-sources', 'shorts-voices', 'shorts-renders', 'shorts-thumbnails', 'sources', 'voices', 'renders', 'thumbnails');
+delete from storage.buckets where id in ('shorts-sources', 'shorts-voices', 'shorts-renders', 'shorts-thumbnails', 'sources', 'voices', 'renders', 'thumbnails');
+-- nomad DB(공통 코어·shorts 이식본) 스키마. private·api 는 옛 마이그레이션(supabase/legacy-migrations) 잔여물.
+drop schema if exists nomad_shorts_private cascade;
+drop schema if exists nomad_shorts cascade;
+drop schema if exists nomad_core cascade;
 drop schema if exists private cascade;
 drop schema if exists api cascade;
 do $$

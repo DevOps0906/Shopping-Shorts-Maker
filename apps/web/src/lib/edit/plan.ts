@@ -10,7 +10,7 @@ export const FPS = 30;
 export const MAX_TEMPO = 1.15;
 export const MIN_CUT_SEC = 0.5;
 
-/** 예상 비용(D9: 호출 전 표시). 크레딧은 DB private.job_cost('render')와 같다. 렌더는 자체 서버 FFmpeg라 외부 API 비용 0원 */
+/** 예상 비용(D9: 호출 전 표시). 크레딧은 DB nomad_shorts_private.job_cost('render')와 같다. 렌더는 자체 서버 FFmpeg라 외부 API 비용 0원 */
 export const RENDER_CREDITS = 30;
 export const RENDER_COST_LINE = `예상 크레딧 ${RENDER_CREDITS} · 자체 서버 렌더(외부 AI 호출 없음) 약 0원`;
 /** 작업 시간 상한(17-5 가설: 렌더 10분). 워커·DB 스위퍼와 같은 값 */

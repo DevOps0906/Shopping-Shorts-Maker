@@ -1,5 +1,5 @@
 import { getGoogleOAuthConfig } from "@/server/oauth/config";
-import { backToAccounts, sessionUserId } from "@/server/oauth/http";
+import { backToAccounts, sessionOrganizationId } from "@/server/oauth/http";
 import { createOAuthStore } from "@/server/oauth/store";
 import { finishConnect } from "@/server/oauth/youtube";
 
@@ -11,10 +11,10 @@ import { finishConnect } from "@/server/oauth/youtube";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
-  const userId = await sessionUserId();
-  if (!userId) return backToAccounts(request, "invalid_state");
+  const organizationId = await sessionOrganizationId();
+  if (!organizationId) return backToAccounts(request, "invalid_state");
   const q = new URL(request.url).searchParams;
-  const result = await finishConnect(createOAuthStore(), getGoogleOAuthConfig(), userId, {
+  const result = await finishConnect(createOAuthStore(), getGoogleOAuthConfig(), organizationId, {
     code: q.get("code"),
     state: q.get("state"),
     error: q.get("error"),

@@ -13,7 +13,7 @@ const NOW = new Date("2026-11-13T12:00:00Z"); // LA 2026-11-13 04:00
 const target = (pub: string, acc: string, video: string, publishedAt = "2026-11-01T00:00:00Z") => ({
   publication_id: pub,
   account_id: acc,
-  user_id: `user-${acc}`,
+  organization_id: `user-${acc}`,
   platform_video_id: video,
   published_at: publishedAt,
 });
